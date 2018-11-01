@@ -48,5 +48,23 @@ namespace IR_engine
             this.docHead = docHead;
         }
 
+        public string getdoc()
+        {
+            return this.doc;
+        }
+
+        public string getdocid()
+        {
+            return this.docID;
+        }
+
+        public string getdoctime(string docTime)
+        {
+            return this.docTime;
+        }
+        public string getdochead(string docHead)
+        {
+            return this.docHead;
+        }
     }
 }

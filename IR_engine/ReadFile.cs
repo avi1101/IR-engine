@@ -10,7 +10,6 @@ namespace IR_engine
     class ReadFile
     {
         public static List<document> documents = new List<document>();
-        static int docu = 0;
 
         public static void getDocs(string path)
         {
@@ -27,7 +26,6 @@ namespace IR_engine
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.None);
             foreach (string doc in docs)
                 if (doc != "" && doc!="\n") { 
-                docu++;
                 int st = doc.IndexOf("<DOCNO>");
                 int end = doc.IndexOf("</DOCNO");
                 string docNo = doc.Substring(st+7, (end - st)-8).Trim();
