@@ -11,6 +11,7 @@ namespace IR_engine
 /// </summary>
     public class Parse
     {
+        List<string> terms = new List<string>();
         HashSet<string> stopwords = new HashSet<string>();
         /// <summary>
         /// this is the constructor for the Parser class
@@ -38,19 +39,20 @@ namespace IR_engine
         {
             foreach (string word in words)
             {
-                if(word==null|| word==""||word==" ")
-                {
-                    words.Remove(word);
-                }
-                if (word.Contains("\n"))
+                if (word == null || word == "" || word == " ")
+                    continue;
+                else if (word.Contains("\n"))
                 {
                     string word2 = word.TrimEnd('\n');
                     words.Add(word2);
                     words.Remove(word);
                 }
-                if (stopwords.Contains(word))
+                else if (stopwords.Contains(word))
+                    continue;
+                else if (IsNumber(word))
                 {
-                    words.Remove(word);
+                    string word2 = NumberSet(word);
+                    terms.Add(word2);
                 }
             }
         }
@@ -62,9 +64,17 @@ namespace IR_engine
                 if (!Char.IsUpper(input[i]))
                     return false;
             }
-
             return true;
         }
-
+        bool IsNumber(string input)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (!Char.IsDigit(input[i]) || input[i]!=',' || input[i]!='.')
+                    return false;
+            }
+            return true;
+        }
+        string.
     }
 }

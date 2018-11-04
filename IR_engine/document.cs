@@ -15,6 +15,7 @@ namespace IR_engine
         private string docID;
         private string docDate;
         private string docHead;
+        private string docCity;
 
         /// <summary>
         /// this is the empty (default) constructor
@@ -25,6 +26,7 @@ namespace IR_engine
             this.docID = null;
             this.docDate = null;
             this.docHead = null;
+            this.docCity = null;
         }
         /// <summary>
         /// this is another constructor that takes all the fields
@@ -33,12 +35,13 @@ namespace IR_engine
         /// <param name="docId">the ID of the document</param>
         /// <param name="docDate"> the date that the document was created</param>
         /// <param name="docHead">the header of the document</param>
-        public document(string doc, string docId, string docDate, string docHead)
+        public document(string doc, string docId, string docDate, string docHead,string docCity)
         {
             this.doc = doc;
             this.docID = docId;
             this.docDate = docDate;
             this.docHead = docHead;
+            this.docCity = docCity;
         }
 
         public void Setdoc(string doc)
@@ -77,6 +80,14 @@ namespace IR_engine
         public string getdochead(string docHead)
         {
             return this.docHead;
+        }
+        public void setdocCity(string docCity)
+        {
+            this.docCity = docCity;
+        }
+        public string getdocCity()
+        {
+            return this.docCity;
         }
     }
 }
