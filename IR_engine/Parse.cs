@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,23 +11,48 @@ namespace IR_engine
 /// </summary>
     public class Parse
     {
-       HashSet<string> terms = new HashSet<string>();
+        HashSet<string> stopwords = new HashSet<string>();
+        /// <summary>
+        /// this is the constructor for the Parser class
+        /// the constructor given a path sets the list of stopwords.
+        /// </summary>
+        /// <param name="path">the path of the stop words list</param>
+        Parse(string path)
+        {
+            string stopPath = path + "\\stop_words";
+            string[] stops = File.ReadAllText(stopPath).Split('\n');
+            foreach (string word in stops) {
+                string stpword = word.Trim();
+                stopwords.Add(stpword);
+            }
+        }
 
         public void Text2list(document document)
         {
-            string text = document.getdoc();
-
+           string tmp_txt = document.getdoc();
+           string[] text = tmp_txt.Split(' ');
+           List<string> text2 = text.ToList();
+           parseText(text2);
         }
-        
-        public void parseText()
+        public void parseText(List<string> words)
         {
-            string x = d.getdoc();
-            string[] x2 = x.Split(' ');
-            foreach (string word in x2)
+            foreach (string word in words)
             {
-                if(IsAllUpper(word)) { }
+                if(word==null|| word==""||word==" ")
+                {
+                    words.Remove(word);
+                }
+                if (word.Contains("\n"))
+                {
+                    string word2 = word.TrimEnd('\n');
+                    words.Add(word2);
+                    words.Remove(word);
+                }
+                if (stopwords.Contains(word))
+                {
+                    words.Remove(word);
+                }
             }
-
         }
 
         bool IsAllUpper(string input)

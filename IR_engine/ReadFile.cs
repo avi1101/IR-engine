@@ -15,27 +15,30 @@ namespace IR_engine
     /// </summary>
     class ReadFile
     {
-        ThreadPool sendDocs = new ThreadPool(2);
+        string[] allfiles = null;
+        int index = 0;
+        ReadFile(string path)
+        {
+            allfiles = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
+        }
         /// <summary>
         /// this function gets all docs in the corpus folder and its sub-folders.
         /// </summary>
         /// <param name="path"></param>
-        public static void getDocs(string path)
+        public List<document> getDocs()
         {
-            string[] allfiles = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
-            foreach (string fpath in allfiles)
-            {
-                string f = File.ReadAllText(fpath);
-                readfile(f);
-            }
+            return readfile(File.ReadAllText(allfiles[index++]));
+             
         }
         /// <summary>
         /// this function create an document type objects from the string file, and sends it to the parser
         /// 
         /// </summary>
         /// <param name="file"> the string that constains all the data in the file</param>
-        private static void readfile(string file)
+        private static List<document> readfile(string file)
         {
+            
+            List<document> docslist = new List<document>();
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.None);
             foreach (string doc in docs)
                 if (doc != "" && doc!="\n") { 
@@ -52,16 +55,9 @@ namespace IR_engine
                 end = doc.IndexOf("</TEXT>");
                 string data = doc.Substring(st+6, (end - st) - 7).Trim();
                 document d = new document(data, docNo, date, head);
-                
-                //documents.Add(d);
+                docslist.Add(d);
             }
-        }
-
-        public static void main()
-        {
-            getDocs("C:\\Users\\zeavi\\Desktop\\TEST1");
-            Console.WriteLine("C:\\Users\\zeavi\\Desktop\\TEST1");
+            return docslist;
         }
     }
-
 }

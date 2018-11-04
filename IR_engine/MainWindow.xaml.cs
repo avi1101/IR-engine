@@ -23,7 +23,7 @@ namespace IR_engine
         public MainWindow()
         {
             // InitializeComponent();
-            ReadFile.main();
+           
         }
     }
 }
