@@ -22,8 +22,32 @@ namespace IR_engine
     {
         public MainWindow()
         {
-            // InitializeComponent();
-            ReadFile.main();
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// mouse enter event for the RUN button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Run_MouseEnter(object sender, MouseEventArgs e)
+        {
+            Run.Width = 110;
+            Run.Height = 110;
+            Run.Foreground = new SolidColorBrush(Colors.Red);
+            Run.FontSize = 38;
+        }
+        /// <summary>
+        /// mouse leave event for the RUN button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Run_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Run.Width = 100;
+            Run.Height = 100;
+            Run.Foreground = new SolidColorBrush(Colors.Black);
+            Run.FontSize = 36;
         }
     }
 }
