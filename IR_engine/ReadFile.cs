@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,21 +9,32 @@ using IR_engine;
 
 namespace IR_engine
 {
+    /// <summary>
+    /// this is the ReadFile class, this class is incharge of reading the documents
+    /// from the given corpus path and sends it to the Parser class
+    /// </summary>
     class ReadFile
     {
-        public static List<document> documents = new List<document>();
-
+        ThreadPool sendDocs = new ThreadPool(2);
+        /// <summary>
+        /// this function gets all docs in the corpus folder and its sub-folders.
+        /// </summary>
+        /// <param name="path"></param>
         public static void getDocs(string path)
         {
             string[] allfiles = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
             foreach (string fpath in allfiles)
             {
                 string f = File.ReadAllText(fpath);
-                addtolist(f);
+                readfile(f);
             }
         }
-
-        private static void addtolist(string file)
+        /// <summary>
+        /// this function create an document type objects from the string file, and sends it to the parser
+        /// 
+        /// </summary>
+        /// <param name="file"> the string that constains all the data in the file</param>
+        private static void readfile(string file)
         {
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.None);
             foreach (string doc in docs)
@@ -40,6 +52,7 @@ namespace IR_engine
                 end = doc.IndexOf("</TEXT>");
                 string data = doc.Substring(st+6, (end - st) - 7).Trim();
                 document d = new document(data, docNo, date, head);
+                
                 //documents.Add(d);
             }
         }

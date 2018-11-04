@@ -6,26 +6,38 @@ using System.Threading.Tasks;
 
 namespace IR_engine
 {
-    class document
+    /// <summary>
+    /// this class implements a "document" object that separetes between the different fields of the document
+    /// </summary>
+    public class document
     {
         private string doc;
         private string docID;
-        private string docTime;
+        private string docDate;
         private string docHead;
 
+        /// <summary>
+        /// this is the empty (default) constructor
+        /// </summary>
         public document()
         {
             this.doc = null;
             this.docID = null;
-            this.docTime = null;
+            this.docDate = null;
             this.docHead = null;
         }
-
-        public document(string doc, string docId, string docTime, string docHead)
+        /// <summary>
+        /// this is another constructor that takes all the fields
+        /// </summary>
+        /// <param name="doc"> the text part of the document</param>
+        /// <param name="docId">the ID of the document</param>
+        /// <param name="docDate"> the date that the document was created</param>
+        /// <param name="docHead">the header of the document</param>
+        public document(string doc, string docId, string docDate, string docHead)
         {
             this.doc = doc;
             this.docID = docId;
-            this.docTime = docTime;
+            this.docDate = docDate;
             this.docHead = docHead;
         }
 
@@ -39,9 +51,9 @@ namespace IR_engine
             this.docID = docID;
         }
 
-        public void Setdoctime(string docTime)
+        public void Setdoctime(string docDate)
         {
-            this.docTime = docTime;
+            this.docDate = docDate;
         }
         public void Setdochead(string docHead)
         {
@@ -58,9 +70,9 @@ namespace IR_engine
             return this.docID;
         }
 
-        public string getdoctime(string docTime)
+        public string getdocdate(string docDate)
         {
-            return this.docTime;
+            return this.docDate;
         }
         public string getdochead(string docHead)
         {

@@ -5,13 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace IR_engine
-{
+{/// <summary>
+/// this is the Paser class, this class cuts the document into terms and makes them fit the required criteria
+/// </summary>
     public class Parse
     {
-       / document d;
-        HashSet<string> terms = new HashSet<string>();
+       HashSet<string> terms = new HashSet<string>();
 
-        public void parsedoc(document d) { this.d = d;}
+        public void Text2list(document document)
+        {
+            string text = document.getdoc();
+
+        }
         
         public void parseText()
         {
