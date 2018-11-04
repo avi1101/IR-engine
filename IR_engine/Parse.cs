@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace IR_engine
 {
-    class Parse
+    public class Parse
     {
-        document d;
+       / document d;
         HashSet<string> terms = new HashSet<string>();
 
         public void parsedoc(document d) { this.d = d;}

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IR_engine;
 
 namespace IR_engine
 {
@@ -39,7 +40,7 @@ namespace IR_engine
                 end = doc.IndexOf("</TEXT>");
                 string data = doc.Substring(st+6, (end - st) - 7).Trim();
                 document d = new document(data, docNo, date, head);
-                documents.Add(d);
+                //documents.Add(d);
             }
         }
 
