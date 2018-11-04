@@ -7,6 +7,50 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        
+        <Button x:Name="Browse" Content="Browse" HorizontalAlignment="Center" Margin="0,100,0,0" VerticalAlignment="Top" Width="203" Height="63" FontFamily="Showcard Gothic" FontSize="36" Background="White" Foreground="#FF009FFF" BorderBrush="#FF5F5F5F">
+            <Button.Effect>
+                <DropShadowEffect/>
+            </Button.Effect>
+        </Button>
+        <CheckBox x:Name="stem" Content="Enable Stemming" HorizontalAlignment="Center" Margin="0,180,0,0" VerticalAlignment="Top"/>
+        <Button Width="100" x:Name="Run" HorizontalAlignment="Center" Content="RUN"
+        Height="100" Margin="0,209,0,0" Foreground="#FF0A0C0F" FontFamily="Stencil" FontSize="36" AutomationProperties.HelpText="click here to run the engine" MouseEnter="Run_MouseEnter" MouseLeave="Run_MouseLeave">
+            <Button.Effect>
+                <DropShadowEffect/>
+            </Button.Effect>
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Ellipse Stroke="Black"
+                         StrokeThickness="2">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Offset="0"
+                                          Color="White" />
+                                    <GradientStop Offset="1"
+                                          Color="Gray" />
+                                    <GradientStop Offset="1"
+                                          Color="DimGray" />
+                                    <RadialGradientBrush.Transform>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleY="0.65" />
+                                        </TransformGroup>
+                                    </RadialGradientBrush.Transform>
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                    </Grid>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+        <Label x:Name="Boogle" Content="BarvazBarvazGo" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Margin="179,10,0,0" VerticalAlignment="Top" Height="85" Width="605" Foreground="#FFFFAE00" FontFamily="Rockwell Extra Bold" FontSize="58" Background="{x:Null}">
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+        <Image x:Name="image" Source="barvaz.JPG" HorizontalAlignment="Left" Height="145" Margin="10,10,0,0" VerticalAlignment="Top" Width="169"/>
+
     </Grid>
 </Window>
