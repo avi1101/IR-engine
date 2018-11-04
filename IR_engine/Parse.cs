@@ -27,7 +27,10 @@ namespace IR_engine
                 stopwords.Add(stpword);
             }
         }
-
+        /// <summary>
+        /// gets the text part of the document, turns it into a list of words and sends to parser
+        /// </summary>
+        /// <param name="document"> the document edited</param>
         public void Text2list(document document)
         {
            string tmp_txt = document.getdoc();
@@ -51,12 +54,17 @@ namespace IR_engine
                     continue;
                 else if (IsNumber(word))
                 {
-                    string word2 = NumberSet(word);
+                    string word2 = NumberSet(word,words.IndexOf(word),words);
                     terms.Add(word2);
+
                 }
             }
         }
-
+        /// <summary>
+        /// checks if the word is all made of upper case letter
+        /// </summary>
+        /// <param name="input"> the word tested</param>
+        /// <returns></returns>
         bool IsAllUpper(string input)
         {
             for (int i = 0; i < input.Length; i++)
@@ -66,15 +74,101 @@ namespace IR_engine
             }
             return true;
         }
+        /// <summary>
+        /// checks of the term is a numeric one
+        /// </summary>
+        /// <param name="input">cheked term</param>
+        /// <returns></returns>
         bool IsNumber(string input)
         {
             for (int i = 0; i < input.Length; i++)
             {
-                if (!Char.IsDigit(input[i]) || input[i]!=',' || input[i]!='.')
+                if (!Char.IsDigit(input[i]) || input[i]!=',' || input[i]!='.' || input[i]!='\\')
                     return false;
             }
             return true;
         }
-        string.
+        /// <summary>
+        /// takes a existing term with numeric valueand edited it 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="idx"></param>
+        /// <param name="words"></param>
+        /// <returns></returns>
+        string NumberSet(string input,int idx,List<string>words)
+        {
+            int option = 0;
+            var charsToRemove = new string[] {",", "."};
+            foreach (var c in charsToRemove)
+            {
+                input = input.Replace(c, string.Empty);
+            }
+            if (words[idx + 1] == "Thousand"){ option = 1; }
+            if (words[idx + 1] == "Million") { option = 2; }
+            if (words[idx + 1] == "Billion" || words[idx + 1] == "Trillion") { option = 3; }
+            double dbl;
+            if(double.TryParse(input, out dbl))
+            {
+                if (option == 1) { dbl = dbl * 1000; }
+                if (option == 2) { dbl = dbl * 1000000; }
+                if (option == 3) { dbl = dbl * 1000000000; }
+                if (dbl >= 1000 && dbl < 1000000) { dbl = dbl / 1000 + (dbl % 1000) * (1 / 1000); return (dbl.ToString() + "K"); }
+                else if (dbl >= 1000000 && dbl < 1000000000) { dbl = dbl / 1000000 + (dbl % 1000000) * (1 / 1000000); return (dbl.ToString() + "M"); }
+                else if (dbl >= 1000000000) { dbl = dbl / 1000000000 + (dbl % 1000000000) * (1 / 1000000000); return (dbl.ToString() + "B"); }
+                else {return (dbl.ToString());}
+                }
+            int nt;
+            if (int.TryParse(input, out nt))
+                {
+                    if (option == 1) { nt = nt * 1000; }
+                    if (option == 2) { nt = nt * 1000000; }
+                    if (option == 3) { nt = nt * 1000000000; }
+                    if (nt >= 1000 && nt < 1000000) { nt = nt / 1000 + (nt % 1000) * (1 / 1000); return (nt.ToString() + "K"); }
+                    else if (nt >= 1000000 && nt < 1000000000) { nt = nt / 1000000 + (nt % 1000000) * (1 / 1000000); return (nt.ToString() + "M"); }
+                    else if (nt >= 1000000000) { nt = nt / 1000000000 + (nt % 1000000000) * (1 / 1000000000); return (nt.ToString() + "B"); }
+                    else { return (nt.ToString()); }
+                }
+            long lng;
+            if (long.TryParse(input, out lng))
+            {
+                if (option == 1) { lng = lng * 1000; }
+                if (option == 2) { lng = lng * 1000000; }
+                if (option == 3) { lng = lng * 1000000000; }
+                if (lng >= 1000 && lng < 1000000) { lng = lng / 1000 + (lng % 1000) * (1 / 1000); return (lng.ToString() + "K"); }
+                else if (lng >= 1000000 && lng < 1000000000) { lng = lng / 1000000 + (lng % 1000000) * (1 / 1000000); return (lng.ToString() + "M"); }
+                else if (lng >= 1000000000) { lng = lng / 1000000000 + (lng % 1000000000) * (1 / 1000000000); return (lng.ToString() + "B"); }
+                else { return (lng.ToString()); }
+            }
+            decimal dec;
+            if (decimal.TryParse(input, out dec))
+            {
+                if (option == 1) { dec = dec * 1000; }
+                if (option == 2) { dec = dec * 1000000; }
+                if (option == 3) { dec = dec * 1000000000; }
+                if (dec >= 1000 && dec < 1000000) { dec = dec / 1000 + (dec % 1000) * (1 / 1000); return (dec.ToString() + "K"); }
+                else if (lng >= 1000000 && lng < 1000000000) { dec = dec / 1000000 + (dec % 1000000) * (1 / 1000000); return (dec.ToString() + "M"); }
+                else if (dec >= 1000000000) { dec = dec / 1000000000 + (dec % 1000000000) * (1 / 1000000000); return (dec.ToString() + "B"); }
+                else { return (dec.ToString()); }
+            }
+            /*
+            string up; string down;
+            int num_up; int num_down; int num;
+            if (input.Contains("\\"))
+            {
+                up = input.Substring(0, input.IndexOf('\\'));
+                down = input.Substring(input.IndexOf('\\'));
+                int.TryParse(up, out num_up);
+                int.TryParse(down, out num_down);
+                num = num_up / num_down;
+                if (option == 1){num = num * 1000;}
+                if (option == 2){num = num * 1000000;}
+                if (option == 3){num = num * 1000000000;}
+                */
+            else { return null; }
+
+
+                
+            }
+        }
     }
 }
