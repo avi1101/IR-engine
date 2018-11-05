@@ -11,6 +11,8 @@ namespace IR_engine
 /// </summary>
     public class Parse
     {
+        List<string> pre_terms ;
+        HashSet<string> terms = new HashSet<string>();
         private enum months {january,february,march,april,may,june,july,august,september,october,november,december};
         List<string> terms = new List<string>();
         HashSet<string> stopwords = new HashSet<string>();
@@ -57,7 +59,7 @@ namespace IR_engine
                     continue;
                 else if (IsNumber(word))
                 {
-                    string word2 = NumberSet(word,words.IndexOf(word),words);
+                    string word2 = NumberSet(word,i,words);
                     terms.Add(word2);
 
                 }
@@ -151,7 +153,11 @@ namespace IR_engine
                 if (dec >= 1000 && dec < 1000000) { dec = dec / 1000 + (dec % 1000) * (1 / 1000); return (dec.ToString() + "K"); }
                 else if (lng >= 1000000 && lng < 1000000000) { dec = dec / 1000000 + (dec % 1000000) * (1 / 1000000); return (dec.ToString() + "M"); }
                 else if (dec >= 1000000000) { dec = dec / 1000000000 + (dec % 1000000000) * (1 / 1000000000); return (dec.ToString() + "B"); }
-                else { return (dec.ToString()); }
+                else {
+                    if (option == 1) { return input + "K"; }
+                    if (option == 2) { return input + "M"; }
+                    if (option == 3) { return input + "B"; }
+                }
             }
             /*
             string up; string down;
