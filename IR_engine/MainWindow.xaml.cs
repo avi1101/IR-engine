@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Threading;
 
 namespace IR_engine
 {
@@ -20,9 +21,13 @@ namespace IR_engine
     /// </summary>
     public partial class MainWindow : Window
     {
+        private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
         public MainWindow()
         {
             InitializeComponent();
+            Parse p = new Parse();
+            string s = p.testToDate(10);
+            test.Content = s;
         }
 
         /// <summary>
@@ -48,6 +53,11 @@ namespace IR_engine
             Run.Height = 100;
             Run.Foreground = new SolidColorBrush(Colors.Black);
             Run.FontSize = 36;
+        }
+
+        private void Run_Click(object sender, RoutedEventArgs e)
+        {
+            
         }
     }
 }

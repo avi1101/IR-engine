@@ -11,6 +11,7 @@ namespace IR_engine
 /// </summary>
     public class Parse
     {
+        private enum months {january,february,march,april,may,june,july,august,september,october,november,december};
         List<string> terms = new List<string>();
         HashSet<string> stopwords = new HashSet<string>();
         /// <summary>
@@ -18,7 +19,7 @@ namespace IR_engine
         /// the constructor given a path sets the list of stopwords.
         /// </summary>
         /// <param name="path">the path of the stop words list</param>
-        Parse(string path)
+        public Parse(string path)
         {
             string stopPath = path + "\\stop_words";
             string[] stops = File.ReadAllText(stopPath).Split('\n');
@@ -27,6 +28,8 @@ namespace IR_engine
                 stopwords.Add(stpword);
             }
         }
+
+        public Parse() { }
         /// <summary>
         /// gets the text part of the document, turns it into a list of words and sends to parser
         /// </summary>
@@ -83,7 +86,7 @@ namespace IR_engine
         {
             for (int i = 0; i < input.Length; i++)
             {
-                if (!Char.IsDigit(input[i]) || input[i]!=',' || input[i]!='.' || input[i]!='\\')
+                if (input[i] > '9' || input[i] < '0')
                     return false;
             }
             return true;
@@ -165,10 +168,74 @@ namespace IR_engine
                 if (option == 3){num = num * 1000000000;}
                 */
             else { return null; }
+        }
 
-
-                
+        /// <summary>
+        /// this method gets 2 strings that contains a date and returns a single string with the formatted date
+        /// </summary>
+        /// <param name="firstTerm">first token of the date</param>
+        /// <param name="secondTerm">second token of the date</param>
+        /// <returns></returns>
+        string ToDate(string firstTerm, string secondTerm)
+        {
+            string month = "";
+            string number = "";
+            string sol = "";
+            if(IsNumber(firstTerm))                                             //if the number is the first term
+            {
+                month = secondTerm;
+                number = firstTerm;
             }
+            else                                                                //if the number is the second term
+            {
+                month = firstTerm;
+                number = secondTerm;
+            }
+            int value = int.Parse(number);                                      //get the numeric value of the year/day
+            month = month.ToLower();                                            //easier to only check lower case strings
+            foreach(months m in Enum.GetValues(typeof(months)))                 //iterate to find out which month it is
+            {
+                string m2 = m.ToString();
+                string mon = m2.Substring(0, 3);
+                                                                                //checks all possible combinations
+                if(month.Equals(m2) || month.Equals(mon))
+                {
+                    if(((int)m+1) < 10)                                         //adds the zero before the number
+                        month = "0"+((int)m + 1) + "";
+                    else
+                        month = ((int)m + 1) + "";
+                    break;
+                }
+            }
+            if (number.Length == 1) number = "0" + number;
+            if(value > 999)
+                sol = number + "-" + month;
+            else
+                sol = month + "-" + number;
+            return sol;
+        }
+        /// <summary>
+        /// this is a testing method for the ToDate method
+        /// </summary>
+        /// <returns>the formatted string equal to the rules we were provided</returns>
+        public string testToDate(int numberOfTests)
+        {
+            Random r = new Random();
+            string sol = "";
+            for(int i = 0; i < numberOfTests; i++)
+            {
+                Array values = Enum.GetValues(typeof(months));
+                string randomBar = ((months)values.GetValue(r.Next(values.Length))).ToString();
+                int n = r.Next(1, 50);
+                int rand = r.Next(0, 3);
+                if (rand == 0) randomBar = randomBar.Substring(0, 3);
+                if (rand == 1) randomBar = randomBar.ToUpper();
+                if(r.Next(0,1) == 1)
+                    sol += ToDate(n+"", randomBar.ToString()) +"\t"+n+" "+randomBar.ToString()+"\n";
+                else
+                    sol += ToDate(randomBar.ToString(), n + "") + "\t" + n + " " + randomBar.ToString() + "\n";
+            }
+            return sol;
         }
     }
 }
