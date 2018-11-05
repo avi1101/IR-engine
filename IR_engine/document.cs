@@ -35,7 +35,7 @@ namespace IR_engine
         /// <param name="docId">the ID of the document</param>
         /// <param name="docDate"> the date that the document was created</param>
         /// <param name="docHead">the header of the document</param>
-        public document(string doc, string docId, string docDate, string docHead/*,string docCity*/)
+        public document(string doc, string docId, string docDate, string docHead/*string docCity*/)
         {
             this.doc = doc;
             this.docID = docId;

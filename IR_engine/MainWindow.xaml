@@ -14,7 +14,7 @@
         </Button>
         <CheckBox x:Name="stem" Content="Enable Stemming" HorizontalAlignment="Center" Margin="0,180,0,0" VerticalAlignment="Top"/>
         <Button Width="100" x:Name="Run" HorizontalAlignment="Center" Content="RUN"
-        Height="100" Margin="0,209,0,0" Foreground="#FF0A0C0F" FontFamily="Stencil" FontSize="36" AutomationProperties.HelpText="click here to run the engine" MouseEnter="Run_MouseEnter" MouseLeave="Run_MouseLeave">
+        Height="100" Margin="0,209,0,0" Foreground="#FF0A0C0F" FontFamily="Stencil" FontSize="36" AutomationProperties.HelpText="click here to run the engine" MouseEnter="Run_MouseEnter" MouseLeave="Run_MouseLeave" Click="Run_Click">
             <Button.Effect>
                 <DropShadowEffect/>
             </Button.Effect>
@@ -51,6 +51,7 @@
             </Label.Effect>
         </Label>
         <Image x:Name="image" Source="barvaz.JPG" HorizontalAlignment="Left" Height="145" Margin="10,10,0,0" VerticalAlignment="Top" Width="169"/>
+        <Label x:Name="test" Content="" HorizontalAlignment="Left" Margin="10,180,0,0" VerticalAlignment="Top" Height="230" Width="284"/>
 
     </Grid>
 </Window>
