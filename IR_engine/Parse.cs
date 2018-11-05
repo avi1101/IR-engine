@@ -12,7 +12,7 @@ namespace IR_engine
     public class Parse
     {
         List<string> pre_terms ;
-        List<string> terms = new List<string>();
+        HashSet<string> terms = new HashSet<string>();
         HashSet<string> stopwords = new HashSet<string>();
         /// <summary>
         /// this is the constructor for the Parser class
@@ -57,6 +57,12 @@ namespace IR_engine
                     continue;
                 else if (IsRegNumber(word,i))
                 {
+                    if (IsRegNumber(words[i+1], i + 1) && words[i+1].Contains("\\"))
+                    {
+                        string word3 = NumberSet(words[i] + " " + words[i + 1], i + 1, words);
+                        terms.Add(word3);
+                        continue;
+                    }
                     string word2 = NumberSet(word,i,words);
                     terms.Add(word2);
                 }
@@ -155,7 +161,11 @@ namespace IR_engine
                 if (dec >= 1000 && dec < 1000000) { dec = dec / 1000 + (dec % 1000) * (1 / 1000); return (dec.ToString() + "K"); }
                 else if (lng >= 1000000 && lng < 1000000000) { dec = dec / 1000000 + (dec % 1000000) * (1 / 1000000); return (dec.ToString() + "M"); }
                 else if (dec >= 1000000000) { dec = dec / 1000000000 + (dec % 1000000000) * (1 / 1000000000); return (dec.ToString() + "B"); }
-                else { return (dec.ToString()); }
+                else {
+                    if (option == 1) { return input + "K"; }
+                    if (option == 2) { return input + "M"; }
+                    if (option == 3) { return input + "B"; }
+                }
             }
             /*
             string up; string down;
