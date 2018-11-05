@@ -93,7 +93,7 @@ namespace IR_engine
         {
             for (int i = 0; i < input.Length; i++)
             {
-                if (!Char.IsDigit(input[i]) || input[i] != ',' || input[i] != '.' || input[i] != '\\')
+                if (input[i] != '.'&& input[i] != '\\' &&( input[i] > '9' || input[i] < '0'))
                     return false;
             }
             if (pre_terms[idx + 1] == "$" || pre_terms[idx + 1] == "%" || pre_terms[idx + 1] == "percent" || pre_terms[idx + 1] == "percentage" || pre_terms[idx + 1] == "Dollars") { return false; }
@@ -185,7 +185,7 @@ namespace IR_engine
             string month = "";
             string number = "";
             string sol = "";
-            if(IsNumber(firstTerm))                                             //if the number is the first term
+            if(false)                                             //if the number is the first term
             {
                 month = secondTerm;
                 number = firstTerm;
