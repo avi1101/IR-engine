@@ -11,6 +11,7 @@ namespace IR_engine
 /// </summary>
     public class Parse
     {
+        List<string> pre_terms ;
         List<string> terms = new List<string>();
         HashSet<string> stopwords = new HashSet<string>();
         /// <summary>
@@ -26,6 +27,7 @@ namespace IR_engine
                 string stpword = word.Trim();
                 stopwords.Add(stpword);
             }
+            pre_terms = new List<string>();
         }
         /// <summary>
         /// gets the text part of the document, turns it into a list of words and sends to parser
@@ -40,8 +42,9 @@ namespace IR_engine
         }
         public void parseText(List<string> words)
         {
-            foreach (string word in words)
+            for(int i =0;i<words.Count;i++)
             {
+                string word = words[i];
                 if (word == null || word == "" || word == " ")
                     continue;
                 else if (word.Contains("\n"))
@@ -52,11 +55,10 @@ namespace IR_engine
                 }
                 else if (stopwords.Contains(word))
                     continue;
-                else if (IsNumber(word))
+                else if (IsRegNumber(word,i))
                 {
-                    string word2 = NumberSet(word,words.IndexOf(word),words);
+                    string word2 = NumberSet(word,i,words);
                     terms.Add(word2);
-
                 }
             }
         }
@@ -79,12 +81,17 @@ namespace IR_engine
         /// </summary>
         /// <param name="input">cheked term</param>
         /// <returns></returns>
-        bool IsNumber(string input)
+        bool IsRegNumber(string input,int idx)
         {
             for (int i = 0; i < input.Length; i++)
             {
-                if (!Char.IsDigit(input[i]) || input[i]!=',' || input[i]!='.' || input[i]!='\\')
+                if (!Char.IsDigit(input[i]) || input[i]!=',' || input[i]!='.' || input[i]!='\\' )
                     return false;
+            }
+            if(pre_terms[idx+1]=="$" || pre_terms[idx + 1] =="%" || pre_terms[idx + 1] == "percent" || pre_terms[idx + 1] == "percentage" || pre_terms[idx + 1] == "Dollars") { return false;}
+            if(pre_terms[idx+1]== "Thousand" || pre_terms[idx + 1] == "thousand" || pre_terms[idx + 1] == "Million" ||pre_terms[idx+1] == "million"||pre_terms[idx + 1] == "Billion"||pre_terms[idx + 1] == "Trillion" || pre_terms[idx + 1] == "billion" || pre_terms[idx + 1] == "trillion")
+            {
+                if (pre_terms[idx + 2] == "$" || pre_terms[idx + 2] == "%" || pre_terms[idx + 2] == "percent" || pre_terms[idx + 2] == "percentage" || pre_terms[idx + 2] == "Dollars") { return false; }
             }
             return true;
         }
@@ -98,14 +105,14 @@ namespace IR_engine
         string NumberSet(string input,int idx,List<string>words)
         {
             int option = 0;
-            var charsToRemove = new string[] {",", "."};
+            var charsToRemove = new string[] {","};
             foreach (var c in charsToRemove)
             {
                 input = input.Replace(c, string.Empty);
             }
-            if (words[idx + 1] == "Thousand"){ option = 1; }
-            if (words[idx + 1] == "Million") { option = 2; }
-            if (words[idx + 1] == "Billion" || words[idx + 1] == "Trillion") { option = 3; }
+            if (words[idx + 1] == "Thousand" || words[idx + 1] == "thousand") { option = 1; }
+            if (words[idx + 1] == "Million" || words[idx + 1] == "million") { option = 2; }
+            if (words[idx + 1] == "Billion" || words[idx + 1] == "Trillion" || words[idx + 1] == "billion" || words[idx + 1] == "trillion") { option = 3; }
             double dbl;
             if(double.TryParse(input, out dbl))
             {
@@ -171,4 +178,4 @@ namespace IR_engine
             }
         }
     }
-}
+
