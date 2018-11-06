@@ -42,6 +42,15 @@ namespace IR_engine
            List<string> text2 = text.ToList();
            parseText(text2);
         }
+        private bool IsNumber(string str)
+        {
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (str[i] > '9' || str[i] < '0')
+                    return false;
+            }
+            return true;
+        }
         public void parseText(List<string> words)
         {
             for (int i = 0; i < words.Count; i++)
@@ -93,7 +102,7 @@ namespace IR_engine
         {
             for (int i = 0; i < input.Length; i++)
             {
-                if (input[i] != '.'&& input[i] != '\\' &&( input[i] > '9' || input[i] < '0'))
+                if (!Char.IsDigit(input[i]) && input[i] != ',' && input[i] != '.' && input[i] != '\\')
                     return false;
             }
             if (pre_terms[idx + 1] == "$" || pre_terms[idx + 1] == "%" || pre_terms[idx + 1] == "percent" || pre_terms[idx + 1] == "percentage" || pre_terms[idx + 1] == "Dollars") { return false; }
@@ -185,7 +194,7 @@ namespace IR_engine
             string month = "";
             string number = "";
             string sol = "";
-            if(false)                                             //if the number is the first term
+            if(IsNumber(firstTerm))                                             //if the number is the first term
             {
                 month = secondTerm;
                 number = firstTerm;
