@@ -6,23 +6,30 @@ using System.Threading.Tasks;
 
 namespace IR_engine
 {
-    class term
+     class term
     {
-        string frase;
-        int numOfDocs;
-        Dictionary<string, int> numInDoc;
+        static string phrase;
+        static int numOfDocs;
+        static Dictionary<string, int> numInDoc;  
+        static Dictionary<string, Tuple<string, int>> forPosting;
 
-        public term()
+        static term()
         {
-            frase = null;
-            numOfDocs = 0;
-            numInDoc = new Dictionary<string, int>();
+            phrase = "";
         }
-        public void addDoc(string docID)
+
+        public string Phrase
         {
-            numInDoc[docID] = 1;
+            set { phrase = value; }
+            get { return phrase; }
         }
-        public void shown()
+        public int NumofDocs
+        {
+            set { numOfDocs = value; }
+            get { return numOfDocs;}
+        }
+
+        public static void shown()
         {
             numOfDocs++;
         }

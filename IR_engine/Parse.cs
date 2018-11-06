@@ -22,25 +22,23 @@ namespace IR_engine
         /// <param name="path">the path of the stop words list</param>
         public Parse(string path)
         {
-            string stopPath = path + "\\stop_words";
+            string stopPath = path + "\\stop_words.txt";
             string[] stops = File.ReadAllText(stopPath).Split('\n');
             foreach (string word in stops) {
                 string stpword = word.Trim();
                 stopwords.Add(stpword);
             }
         }
-
-        public Parse() { }
         /// <summary>
         /// gets the text part of the document, turns it into a list of words and sends to parser
         /// </summary>
         /// <param name="document"> the document edited</param>
         public void Text2list(document document)
         {
-           string tmp_txt = document.getdoc();
+           string tmp_txt = document.Doc;
            string[] text = tmp_txt.Split(' ');
-           List<string> text2 = text.ToList();
-           parseText(text2);
+           pre_terms = text.ToList();
+           parseText(pre_terms);
         }
         private bool IsNumber(string str)
         {
@@ -56,12 +54,12 @@ namespace IR_engine
             for (int i = 0; i < words.Count; i++)
             {
                 string word = words[i];
-                if (word == null || word == "" || word == " ")
+                if (word == null || word == "" || word == " " || word[0]=='<')
                     continue;
                 else if (word.Contains("\n"))
                 {
                     string word2 = word.TrimEnd('\n');
-                    words.Add(word2);
+                    //words.Add(word2);
                     words.Remove(word);
                 }
                 else if (stopwords.Contains(word))
@@ -77,6 +75,14 @@ namespace IR_engine
                     string word2 = NumberSet(word, i, words);
                     terms.Add(word2);
                 }
+                else if (Isprecent(word, i)!=0) {
+                    int typePrecent = Isprecent(word, i);
+                    if (typePrecent == 1)
+                        terms.Add(words[i] + " " + words[i + 1]);
+                    if (typePrecent == 2)
+                        terms.Add(words[i] + " " + words[i + 1] + " " + words[i + 2]);
+                }
+
             }
         }
         /// <summary>
@@ -111,6 +117,22 @@ namespace IR_engine
                 if (pre_terms[idx + 2] == "$" || pre_terms[idx + 2] == "%" || pre_terms[idx + 2] == "percent" || pre_terms[idx + 2] == "percentage" || pre_terms[idx + 2] == "Dollars") { return false; }
             }
             return true;
+        }
+
+        bool IsComNum(string input)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (!Char.IsDigit(input[i]) && input[i] != ',' && input[i] != '.' && input[i] != '\\')
+                    return false;
+            }
+            return true;
+        }
+        int Isprecent(string input, int idx)
+        {
+            if(IsComNum(input)&&(pre_terms[idx+1]== "%" || pre_terms[idx+1]== "percent" || pre_terms[idx+1]== "percentage" || pre_terms[idx + 1] == "percent" || pre_terms[idx + 1] == "percentage")) { return 1; }
+            if (IsComNum(input) && IsComNum(pre_terms[idx+1]) && (pre_terms[idx + 2] == "%" || pre_terms[idx + 2] == "percent" || pre_terms[idx + 2] == "percentage" || pre_terms[idx +2] == "percent" || pre_terms[idx + 2] == "percentage")) { return 2;}
+            return 0;
         }
         /// <summary>
         /// takes a existing term with numeric valueand edited it 

@@ -8,9 +8,28 @@ namespace IR_engine
 {
     class Model
     {
-        ReadFile readFile = null;
-        Parse parser = null;
 
+        public Model()
+        {
+
+            long st = DateTime.Now.Second;
+            ReadFile readfo = new ReadFile("C:\\Users\\zeavi\\Desktop\\TEST1");
+            int filesNum = readfo.returnSize();
+            Parse parser = new Parse("C:\\Users\\zeavi\\Desktop\\TEST1");
+            for (int i = 0; i < readfo.returnSize(); i++)
+            {
+                List<document> f = readfo.getDocs();
+            }
+            long nd = DateTime.Now.Second;
+
+            Console.WriteLine(nd - st); }
+        }
+
+        public static class Vars
+        {
+            public static HashSet<string> completeTerms = new HashSet<string>();
+        }
 
     }
-}
+    
+

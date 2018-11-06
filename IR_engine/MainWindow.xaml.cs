@@ -25,9 +25,10 @@ namespace IR_engine
         public MainWindow()
         {
             InitializeComponent();
-            Parse p = new Parse();
-            string s = p.testToDate(10);
-            test.Content = s;
+            //Parse p = new Parse();
+            //string s = p.testToDate(10);
+            //test.Content = s;
+            Model m = new Model();
         }
 
         /// <summary>

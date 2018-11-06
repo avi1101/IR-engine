@@ -15,7 +15,9 @@ namespace IR_engine
         private string docID;
         private string docDate;
         private string docHead;
-        //private string docCity;
+        int maxTF;
+        int uniqueTerms;
+        private string docCity;
 
         /// <summary>
         /// this is the empty (default) constructor
@@ -26,7 +28,9 @@ namespace IR_engine
             this.docID = null;
             this.docDate = null;
             this.docHead = null;
-            //this.docCity = null;
+            maxTF = 0;
+            uniqueTerms = 0;
+            this.docCity = null;
         }
         /// <summary>
         /// this is another constructor that takes all the fields
@@ -35,59 +39,39 @@ namespace IR_engine
         /// <param name="docId">the ID of the document</param>
         /// <param name="docDate"> the date that the document was created</param>
         /// <param name="docHead">the header of the document</param>
-        public document(string doc, string docId, string docDate, string docHead/*string docCity*/)
+        public document(string doc, string docId, string docDate, string docHead, string docCity)
         {
             this.doc = doc;
             this.docID = docId;
             this.docDate = docDate;
             this.docHead = docHead;
-            //this.docCity = docCity;
-        }
-
-        public void Setdoc(string doc)
-        {
-            this.doc = doc;
-        }
-
-        public void Setdocid(string docID)
-        {
-            this.docID = docID;
-        }
-
-        public void Setdoctime(string docDate)
-        {
-            this.docDate = docDate;
-        }
-        public void Setdochead(string docHead)
-        {
-            this.docHead = docHead;
-        }
-
-        public string getdoc()
-        {
-            return this.doc;
-        }
-
-        public string getdocid()
-        {
-            return this.docID;
-        }
-
-        public string getdocdate(string docDate)
-        {
-            return this.docDate;
-        }
-        public string getdochead(string docHead)
-        {
-            return this.docHead;
-        }
-       /* public void setdocCity(string docCity)
-        {
             this.docCity = docCity;
         }
-        public string getdocCity()
+
+        public string Doc
         {
-            return this.docCity;
-        }*/
+            get { return doc; }
+            set { doc = value; }
+        }
+        public string DocID
+        {
+            get { return docID; }
+            set { docID = value; }
+        }
+        public string Docdate
+        {
+            get { return docDate; }
+            set { docDate = value; }
+        }
+        public string DocHead
+        {
+            get { return docHead; }
+            set { docHead = value; }
+        }
+        public string DocCity
+        {
+            get { return docCity; }
+            set { docCity = value; }
+        }
     }
 }
