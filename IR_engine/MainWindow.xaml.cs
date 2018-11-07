@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace IR_engine
 {
@@ -28,7 +29,14 @@ namespace IR_engine
             //Parse p = new Parse();
             //string s = p.testToDate(10);
             //test.Content = s;
-            Model m = new Model();
+            HashSet<term> h = new HashSet<term>();
+            term a = new term("hello");
+            term b = new term("hello");
+            term c = new term("lol");
+            h.Add(a);
+            test.Content = h.Contains(a) + "\n";
+            test.Content += h.Contains(b) + "\n";
+            test.Content += h.Contains(c) + "\n";
         }
 
         /// <summary>

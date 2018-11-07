@@ -15,7 +15,7 @@ namespace IR_engine
             long st = DateTime.Now.Second;
             ReadFile readfo = new ReadFile("C:\\Users\\zeavi\\Desktop\\TEST1");
             int filesNum = readfo.returnSize();
-            Parse parser = new Parse("C:\\Users\\zeavi\\Desktop\\TEST1");
+            Parse parser = new Parse("C:\\Users\\zeavi\\Desktop\\TEST1",false);
             for (int i = 0; i < readfo.returnSize(); i++)
             {
                 List<document> f = readfo.getDocs();

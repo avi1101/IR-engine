@@ -14,7 +14,7 @@ namespace IR_engine
         bool isUpperInCurpus;
         Dictionary<string, int> numInDoc;  
         Dictionary<string, Tuple<string, int>> forPosting;
-        List<string> postingList; //this will be used in the format: <filename>_<number of occurances of the term>
+        List<string> postingList; //this will be used in the format: <filename>_<number> of occurances of the term>
 
         public term()
         {

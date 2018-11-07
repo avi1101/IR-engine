@@ -60,7 +60,7 @@ namespace IR_engine
         }
         public void parseText(List<string> words, bool ToStem)
         {
-            for (int i = 0; i < words.Count - 4; i++)
+            for (int i = 0; i < words.Count - 4/*still not sure about that*/; i++)
             {
                 //string word = words[i];
                 //if (word == null || word == "" || word == " " || word[0]=='<')
@@ -110,8 +110,15 @@ namespace IR_engine
                 */
                 if(word.Contains('-') && word[0] != '-')
                 {
-                    /* checked for no first minus '-' to eliminate negative numbers */
-
+                    /* 
+                     * checked for no first minus '-' to eliminate negative numbers
+                     * in this case, we found a range\expression, we'll deal with this here by splitting it and save the terms
+                     */
+                    string[] splittedExpression = word.Split('-');
+                    for(int part = 0; part < word.Length; part++)
+                    {
+                        //TODO: complete last rule here
+                    }
                 }
                 else if (containsNumbers(word))
                 {
@@ -119,6 +126,37 @@ namespace IR_engine
                      * the first word contains a number, which means it can apply one of the rules
                      * here i'll check which rule to apply
                      */
+
+                    // checking for price existance
+                    if(isPrice(words, i))
+                    {
+                        /*
+                         * we found that word[i] is a price expression
+                         * time to call the correct rule method
+                         * it will return the string phrase we will use to create the term
+                         */
+                    }
+                    else if (isPercentage(words, i))
+                    {
+                        /*
+                         * the number is a percentage format
+                         * time to call the correct rule method
+                         */
+                    }
+                    else if(isDate(words, i))
+                    {
+                        /*
+                         * the number is in date format
+                         */
+                    }
+                    else
+                    {
+                        /*
+                         * which no latter condition is fulfilled, that means the number we found
+                         * is a normal number that has to be formatted by the numbers rule
+                         * we'll call the rule method here
+                         */
+                    }
                 }
                 else
                 {
@@ -130,6 +168,46 @@ namespace IR_engine
                      */
                 }
             }
+        }
+        //TODO: need to implement isDate
+        private bool isDate(List<string> words, int idx)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// this method checks if a given word in the words list is a start of a percent format
+        /// </summary>
+        /// <param name="words">the list of words in working on</param>
+        /// <param name="idx">the index of the word in the list</param>
+        /// <returns></returns>
+        private bool isPercentage(List<string> words, int idx)
+        {
+            int size = words[idx].Length - 1;
+            if (words[idx][size] == '%') return true;
+            string word = words[idx + 1].ToLower();
+            if (word.Equals("percent") || word.Equals("percentage")) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// this method checks if a given word in the words list is a start of a price format
+        /// </summary>
+        /// <param name="words">the list of words in working on</param>
+        /// <param name="idx">the index of the word in the list</param>
+        /// <returns></returns>
+        private bool isPrice(List<string> words, int idx)
+        {
+            string word = "";
+
+            word = words[idx + 1].ToUpper();
+            if (words[idx][0] == '$' || word.Equals("DOLLARS")) return true;
+            if ((word.Equals("M") || word.Equals("BN")) &&
+                (words[idx + 2].Equals("DOLLARS") || words[idx + 2].Equals("dollars") || words[idx + 2].Equals("Dollars")))
+                return true;
+            //checking for million billion trillion after the price number
+            if (word.Equals("MILLION") || word.Equals("BILLION") || word.Equals("TRILLION")) return true;
+            return false;
         }
 
         private bool containsNumbers(string s)
@@ -183,8 +261,13 @@ namespace IR_engine
         }
         int Isprecent(string input, int idx)
         {
-            if (IsComNum(input) && (pre_terms[idx + 1] == "%" || pre_terms[idx + 1] == "percent" || pre_terms[idx + 1] == "percentage" || pre_terms[idx + 1] == "percent" || pre_terms[idx + 1] == "percentage")) { return 1; }
-            if (IsComNum(input) && IsComNum(pre_terms[idx + 1]) && (pre_terms[idx + 2] == "%" || pre_terms[idx + 2] == "percent" || pre_terms[idx + 2] == "percentage" || pre_terms[idx + 2] == "percent" || pre_terms[idx + 2] == "percentage")) { return 2; }
+            if (IsComNum(input) && (pre_terms[idx + 1] == "%" || pre_terms[idx + 1] == "percent" ||
+                pre_terms[idx + 1] == "percentage" || pre_terms[idx + 1] == "percent" ||
+                pre_terms[idx + 1] == "percentage")) { return 1; }
+            if (IsComNum(input) && IsComNum(pre_terms[idx + 1]) &&
+                (pre_terms[idx + 2] == "%" || pre_terms[idx + 2] == "percent" ||
+                pre_terms[idx + 2] == "percentage" || pre_terms[idx + 2] == "percent" ||
+                pre_terms[idx + 2] == "percentage")) { return 2; }
             return 0;
         }
         /// <summary>
@@ -327,6 +410,6 @@ namespace IR_engine
         }
         string SetLetterType(int idx, List<string> words) { return null; }
         string Setprice(int idx, List<string> words) { return null; }
-        string SetParExp(int idx, List<string> words) { return null; }
+        string[] SetParExp(int idx, List<string> words) { return null; }
     }
 }
