@@ -13,21 +13,28 @@ namespace IR_engine
     /// this is the ReadFile class, this class is incharge of reading the documents
     /// from the given corpus path and sends it to the Parser class
     /// </summary>
-    class ReadFile
+    public class ReadFile
     {
-        string[] allfiles = null;
+        List<string> allfiles = null;
         int index = 0;
-        ReadFile(string path)
+        int allfilesSize = 0;
+        static int counter = 0;
+        public ReadFile(string path)
         {
-            allfiles = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
+            string[] tmp = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
+            allfiles = tmp.ToList();
+            allfiles.Remove(path + "\\stop_words.txt");
+            allfilesSize = tmp.Length-1;
         }
         /// <summary>
         /// this function gets all docs in the corpus folder and its sub-folders.
         /// </summary>
         /// <param name="path"></param>
-        public List<document> getDocs()
+         public List<document> getDocs()
         {
-            return readfile(File.ReadAllText(allfiles[index++]));
+            if (index < allfilesSize)
+                return readfile(File.ReadAllText(allfiles[index++]));
+            return null;
              
         }
         /// <summary>
@@ -35,13 +42,13 @@ namespace IR_engine
         /// 
         /// </summary>
         /// <param name="file"> the string that constains all the data in the file</param>
-        private static List<document> readfile(string file)
+        public static List<document> readfile(string file)
         {
             
             List<document> docslist = new List<document>();
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.None);
             foreach (string doc in docs)
-                if (doc != "" && doc!="\n") { 
+                if (doc != "" && doc!="\n"){
                 int st = doc.IndexOf("<DOCNO>");
                 int end = doc.IndexOf("</DOCNO");
                 string docNo = doc.Substring(st+7, (end - st)-8).Trim();
@@ -54,10 +61,21 @@ namespace IR_engine
                 st = doc.IndexOf("<TEXT>");
                 end = doc.IndexOf("</TEXT>");
                 string data = doc.Substring(st+6, (end - st) - 7).Trim();
-                document d = new document(data, docNo, date, head);
+               st = doc.IndexOf("<F P=104>");
+                    if (st != -1) { 
+                end = doc.IndexOf("</F>",st);
+                    }
+                    string city = "";
+                if (st != -1){ city = doc.Substring(st + 9, (end - st) - 4).Trim(); }
+                document d = new document(data, docNo, date, head,city);
                 docslist.Add(d);
-            }
+                    counter++;
+                }
             return docslist;
+        }
+        public int returnSize()
+        {
+            return allfilesSize;
         }
     }
 }
