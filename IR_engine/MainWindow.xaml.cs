@@ -21,13 +21,9 @@ namespace IR_engine
     /// </summary>
     public partial class MainWindow : Window
     {
-        private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
         public MainWindow()
         {
             InitializeComponent();
-            Parse p = new Parse();
-            string s = p.testToDate(10);
-            test.Content = s;
         }
 
         /// <summary>

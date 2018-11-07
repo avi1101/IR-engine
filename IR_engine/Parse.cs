@@ -250,5 +250,18 @@ namespace IR_engine
             }
             return sol;
         }
+        /// <summary>
+        /// this method will format the price string
+        /// </summary>
+        /// <param name="price">the amount of dollars, may have a $ sign at the beginning or m,bn at the end</param>
+        /// <param name="count">the identifier which tells us if its million, billion or trillion</param>
+        /// <returns></returns>
+        string ToPrice(string price, string count)
+        {
+            int startIndex = price[0] == '$' ? 1 : 0;
+            int endIndex = price[price.Length - 1] == 'n' ? price.Length - 2 : price.Length;
+            endIndex = price[price.Length - 1] == 'm' ? price.Length - 1 : price.Length;
+            return "";
+        }
     }
 }
