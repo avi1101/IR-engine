@@ -62,8 +62,9 @@ namespace IR_engine
                 end = doc.IndexOf("</TEXT>");
                 string data = doc.Substring(st+6, (end - st) - 7).Trim();
                st = doc.IndexOf("<F P=104>");
-                    if (st != -1) { 
-                end = doc.IndexOf("</F>",st);
+                    if (st != -1)
+                    {
+                        end = doc.IndexOf("</F>", st);
                     }
                     string city = "";
                 if (st != -1){ city = doc.Substring(st + 9, (end - st) - 4).Trim(); }

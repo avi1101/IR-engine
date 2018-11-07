@@ -54,17 +54,16 @@ namespace IR_engine
             for (int i = 0; i < words.Count; i++)
             {
                 string word = words[i];
-                if (word == null || word == "" || word == " " || word[0]=='<')
+                if (word == null || word == "" || word == " " || (word[0]=='<' && word.Length>1))                  // remove white Characters and tags
                     continue;
-                else if (word.Contains("\n"))
+                else if (word.Contains("\n"))  //  removes \n end
                 {
                     string word2 = word.TrimEnd('\n');
-                    //words.Add(word2);
                     words.Remove(word);
                 }
-                else if (stopwords.Contains(word))
+                else if (stopwords.Contains(word))   //removes stop words
                     continue;
-                else if (IsRegNumber(word, i))
+                else if (IsRegNumber(word, i))   // takes care of regular number  instance
                 {
                     if (IsRegNumber(words[i + 1], i + 1) && words[i + 1].Contains("\\"))
                     {
@@ -75,7 +74,7 @@ namespace IR_engine
                     string word2 = NumberSet(word, i, words);
                     terms.Add(word2);
                 }
-                else if (Isprecent(word, i)!=0) {
+                else if (Isprecent(word, i)!=0) { // takes care of precent number instance
                     int typePrecent = Isprecent(word, i);
                     if (typePrecent == 1)
                         terms.Add(words[i] + " " + words[i + 1]);
@@ -272,5 +271,8 @@ namespace IR_engine
             }
             return sol;
         }
+        string SetLetterType(int idx, List<string> words) { return null; }
+        string Setprice(int idx, List<string> words) { return null; }
+        string SetParExp(int idx, List<string> words) { return null; }
     }
 }
