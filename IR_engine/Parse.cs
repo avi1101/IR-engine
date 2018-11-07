@@ -11,20 +11,29 @@ namespace IR_engine
 /// </summary>
     public class Parse
     {
-        List<string> pre_terms ;
-        HashSet<string> terms = new HashSet<string>();
-        private enum months {january,february,march,april,may,june,july,august,september,october,november,december};
-        HashSet<string> stopwords = new HashSet<string>();
+        private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
+
+        List<string> pre_terms;
+        HashSet<string> terms;
+        HashSet<string> stopwords;
+        Stemmer stem;
+        bool toStem;
+
         /// <summary>
         /// this is the constructor for the Parser class
         /// the constructor given a path sets the list of stopwords.
         /// </summary>
         /// <param name="path">the path of the stop words list</param>
-        public Parse(string path)
+        public Parse(string path, bool tostem)
         {
+            toStem = tostem;
+            stopwords = new HashSet<string>();
+            terms = new HashSet<string>();
+            stem = new Stemmer();
             string stopPath = path + "\\stop_words.txt";
             string[] stops = File.ReadAllText(stopPath).Split('\n');
-            foreach (string word in stops) {
+            foreach (string word in stops)
+            {
                 string stpword = word.Trim();
                 stopwords.Add(stpword);
             }
@@ -35,10 +44,10 @@ namespace IR_engine
         /// <param name="document"> the document edited</param>
         public void Text2list(document document)
         {
-           string tmp_txt = document.Doc;
-           string[] text = tmp_txt.Split(' ');
-           pre_terms = text.ToList();
-           parseText(pre_terms);
+            string tmp_txt = document.Doc;
+            string[] text = tmp_txt.Split(' ');
+            pre_terms = text.ToList();
+            parseText(pre_terms, toStem);
         }
         private bool IsNumber(string str)
         {
@@ -49,41 +58,85 @@ namespace IR_engine
             }
             return true;
         }
-        public void parseText(List<string> words)
+        public void parseText(List<string> words, bool ToStem)
         {
-            for (int i = 0; i < words.Count; i++)
+            for (int i = 0; i < words.Count - 4; i++)
             {
-                string word = words[i];
-                if (word == null || word == "" || word == " " || word[0]=='<')
-                    continue;
-                else if (word.Contains("\n"))
+                //string word = words[i];
+                //if (word == null || word == "" || word == " " || word[0]=='<')
+                //    continue;
+                //if (word.Contains("\n"))
+                //{
+                //    string word2 = word.TrimEnd('\n');
+                //    words.Remove(word);
+                //    word = word2;
+                //}
+                //if (stopwords.Contains(word))
+                //    continue;
+                //if (IsRegNumber(word, i))
+                //{
+                //    if (IsRegNumber(words[i + 1], i + 1) && words[i + 1].Contains("\\"))
+                //    {
+                //        string word3 = NumberSet(words[i] + " " + words[i + 1], i + 1, words);
+                //        terms.Add(word3);
+                //        continue;
+                //    }
+                //    string word2 = NumberSet(word, i, words);
+                //    terms.Add(word2);
+                //}
+                //else if (Isprecent(word, i)!=0) {
+                //    int typePrecent = Isprecent(word, i);
+                //    if (typePrecent == 1)
+                //        terms.Add(words[i] + " " + words[i + 1]);
+                //    if (typePrecent == 2)
+                //        terms.Add(words[i] + " " + words[i + 1] + " " + words[i + 2]);
+                //}
+                //else //should add all rules before reaching here
+                //{
+                //    if (ToStem)
+                //        word = stem.stemTerm(word);
+                //}
+                int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
+                string word = words[j];
+                if (word.Length > 0 && word[word.Length] == '\n') word = word.TrimEnd('\n');            //remove \n from the end of a word
+                if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
+                //checking for rule
+                /*
+                * each term to parse is build from up to 5 words
+                * aside of a special date case, all of them starts with numbers
+                * for example: 'price friction MILLION US dollars'
+                * for my first step is to determind if the first is a term with '-' or any other since its special
+                * than I will check if word contains a number what so ever
+                */
+                if(word.Contains('-') && word[0] != '-')
                 {
-                    string word2 = word.TrimEnd('\n');
-                    //words.Add(word2);
-                    words.Remove(word);
-                }
-                else if (stopwords.Contains(word))
-                    continue;
-                else if (IsRegNumber(word, i))
-                {
-                    if (IsRegNumber(words[i + 1], i + 1) && words[i + 1].Contains("\\"))
-                    {
-                        string word3 = NumberSet(words[i] + " " + words[i + 1], i + 1, words);
-                        terms.Add(word3);
-                        continue;
-                    }
-                    string word2 = NumberSet(word, i, words);
-                    terms.Add(word2);
-                }
-                else if (Isprecent(word, i)!=0) {
-                    int typePrecent = Isprecent(word, i);
-                    if (typePrecent == 1)
-                        terms.Add(words[i] + " " + words[i + 1]);
-                    if (typePrecent == 2)
-                        terms.Add(words[i] + " " + words[i + 1] + " " + words[i + 2]);
-                }
+                    /* checked for no first minus '-' to eliminate negative numbers */
 
+                }
+                else if (containsNumbers(word))
+                {
+                    /* 
+                     * the first word contains a number, which means it can apply one of the rules
+                     * here i'll check which rule to apply
+                     */
+                }
+                else
+                {
+                    /*
+                     * it has been found that 'word' has no numbers in it what so ever
+                     * so there are 3 cases for that to happen:
+                     * 1- date that starts with month, like MAY 14 where word = MAY
+                     * 2- its a regular word with no rule to apply
+                     */
+                }
             }
+        }
+
+        private bool containsNumbers(string s)
+        {
+            for (int i = 0; i < s.Length; i++)
+                if (s[i] <= '9' && s[i] >= '0') return true;
+            return false;
         }
         /// <summary>
         /// checks if the word is all made of upper case letter
@@ -130,8 +183,8 @@ namespace IR_engine
         }
         int Isprecent(string input, int idx)
         {
-            if(IsComNum(input)&&(pre_terms[idx+1]== "%" || pre_terms[idx+1]== "percent" || pre_terms[idx+1]== "percentage" || pre_terms[idx + 1] == "percent" || pre_terms[idx + 1] == "percentage")) { return 1; }
-            if (IsComNum(input) && IsComNum(pre_terms[idx+1]) && (pre_terms[idx + 2] == "%" || pre_terms[idx + 2] == "percent" || pre_terms[idx + 2] == "percentage" || pre_terms[idx +2] == "percent" || pre_terms[idx + 2] == "percentage")) { return 2;}
+            if (IsComNum(input) && (pre_terms[idx + 1] == "%" || pre_terms[idx + 1] == "percent" || pre_terms[idx + 1] == "percentage" || pre_terms[idx + 1] == "percent" || pre_terms[idx + 1] == "percentage")) { return 1; }
+            if (IsComNum(input) && IsComNum(pre_terms[idx + 1]) && (pre_terms[idx + 2] == "%" || pre_terms[idx + 2] == "percent" || pre_terms[idx + 2] == "percentage" || pre_terms[idx + 2] == "percent" || pre_terms[idx + 2] == "percentage")) { return 2; }
             return 0;
         }
         /// <summary>
@@ -216,7 +269,7 @@ namespace IR_engine
             string month = "";
             string number = "";
             string sol = "";
-            if(IsNumber(firstTerm))                                             //if the number is the first term
+            if (IsNumber(firstTerm))                                             //if the number is the first term
             {
                 month = secondTerm;
                 number = firstTerm;
@@ -228,22 +281,22 @@ namespace IR_engine
             }
             int value = int.Parse(number);                                      //get the numeric value of the year/day
             month = month.ToLower();                                            //easier to only check lower case strings
-            foreach(months m in Enum.GetValues(typeof(months)))                 //iterate to find out which month it is
+            foreach (months m in Enum.GetValues(typeof(months)))                 //iterate to find out which month it is
             {
                 string m2 = m.ToString();
                 string mon = m2.Substring(0, 3);
-                                                                                //checks all possible combinations
-                if(month.Equals(m2) || month.Equals(mon))
+                //checks all possible combinations
+                if (month.Equals(m2) || month.Equals(mon))
                 {
-                    if(((int)m+1) < 10)                                         //adds the zero before the number
-                        month = "0"+((int)m + 1) + "";
+                    if (((int)m + 1) < 10)                                         //adds the zero before the number
+                        month = "0" + ((int)m + 1) + "";
                     else
                         month = ((int)m + 1) + "";
                     break;
                 }
             }
             if (number.Length == 1) number = "0" + number;
-            if(value > 999)
+            if (value > 999)
                 sol = number + "-" + month;
             else
                 sol = month + "-" + number;
@@ -257,7 +310,7 @@ namespace IR_engine
         {
             Random r = new Random();
             string sol = "";
-            for(int i = 0; i < numberOfTests; i++)
+            for (int i = 0; i < numberOfTests; i++)
             {
                 Array values = Enum.GetValues(typeof(months));
                 string randomBar = ((months)values.GetValue(r.Next(values.Length))).ToString();
@@ -265,8 +318,8 @@ namespace IR_engine
                 int rand = r.Next(0, 3);
                 if (rand == 0) randomBar = randomBar.Substring(0, 3);
                 if (rand == 1) randomBar = randomBar.ToUpper();
-                if(r.Next(0,1) == 1)
-                    sol += ToDate(n+"", randomBar.ToString()) +"\t"+n+" "+randomBar.ToString()+"\n";
+                if (r.Next(0, 1) == 1)
+                    sol += ToDate(n + "", randomBar.ToString()) + "\t" + n + " " + randomBar.ToString() + "\n";
                 else
                     sol += ToDate(randomBar.ToString(), n + "") + "\t" + n + " " + randomBar.ToString() + "\n";
             }

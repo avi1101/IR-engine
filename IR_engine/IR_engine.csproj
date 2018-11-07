@@ -58,6 +58,7 @@
     <Compile Include="Model.cs" />
     <Compile Include="Parse.cs" />
     <Compile Include="ReadFile.cs" />
+    <Compile Include="Stemmer.cs" />
     <Compile Include="term.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

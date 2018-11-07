@@ -24,18 +24,18 @@ namespace IR_engine
             string[] tmp = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
             allfiles = tmp.ToList();
             allfiles.Remove(path + "\\stop_words.txt");
-            allfilesSize = tmp.Length-1;
+            allfilesSize = tmp.Length - 1;
         }
         /// <summary>
         /// this function gets all docs in the corpus folder and its sub-folders.
         /// </summary>
         /// <param name="path"></param>
-         public List<document> getDocs()
+        public List<document> getDocs()
         {
             if (index < allfilesSize)
                 return readfile(File.ReadAllText(allfiles[index++]));
             return null;
-             
+
         }
         /// <summary>
         /// this function create an document type objects from the string file, and sends it to the parser
@@ -44,31 +44,32 @@ namespace IR_engine
         /// <param name="file"> the string that constains all the data in the file</param>
         public static List<document> readfile(string file)
         {
-            
             List<document> docslist = new List<document>();
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.None);
             foreach (string doc in docs)
-                if (doc != "" && doc!="\n"){
-                int st = doc.IndexOf("<DOCNO>");
-                int end = doc.IndexOf("</DOCNO");
-                string docNo = doc.Substring(st+7, (end - st)-8).Trim();
-                st = doc.IndexOf("<DATE1>");
-                end = doc.IndexOf("</DATE1>");
-                string date = doc.Substring(st+7, (end - st) - 8).Trim();
-                st = doc.IndexOf("<TI>");
-                end = doc.IndexOf("</TI>");
-                string head = doc.Substring(st+4, (end - st) - 4).Trim();
-                st = doc.IndexOf("<TEXT>");
-                end = doc.IndexOf("</TEXT>");
-                string data = doc.Substring(st+6, (end - st) - 7).Trim();
-               st = doc.IndexOf("<F P=104>");
-                    if (st != -1) { 
-                end = doc.IndexOf("</F>",st);
+                if (doc != "" && doc != "\n")
+                {
+                    int st = doc.IndexOf("<DOCNO>");
+                    int end = doc.IndexOf("</DOCNO");
+                    string docNo = doc.Substring(st + 7, (end - st) - 8).Trim();
+                    st = doc.IndexOf("<DATE1>");
+                    end = doc.IndexOf("</DATE1>");
+                    string date = doc.Substring(st + 7, (end - st) - 8).Trim();
+                    st = doc.IndexOf("<TI>");
+                    end = doc.IndexOf("</TI>");
+                    string head = doc.Substring(st + 4, (end - st) - 4).Trim();
+                    st = doc.IndexOf("<TEXT>");
+                    end = doc.IndexOf("</TEXT>");
+                    string data = doc.Substring(st + 6, (end - st) - 7).Trim();
+                    st = doc.IndexOf("<F P=104>");
+                    if (st != -1)
+                    {
+                        end = doc.IndexOf("</F>", st);
                     }
                     string city = "";
-                if (st != -1){ city = doc.Substring(st + 9, (end - st) - 4).Trim(); }
-                document d = new document(data, docNo, date, head,city);
-                docslist.Add(d);
+                    if (st != -1) { city = doc.Substring(st + 9, (end - st) - 4).Trim(); }
+                    document d = new document(data, docNo, date, head, city);
+                    docslist.Add(d);
                     counter++;
                 }
             return docslist;
