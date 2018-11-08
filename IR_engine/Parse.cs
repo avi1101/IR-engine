@@ -1,4 +1,96 @@
-﻿using System;
+﻿
+/*
+ *                              _                             _           _          _                                                                    
+ *                             | |                           | |         | |        | |                                                                   
+ *     __      __   ___      __| |   ___      _ __     ___   | |_      __| |   ___  | |__    _   _    __ _                                                
+ *     \ \ /\ / /  / _ \    / _` |  / _ \    | '_ \   / _ \  | __|    / _` |  / _ \ | '_ \  | | | |  / _` |                                               
+ *      \ V  V /  |  __/   | (_| | | (_) |   | | | | | (_) | | |_    | (_| | |  __/ | |_) | | |_| | | (_| |                                               
+ *       \_/\_/    \___|    \__,_|  \___/    |_| |_|  \___/   \__|    \__,_|  \___| |_.__/   \__,_|  \__, |                                               
+ *                                                                                                    __/ |                                               
+ *                                                                                                   |___/                                                
+ *                                _                                     _       _     _                                   _                               
+ *                               | |                                   | |     | |   | |                                 | |                              
+ *     __      __   ___     ___  | |_    __ _   _ __    ___      __ _  | |_    | |_  | |__     ___      ___    ___     __| |   ___                        
+ *     \ \ /\ / /  / _ \   / __| | __|  / _` | | '__|  / _ \    / _` | | __|   | __| | '_ \   / _ \    / __|  / _ \   / _` |  / _ \                       
+ *      \ V  V /  |  __/   \__ \ | |_  | (_| | | |    |  __/   | (_| | | |_    | |_  | | | | |  __/   | (__  | (_) | | (_| | |  __/                       
+ *       \_/\_/    \___|   |___/  \__|  \__,_| |_|     \___|    \__,_|  \__|    \__| |_| |_|  \___|    \___|  \___/   \__,_|  \___|                       
+ *                                                                                                                                                        
+ *                                                                                                                                                        
+ *                      _     _   _     _     _                                   _                                    __                                 
+ *                     | |   (_) | |   | |   | |                                 | |                                  / _|                                
+ *      _   _   _ __   | |_   _  | |   | |_  | |__     ___      ___    ___     __| |   ___      ___    ___    _ __   | |_    ___   ___   ___    ___   ___ 
+ *     | | | | | '_ \  | __| | | | |   | __| | '_ \   / _ \    / __|  / _ \   / _` |  / _ \    / __|  / _ \  | '_ \  |  _|  / _ \ / __| / __|  / _ \ / __|
+ *     | |_| | | | | | | |_  | | | |   | |_  | | | | |  __/   | (__  | (_) | | (_| | |  __/   | (__  | (_) | | | | | | |   |  __/ \__ \ \__ \ |  __/ \__ \
+ *      \__,_| |_| |_|  \__| |_| |_|    \__| |_| |_|  \___|    \___|  \___/   \__,_|  \___|    \___|  \___/  |_| |_| |_|    \___| |___/ |___/  \___| |___/
+ *                                                                                                                                                        
+ *                                                                                                                                                        
+ */
+/*
+WWWWWWWWWWWWWWWWWWWWWWWWWNWNNWWNX0OkxxkkOO0KKKKK000KXNNNNNNWWWNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWNNNXOxl;'..    ............,oOXNNNWWWNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWNNNNNNNNWNOl,.                       .lkKNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWNNWWNWXk:.                           .oOKNNWNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWNWNNKl.                              .lOKNNNWNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWNNNd.                                .ck0XNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWNWNWX:                                  .cxOKXNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWNNWWO'                                  .'cdOKXNWWWWWNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWNWNd.                                   .,cdOKXNNWWWNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWNWNl                                     .,cdkKNWWNNWWNNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWNWXc                                      .,cdkKNNNNNWWNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWNWWWK;                                      ..;ldOXNNNNWWWWWWWWWWWNNWWWNNWNNWWWWWWWWW
+WWWWWWWWWWWWWWWNWWWO'                                       ..:lx0NNNNNNWWWWWWWWWWWWNNNWNNNNWWWWWWWW
+WWWWWWWWWWWWNNNNNNWk.                                        .':oOXNWNNWWWWWWWWWNNNNNNNNNNNNWWWWWWWW
+WWWWWWWWWWWWWNNNNNNx.                                     ..',:ldOKNNWNNWWWWWWWWWNNNNXKKXNNNWWWWWWWW
+NNNNWNX0Okxolc:::::'                                      .':oxkk0KKNNNNNNWNNNWWNNNKkdkKNNNWWWWWWWWW
+NNKko:,..                     .......             ...',:ccllodxkkOOOKXXNNNNNNXK0xoccd0NNNWWWWWWWWWWW
+Ol'.                             .............',:loodxkkkkkkxxxddddddddddolc:;'.':xKNNNNWWWWWWWWWWWW
+.                                         .....'''''''''''''.......  .     .,:okKNNNNWWWNWWWWWWWWWWW
+                              .....................'''''''.........  ..,:lx0XNWWNNNNNWWWWWWWWWWWWWWW
+                             ....''''''..........''',,,,,'.......'',lk0XNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+                             ..',,,;;;;;,,'..''',;;;;;;;;,....'',;o0NWWNNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+                             .',;;;::::;;;;;:::;;;;;;;;;;;;;::clccdKNWWNWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+o,.                ... ...   .';::::::::ccllllc::;;;;;;;;:cc:cclookXNNWWNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+NXOd:..           ..''..''....,::::ccccccclllllcccc:::;;::loollodd0NWNWWNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+NWWNNKko:'..       .:c;''''...,::cccccclllllllllccc:::;;::colllodx0NNWWWNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWNNWWWNK0kdl:;'.  .::,'','.',;::ccccccllllllllc:::;;;;::cloocloxKNNWWNNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWNWWWNNNNNWNNNKo.  '::;,,'.'',;:ccccccclllllllc::::::cllllooccldKNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWNNO'   .;:c:;'''',;::::cccclllllcc:;;:;;;;;::::;:cxXNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWNNK;    .';c:,'''',;::ccccccllcc::;;;,,,,'''''',;ckNNNWNNWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWNWNd.     .,:,'.''',;:::ccllc:;,,,,,,,,,,..',,',cxKNNNWWNWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWNNNKc.    .';,....',,,;::cc:;,'''',,'',,,'',;;::lkKNNNNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWNWWNKc.   .';,...'',,,,;:::;,',,;;;;;;;;,,;:col::dKWNNNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWNWWNXx:...,:;'...'',,,,;;;,'',:ccccccccc:cldkklckXWWNNWNNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWNNWNNNXKOdc:::;'..''''',,,'',;:cccccllc::::coddkKNNNWNWWNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWNWWWNNNNN0o:::cc:;'.......''''',;,,,,,,''''',:oOKNNNNNNWWNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWNNWNNNNx;:;;ccccc:;'......'''''''''''''',,,:dOKKXNNNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWNWWNNXd..lc,,;:cccc:,.......',,,,,,,,,;,,;:cdOkdkXNNNWNNWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWNWNNWKc. .cd:'.,;:::::;'.......'',,,,''''',,;cllclkXNNNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWNNNNWWKc.   ;xdc'.',;;;;::;,'............''.''...,:clkKNNNNNNNNWWWWNNWWWNNWWWNWWNNWWWWW
+WWWWWWWWWWNWWNNNX0d,     ,dxdl;.'',;;;;:;;;,,,,,''''';c:'.....';:cokxOXXXXXXXXXXNNNNNNNWWNNWWWNWWWWW
+WWWWWWWWNNNNNXkc,.       .lddxdc,'',,;;;;;;;;;;;;;;;;;;;,'....';:cokod0KXKK0OO0KXXXXXXNNNNNNNNWWNWWW
+WWWWWWWNNNNXk:.           'clldxl::;,;;:::;;;;;;;,,,,,,,'.....';ccoxo:lkKKKOkkkOKXXXXKKKKKXNNNNNNWWW
+WWWNNNWWXOd;.              .';cl':kxoc;;:::;;;;;,,,,,,,''.'...;clool,..;ldO0kocoOKKKXK0xoloOKXKXNNNW
+NWNNNX0d:.                  ..':;;dxdxoc;::;;;;;,,,,,,,''''..,l:;lolc;....:k0OdcdOkOKXXKOl'.lkxxKXNN
+NWN0d:..                  .....':,.;odxdc;:;;,,;,;;;;;,,,''..lo,:OOxkO:....,;lxdx0d;:x0XNXOc.,lldKX0
+Oo:'..                     .,,'',;,':odxdl:;:,,;;;;;;;,,,'.'oOocx0K0Okc..;:,..,;lxxc,,cloxOOd,'cok0x
+.                          .;;::;cll:codxxxdl:;;;;;;;;,,'.;x0OkO00KKOk:..:dd:...',clo:.  ...''..cxOl
+                           .;::llllllllloodxxdl:;;;,,,,,.'oKKKKXK000Ox:..':d0x:..':cdxl'        .:Od
+                            .;cccc:;:clloooooodolc:;,,,'.;ONXKKXKOOOkx:.   'oO0ko,.':;'c;.        ;x
+                 .......     .,c::c:::lllodddddddddoc,'..lXNXXKKK0Okxdl'    .:xKXOddc. .'.        .l
+    .'..............           'ccccl:;loooodxxkxxxxxo;..dNNNXXXX0Okxol;.     .cOKNXd.             ,
+        .....     ..            'clclo:;lxxdddxxkkkOOkx:'oNNNXXNKOkkxdoc'.      'ck0Ol.      ...    
+                   ......        'lollo::lxkkkxdxO0KX0kxldXNNNNXOxxxxddl;.        'dkOd.  .'cdkxol,.
+                    ..';.         'lolooccokOOOkxxxkkxxkdd0NNNNKxodxxdooc;.       ,ox0Xk,.,l:ck00K0d
+                     ..            'ododdllokOOOOkxxdooolckNNNKOxddxxdoool,.     .::.cOXOl::;;lxOxoO
+                     ..             ,oooddoldkOOOkkkxddol;oKXK0kxxdxxdooolc, .,. .c,  'dK0l::;:lcldk
+                      ..            .;oodddocdO0OOkkkkxxxllO0Okkxdddxxxolllc'.'. 'c.   .:kOl:odolllc
+                                     .;oddxdllk00OOkkOOkkdlxOOkxxxddxkxdollc:'   'c.    .,x0xddc:;'.
+                                      .;dxddoldO00OOkOOkxdcoOOkkkxddxkxxolccc:. ..lo'  .,clokxooo,. 
+                         ..            .:dxxdodO000OOOOOkdclkOkxxxxdxkkkxocclc,...,dkc..'..'cllk0d' 
+                          ..            .ldxkxxk0000OOOOkd:cxOkkxxxxxkkkkdlcll:...'oOd'    .;;;d0Xk'
+ */
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,7 +106,7 @@ namespace IR_engine
         private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
 
         List<string> pre_terms;
-        HashSet<string> terms;
+        HashSet<term> terms;
         HashSet<string> stopwords;
         Stemmer stem;
         bool toStem;
@@ -28,7 +120,7 @@ namespace IR_engine
         {
             toStem = tostem;
             stopwords = new HashSet<string>();
-            terms = new HashSet<string>();
+            terms = new HashSet<term>();
             stem = new Stemmer();
             string stopPath = path + "\\stop_words.txt";
             string[] stops = File.ReadAllText(stopPath).Split('\n');
@@ -62,6 +154,8 @@ namespace IR_engine
         {
             for (int i = 0; i < words.Count - 4/*still not sure about that*/; i++)
             {
+                term t;
+                string phrase = "";
                 //string word = words[i];
                 //if (word == null || word == "" || word == " " || word[0]=='<')
                 //    continue;
@@ -102,9 +196,9 @@ namespace IR_engine
                 if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
                 //checking for rule
                 /*
-                * each term to parse is build from up to 5 words
+                * each term to parse is build from up to 4 words
                 * aside of a special date case, all of them starts with numbers
-                * for example: 'price friction MILLION US dollars'
+                * for example: 'price MILLION US dollars'
                 * for my first step is to determind if the first is a term with '-' or any other since its special
                 * than I will check if word contains a number what so ever
                 */
@@ -156,6 +250,7 @@ namespace IR_engine
                          * is a normal number that has to be formatted by the numbers rule
                          * we'll call the rule method here
                          */
+                        phrase = NumberSet(word, i, words);
                     }
                 }
                 else
@@ -166,6 +261,11 @@ namespace IR_engine
                      * 1- date that starts with month, like MAY 14 where word = MAY
                      * 2- its a regular word with no rule to apply
                      */
+                }
+                t = new term(phrase);
+                if(terms.Contains(t))
+                {
+
                 }
             }
         }
