@@ -343,11 +343,11 @@ namespace IR_engine
         /// </summary>
         /// <param name="input">cheked term</param>
         /// <returns></returns>
-        bool IsRegNumber(List<string> words, int idx)
+         bool IsRegNumber(List<string> words, int idx)
         {
             for (int i = 0; i < words[idx].Length; i++)
             {
-                if (!Char.IsDigit(words[idx][i]) && words[idx][i] != ',' && words[idx][i] != '.' && words[idx][i] != '\\')
+                if ((!Char.IsDigit(words[idx][i]) && words[idx][i] != ',' && words[idx][i] != '.' && words[idx][i] != '\\' && words[idx][i] != '/') || words[idx] == "")
                     return false;
             }
             if (words[idx + 1] == "$" || words[idx + 1] == "%" || words[idx + 1] == "percent" || words[idx + 1] == "percentage" || words[idx + 1] == "Dollars") { return false; }
@@ -385,7 +385,7 @@ namespace IR_engine
         /// <param name="idx"></param>
         /// <param name="words"></param>
         /// <returns></returns>
-        string NumberSet(string input, int idx, List<string> words)
+         string NumberSet(string input, int idx, List<string> words)
         {
             int option = 0;
             var charsToRemove = new string[] { "," };
@@ -432,21 +432,63 @@ namespace IR_engine
             decimal dec;
             if (decimal.TryParse(input, out dec))
             {
-                if (option == 1) { dec = dec * 1000; }
-                if (option == 2) { dec = dec * 1000000; }
-                if (option == 3) { dec = dec * 1000000000; }
-                if (dec >= 1000 && dec < 1000000) { dec = dec / 1000 + (dec % 1000) * (1 / 1000); return (dec.ToString() + "K"); }
-                else if (lng >= 1000000 && lng < 1000000000) { dec = dec / 1000000 + (dec % 1000000) * (1 / 1000000); return (dec.ToString() + "M"); }
-                else if (dec >= 1000000000) { dec = dec / 1000000000 + (dec % 1000000000) * (1 / 1000000000); return (dec.ToString() + "B"); }
+                if (option == 1)
+                {
+                    dec = dec * 1000;
+                }
+
+                if (option == 2)
+                {
+                    dec = dec * 1000000;
+                }
+
+                if (option == 3)
+                {
+                    dec = dec * 1000000000;
+                }
+
+                if (dec >= 1000 && dec < 1000000)
+                {
+                    dec = dec / 1000 + (dec % 1000) * (1 / 1000);
+                    return (dec.ToString() + "K");
+                }
+                else if (lng >= 1000000 && lng < 1000000000)
+                {
+                    dec = dec / 1000000 + (dec % 1000000) * (1 / 1000000);
+                    return (dec.ToString() + "M");
+                }
+                else if (dec >= 1000000000)
+                {
+                    dec = dec / 1000000000 + (dec % 1000000000) * (1 / 1000000000);
+                    return (dec.ToString() + "B");
+                }
                 else
                 {
-                    if (option == 1) { return input + "K"; }
-                    if (option == 2) { return input + "M"; }
-                    if (option == 3) { return input + "B"; }
-                    else { return input; }
+                    return (dec.ToString());
                 }
             }
-            else { return null; }
+            else
+            {
+                if (option == 1)
+                {
+                    return input + "K";
+                }
+
+                if (option == 2)
+                {
+                    return input + "M";
+                }
+
+                if (option == 3)
+                {
+                    return input + "B";
+                }
+                else
+                {
+                    return input;
+                }
+            }
+
         }
 
         /// <summary>
@@ -521,13 +563,34 @@ namespace IR_engine
         string[] SetParExp(int idx, List<string> words) { return null; }
         string Fixword(string word)
         {
-            if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' || word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == '"' || word[word.Length - 1] == '>')
+            word = word.Replace(" ", "");
+            word = word.Replace(":", "");
+            word = word.Replace("\n", "");
+            word = word.Replace(",", "");
+            if (word != "" && word != "\n" && word[0] != '<')
             {
-                word = word.Remove(word.Length - 1);
+
+                if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' ||
+                    word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == '"' ||
+                    word[word.Length - 1] == '>')
+                {
+                    word = word.Remove(word.Length - 1);
+                }
+
+                //removes non-relative end characters from words
+                if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' ||
+                    word[0] == '"' || word[0] == '<')
+                {
+                    word = word.Remove(0, 1);
+                }
             }
-            //removes non-relative end characters from words
-            if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' || word[0] == '"' || word[0] == '<') { word = word.Remove(0, 1); }
-            return word;
+
+            if (word != "")
+            {
+                return word;
+            }
+
+            return null;
         }
     }
 }
