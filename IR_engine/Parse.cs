@@ -392,7 +392,7 @@ namespace IR_engine
         /// <param name="idx"></param>
         /// <param name="words"></param>
         /// <returns></returns>
-        string NumberSet(string input, int idx, List<string> words)
+        string NumberSet(string input, int idx, List<string> words, out int j)
         {
             int option = 0;
             var charsToRemove = new string[] { "," };
@@ -524,8 +524,8 @@ namespace IR_engine
             return sol;
         }
         string SetLetterType(int idx, List<string> words) { return null; }
-        string Setprice(int idx, List<string> words) { return null; }
-        string[] SetParExp(int idx, List<string> words) { return null; }
+        string Setprice(int idx, List<string> words, out int j) { return null; }
+        string[] SetParExp(int idx, List<string> words, out int j) { return null; }
         string Fixword(string word)
         {
             if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' || word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == '"' || word[word.Length - 1] == '>')

@@ -18,13 +18,15 @@ namespace IR_engine
         List<string> allfiles = null;
         int index = 0;
         int allfilesSize = 0;
+        string path;
         static int counter = 0;
         public ReadFile(string path)
         {
+            this.path = path;
             string[] tmp = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
             allfiles = tmp.ToList();
             allfiles.Remove(path + "\\stop_words.txt");
-            allfilesSize = tmp.Length - 1;
+            allfilesSize = tmp.Length;
         }
         /// <summary>
         /// this function gets all docs in the corpus folder and its sub-folders.
@@ -33,7 +35,12 @@ namespace IR_engine
         public List<document> getDocs()
         {
             if (index < allfilesSize)
+            {
+                index++;
+                string[] ext = allfiles[index].Split('.');
+                if (ext[ext.Length - 1].Equals("txt")) return null;
                 return readfile(File.ReadAllText(allfiles[index++]));
+            }
             return null;
         }
         /// <summary>
@@ -47,6 +54,7 @@ namespace IR_engine
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.None);
             foreach (string doc in docs)
             {
+                if (doc.Equals("")) continue;
                 string docNo = "";
                 string date = "";
                 string head = "";
@@ -76,9 +84,9 @@ namespace IR_engine
                     docslist.Add(d);
                     counter++;
                 }
-                return docslist;
+                
             }
-            return null;
+            return docslist;
         }
         public int returnSize()
         {
