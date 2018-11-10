@@ -24,8 +24,6 @@
  *      \__,_| |_| |_|  \__| |_| |_|    \__| |_| |_|  \___|    \___|  \___/   \__,_|  \___|    \___|  \___/  |_| |_| |_|    \___| |___/ |___/  \___| |___/
  *                                                                                                                                                        
  *                                                                                                                                                        
- */
-/*
 WWWWWWWWWWWWWWWWWWWWWWWWWNWNNWWNX0OkxxkkOO0KKKKK000KXNNNNNNWWWNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 WWWWWWWWWWWWWWWWWWWWWWWWNNNXOxl;'..    ............,oOXNNNWWWNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 WWWWWWWWWWWWWWWNNNNNNNNWNOl,.                       .lkKNNNNWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
@@ -106,10 +104,11 @@ namespace IR_engine
         private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
 
         List<string> pre_terms;
-        HashSet<term> terms;
+        Dictionary<string, term> terms;
         HashSet<string> stopwords;
         Stemmer stem;
         bool toStem;
+        string currectDocName;
 
         /// <summary>
         /// this is the constructor for the Parser class
@@ -119,8 +118,9 @@ namespace IR_engine
         public Parse(string path, bool tostem)
         {
             toStem = tostem;
+            currectDocName = "";
             stopwords = new HashSet<string>();
-            terms = new HashSet<term>();
+            terms = new Dictionary<string, term>();
             stem = new Stemmer();
             string stopPath = path + "\\stop_words.txt";
             string[] stops = File.ReadAllText(stopPath).Split('\n');
@@ -137,6 +137,7 @@ namespace IR_engine
         public void Text2list(document document)
         {
             string tmp_txt = document.Doc;
+            currectDocName = document.DocID;
             string[] text = tmp_txt.Split(' ');
             pre_terms = text.ToList();
             parseText(pre_terms, toStem);
@@ -263,8 +264,15 @@ namespace IR_engine
                      */
                 }
                 t = new term(phrase);
-                if(terms.Contains(t))
+                if(terms.ContainsKey(t.Phrase))
                 {
+                    /*
+                     * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
+                     * the dictionary is implemented as a hash table with chaining
+                     * so it should give us the best resaults
+                     */
+                    term original = terms[t.Phrase]; //reference to the original term
+
 
                 }
             }

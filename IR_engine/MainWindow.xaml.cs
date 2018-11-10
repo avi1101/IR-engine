@@ -29,14 +29,15 @@ namespace IR_engine
             //Parse p = new Parse();
             //string s = p.testToDate(10);
             //test.Content = s;
-            HashSet<term> h = new HashSet<term>();
+            Dictionary<string, term> h = new Dictionary<string, term>();
             term a = new term("hello");
+            a.GlobalOccurances = 100;
             term b = new term("hello");
             term c = new term("lol");
-            h.Add(a);
-            test.Content = h.Contains(a) + "\n";
-            test.Content += h.Contains(b) + "\n";
-            test.Content += h.Contains(c) + "\n";
+            h.Add(a.Phrase, a);
+            term t = h["hello"];
+            t.GlobalOccurances = 200;
+            test.Content = h["hello"].GlobalOccurances;
         }
 
         /// <summary>
