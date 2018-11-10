@@ -16,10 +16,7 @@ namespace IR_engine
             ReadFile readfo = new ReadFile("C:\\Users\\zeavi\\Desktop\\TEST1");
             int filesNum = readfo.returnSize();
             Parse parser = new Parse("C:\\Users\\zeavi\\Desktop\\TEST1",false);
-            for (int i = 0; i < readfo.returnSize(); i++)
-            {
-                List<document> f = readfo.getDocs();
-            }
+            List<document> f = readfo.getDocs();
             long nd = DateTime.Now.Second;
 
             Console.WriteLine(nd - st); }

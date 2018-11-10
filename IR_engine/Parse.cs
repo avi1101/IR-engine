@@ -108,7 +108,7 @@ namespace IR_engine
         HashSet<string> stopwords;
         Stemmer stem;
         bool toStem;
-        string currectDocName;
+        string path;
 
         /// <summary>
         /// this is the constructor for the Parser class
@@ -117,11 +117,13 @@ namespace IR_engine
         /// <param name="path">the path of the stop words list</param>
         public Parse(string path, bool tostem)
         {
+            this.path = path;
             toStem = tostem;
-            currectDocName = "";
             stopwords = new HashSet<string>();
             terms = new Dictionary<string, term>();
             stem = new Stemmer();
+            if (!File.Exists(path + "\\postingList.txt"))
+                File.CreateText(path + "\\postingList.txt");
             string stopPath = path + "\\stop_words.txt";
             string[] stops = File.ReadAllText(stopPath).Split('\n');
             foreach (string word in stops)
@@ -137,10 +139,9 @@ namespace IR_engine
         public void Text2list(document document)
         {
             string tmp_txt = document.Doc;
-            currectDocName = document.DocID;
             string[] text = tmp_txt.Split(' ');
             pre_terms = text.ToList();
-            parseText(pre_terms, toStem);
+            parseText(pre_terms, toStem, document.DocID);
         }
         private bool IsNumber(string str)
         {
@@ -151,50 +152,17 @@ namespace IR_engine
             }
             return true;
         }
-        public void parseText(List<string> words, bool ToStem)
+        public void parseText(List<string> words, bool ToStem, string DocName)
         {
-            for (int i = 0; i < words.Count - 4/*still not sure about that*/; i++)
+            for (int i = 0; i < words.Count; i++)
             {
                 term t;
                 string phrase = "";
-                //string word = words[i];
-                //if (word == null || word == "" || word == " " || word[0]=='<')
-                //    continue;
-                //if (word.Contains("\n"))
-                //{
-                //    string word2 = word.TrimEnd('\n');
-                //    words.Remove(word);
-                //    word = word2;
-                //}
-                //if (stopwords.Contains(word))
-                //    continue;
-                //if (IsRegNumber(word, i))
-                //{
-                //    if (IsRegNumber(words[i + 1], i + 1) && words[i + 1].Contains("\\"))
-                //    {
-                //        string word3 = NumberSet(words[i] + " " + words[i + 1], i + 1, words);
-                //        terms.Add(word3);
-                //        continue;
-                //    }
-                //    string word2 = NumberSet(word, i, words);
-                //    terms.Add(word2);
-                //}
-                //else if (Isprecent(word, i)!=0) {
-                //    int typePrecent = Isprecent(word, i);
-                //    if (typePrecent == 1)
-                //        terms.Add(words[i] + " " + words[i + 1]);
-                //    if (typePrecent == 2)
-                //        terms.Add(words[i] + " " + words[i + 1] + " " + words[i + 2]);
-                //}
-                //else //should add all rules before reaching here
-                //{
-                //    if (ToStem)
-                //        word = stem.stemTerm(word);
-                //}
                 int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
                 string word = words[j];
                 if (word.Length > 0 && word[word.Length] == '\n') word = word.TrimEnd('\n');            //remove \n from the end of a word
                 if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
+                bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
                 //checking for rule
                 /*
                 * each term to parse is build from up to 4 words
@@ -210,10 +178,31 @@ namespace IR_engine
                      * in this case, we found a range\expression, we'll deal with this here by splitting it and save the terms
                      */
                     string[] splittedExpression = word.Split('-');
-                    for(int part = 0; part < word.Length; part++)
+                    string exp = "";
+                    int part = 0;
+                    for(part = 0; part < word.Length; part++)
                     {
                         //TODO: complete last rule here
+                        exp = splittedExpression[part];
+                        if (ToStem && !containsNumbers(exp))
+                            exp = stem.stemTerm(exp);
+                        t = new term(exp);
+                        if (terms.ContainsKey(exp))
+                            t = terms[exp];
+                        else
+                            terms.Add(exp, t);
+                        t.AddToCount(DocName);
+                        if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
                     }
+                    i = part;
+                    phrase = word;
+                }
+                else if(word[0] == '\"')
+                {
+                    /*
+                     * our own rule, in case of an expression that start and end with ""
+                     * we need to save it as according to the expression rules
+                     */
                 }
                 else if (containsNumbers(word))
                 {
@@ -243,6 +232,7 @@ namespace IR_engine
                         /*
                          * the number is in date format
                          */
+                        phrase = ToDate(words[i], words[i + 1]);
                     }
                     else
                     {
@@ -262,6 +252,10 @@ namespace IR_engine
                      * 1- date that starts with month, like MAY 14 where word = MAY
                      * 2- its a regular word with no rule to apply
                      */
+                    if (isDate(words, i))
+                        phrase = ToDate(words[i], words[i + 1]);
+                    else
+                        phrase = toStem ? stem.stemTerm(word) : word;
                 }
                 t = new term(phrase);
                 if(terms.ContainsKey(t.Phrase))
@@ -271,11 +265,24 @@ namespace IR_engine
                      * the dictionary is implemented as a hash table with chaining
                      * so it should give us the best resaults
                      */
-                    term original = terms[t.Phrase]; //reference to the original term
-
-
+                    t = terms[t.Phrase]; //reference to the original term
                 }
+                else
+                {
+                    /*
+                     * this is a new tern that needs to be created
+                     */
+                    terms.Add(t.Phrase, t);
+                }
+                t.AddToCount(DocName);
+                if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
             }
+
+            /*
+             * at the end of the doc parsing, I should end all opened doc counts for the terms
+             */
+            foreach(KeyValuePair<string, term> tn in terms)
+                tn.Value.addDocumentToPostingList();
         }
         //TODO: need to implement isDate
         private bool isDate(List<string> words, int idx)

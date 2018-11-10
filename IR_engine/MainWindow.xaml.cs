@@ -69,5 +69,13 @@ namespace IR_engine
         {
             
         }
+
+        private void Browse_Click(object sender, RoutedEventArgs e)
+        {
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                test.Content = dialog.SelectedPath;
+            }
+        }
     }
 }
