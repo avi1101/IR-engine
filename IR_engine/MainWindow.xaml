@@ -53,5 +53,5 @@
         <Image x:Name="image" Source="barvaz.JPG" HorizontalAlignment="Left" Height="145" Margin="10,10,0,0" VerticalAlignment="Top" Width="169"/>
         <Label x:Name="test" Content="" HorizontalAlignment="Left" Margin="10,180,0,0" VerticalAlignment="Top" Height="230" Width="284"/>
 
-    </Grid>
+  </Grid>
 </Window>

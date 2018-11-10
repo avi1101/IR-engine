@@ -350,17 +350,17 @@ namespace IR_engine
         /// </summary>
         /// <param name="input">cheked term</param>
         /// <returns></returns>
-        bool IsRegNumber(string input, int idx)
+        bool IsRegNumber(List<string> words, int idx)
         {
-            for (int i = 0; i < input.Length; i++)
+            for (int i = 0; i < words[idx].Length; i++)
             {
-                if (!Char.IsDigit(input[i]) && input[i] != ',' && input[i] != '.' && input[i] != '\\')
+                if (!Char.IsDigit(words[idx][i]) && words[idx][i] != ',' && words[idx][i] != '.' && words[idx][i] != '\\')
                     return false;
             }
-            if (pre_terms[idx + 1] == "$" || pre_terms[idx + 1] == "%" || pre_terms[idx + 1] == "percent" || pre_terms[idx + 1] == "percentage" || pre_terms[idx + 1] == "Dollars") { return false; }
-            if (pre_terms[idx + 1] == "Thousand" || pre_terms[idx + 1] == "thousand" || pre_terms[idx + 1] == "Million" || pre_terms[idx + 1] == "million" || pre_terms[idx + 1] == "Billion" || pre_terms[idx + 1] == "Trillion" || pre_terms[idx + 1] == "billion" || pre_terms[idx + 1] == "trillion")
+            if (words[idx + 1] == "$" || words[idx + 1] == "%" || words[idx + 1] == "percent" || words[idx + 1] == "percentage" || words[idx + 1] == "Dollars") { return false; }
+            if (words[idx + 1] == "Thousand" || words[idx + 1] == "thousand" || words[idx + 1] == "Million" || words[idx + 1] == "million" || words[idx + 1] == "Billion" || words[idx + 1] == "Trillion" || words[idx + 1] == "billion" || words[idx + 1] == "trillion")
             {
-                if (pre_terms[idx + 2] == "$" || pre_terms[idx + 2] == "%" || pre_terms[idx + 2] == "percent" || pre_terms[idx + 2] == "percentage" || pre_terms[idx + 2] == "Dollars") { return false; }
+                if (words[idx + 2] == "$" || words[idx + 2] == "%" || words[idx + 2] == "percent" || words[idx + 2] == "percentage" || words[idx + 2] == "Dollars") { return false; }
             }
             return true;
         }
@@ -374,15 +374,15 @@ namespace IR_engine
             }
             return true;
         }
-        int Isprecent(string input, int idx)
+        int Isprecent(List<string> words, int idx)
         {
-            if (IsComNum(input) && (pre_terms[idx + 1] == "%" || pre_terms[idx + 1] == "percent" ||
-                pre_terms[idx + 1] == "percentage" || pre_terms[idx + 1] == "percent" ||
-                pre_terms[idx + 1] == "percentage")) { return 1; }
-            if (IsComNum(input) && IsComNum(pre_terms[idx + 1]) &&
-                (pre_terms[idx + 2] == "%" || pre_terms[idx + 2] == "percent" ||
-                pre_terms[idx + 2] == "percentage" || pre_terms[idx + 2] == "percent" ||
-                pre_terms[idx + 2] == "percentage")) { return 2; }
+            if (IsComNum(words[idx]) && (words[idx + 1] == "%" || words[idx + 1] == "percent" ||
+                words[idx + 1] == "percentage" || words[idx + 1] == "percent" ||
+                words[idx + 1] == "percentage")) { return 1; }
+            if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) &&
+                (words[idx + 2] == "%" || words[idx + 2] == "percent" ||
+                words[idx + 2] == "percentage" || words[idx + 2] == "percent" ||
+                words[idx + 2] == "percentage")) { return 2; }
             return 0;
         }
         /// <summary>
@@ -526,5 +526,16 @@ namespace IR_engine
         string SetLetterType(int idx, List<string> words) { return null; }
         string Setprice(int idx, List<string> words) { return null; }
         string[] SetParExp(int idx, List<string> words) { return null; }
+        string Fixword(string word)
+        {
+            if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' || word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == '"' || word[word.Length - 1] == '>')
+            {
+                word = word.Remove(word.Length - 1);
+            }
+            //removes non-relative end characters from words
+            if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' || word[0] == '"' || word[0] == '<') { word = word.Remove(0, 1); }
+            return word;
+        }
     }
 }
+

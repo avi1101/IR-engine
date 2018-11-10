@@ -14,6 +14,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Threading;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+using System.IO;
 
 namespace IR_engine
 {
@@ -23,21 +26,12 @@ namespace IR_engine
     public partial class MainWindow : Window
     {
         private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
+        string path=null;
         public MainWindow()
         {
             InitializeComponent();
-            //Parse p = new Parse();
-            //string s = p.testToDate(10);
-            //test.Content = s;
-            Dictionary<string, term> h = new Dictionary<string, term>();
-            term a = new term("hello");
-            a.GlobalOccurances = 100;
-            term b = new term("hello");
-            term c = new term("lol");
-            h.Add(a.Phrase, a);
-            term t = h["hello"];
-            t.GlobalOccurances = 200;
-            test.Content = h["hello"].GlobalOccurances;
+            
+
         }
 
         /// <summary>
@@ -45,7 +39,7 @@ namespace IR_engine
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Run_MouseEnter(object sender, MouseEventArgs e)
+        private void Run_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             Run.Width = 110;
             Run.Height = 110;
@@ -57,7 +51,7 @@ namespace IR_engine
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Run_MouseLeave(object sender, MouseEventArgs e)
+        private void Run_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
             Run.Width = 100;
             Run.Height = 100;
@@ -65,9 +59,25 @@ namespace IR_engine
             Run.FontSize = 36;
         }
 
+        private void Browse_Click(object sender, RoutedEventArgs e)
+        {
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog()) { if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
+                    path = dialog.SelectedPath;
+                }
+            }
+        }
+
         private void Run_Click(object sender, RoutedEventArgs e)
         {
-            
+            if (path == null)
+            {
+                
+            }
+            else
+            {
+                Model m = new Model(path,false);
+            }
+
         }
 
         private void Browse_Click(object sender, RoutedEventArgs e)
