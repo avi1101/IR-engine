@@ -241,7 +241,7 @@ namespace IR_engine
                          * is a normal number that has to be formatted by the numbers rule
                          * we'll call the rule method here
                          */
-                        phrase = NumberSet(word, i, words);
+                        phrase = NumberSet(word, i, words, out j);
                     }
                 }
                 else
