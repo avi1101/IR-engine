@@ -35,7 +35,6 @@ namespace IR_engine
             if (index < allfilesSize)
                 return readfile(File.ReadAllText(allfiles[index++]));
             return null;
-
         }
         /// <summary>
         /// this function create an document type objects from the string file, and sends it to the parser
@@ -47,20 +46,25 @@ namespace IR_engine
             List<document> docslist = new List<document>();
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.None);
             foreach (string doc in docs)
+            {
+                string docNo = "";
+                string date = "";
+                string head = "";
+                string data = " ";
                 if (doc != "" && doc != "\n")
                 {
                     int st = doc.IndexOf("<DOCNO>");
                     int end = doc.IndexOf("</DOCNO");
-                    string docNo = doc.Substring(st + 7, (end - st) - 8).Trim();
+                    if (st != -1 || end != -1) { docNo = doc.Substring(st + 7, (end - st) - 8).Trim(); }
                     st = doc.IndexOf("<DATE1>");
                     end = doc.IndexOf("</DATE1>");
-                    string date = doc.Substring(st + 7, (end - st) - 8).Trim();
+                    if (st != -1 || end != -1) {  date = doc.Substring(st + 7, (end - st) - 8).Trim(); }
                     st = doc.IndexOf("<TI>");
                     end = doc.IndexOf("</TI>");
-                    string head = doc.Substring(st + 4, (end - st) - 4).Trim();
+                    if (st != -1 || end != -1) {  head = doc.Substring(st + 4, (end - st) - 4).Trim(); }
                     st = doc.IndexOf("<TEXT>");
                     end = doc.IndexOf("</TEXT>");
-                    string data = doc.Substring(st + 6, (end - st) - 7).Trim();
+                    if (st != -1 || end != -1) {  data = doc.Substring(st + 6, (end - st) - 7).Trim(); }
                     st = doc.IndexOf("<F P=104>");
                     if (st != -1)
                     {
@@ -72,7 +76,9 @@ namespace IR_engine
                     docslist.Add(d);
                     counter++;
                 }
-            return docslist;
+                return docslist;
+            }
+            return null;
         }
         public int returnSize()
         {

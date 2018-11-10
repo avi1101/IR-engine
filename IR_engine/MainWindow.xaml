@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Button x:Name="Browse" Content="Browse" HorizontalAlignment="Center" Margin="0,100,0,0" VerticalAlignment="Top" Width="203" Height="63" FontFamily="Showcard Gothic" FontSize="36" Background="White" Foreground="#FF009FFF" BorderBrush="#FF5F5F5F">
+        <Button x:Name="Browse" Content="Browse" HorizontalAlignment="Center" Margin="0,100,0,0" VerticalAlignment="Top" Width="203" Height="63" FontFamily="Showcard Gothic" FontSize="36" Background="White" Foreground="#FF009FFF" BorderBrush="#FF5F5F5F" Click="Browse_Click">
             <Button.Effect>
                 <DropShadowEffect/>
             </Button.Effect>
@@ -53,5 +53,5 @@
         <Image x:Name="image" Source="barvaz.JPG" HorizontalAlignment="Left" Height="145" Margin="10,10,0,0" VerticalAlignment="Top" Width="169"/>
         <Label x:Name="test" Content="" HorizontalAlignment="Left" Margin="10,180,0,0" VerticalAlignment="Top" Height="230" Width="284"/>
 
-    </Grid>
+  </Grid>
 </Window>
