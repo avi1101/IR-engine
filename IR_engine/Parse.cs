@@ -93,6 +93,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace IR_engine
@@ -369,21 +370,17 @@ namespace IR_engine
         {
             for (int i = 0; i < input.Length; i++)
             {
-                if (!Char.IsDigit(input[i]) && input[i] != ',' && input[i] != '.' && input[i] != '\\')
+                if (!Char.IsDigit(input[i]) && input[i] != '.' && input[i] != '/')
                     return false;
             }
             return true;
         }
-        int Isprecent(List<string> words, int idx)
+        string Isprecent(List<string> words, int idx,out int j)
         {
-            if (IsComNum(words[idx]) && (words[idx + 1] == "%" || words[idx + 1] == "percent" ||
-                words[idx + 1] == "percentage" || words[idx + 1] == "percent" ||
-                words[idx + 1] == "percentage")) { return 1; }
-            if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) &&
-                (words[idx + 2] == "%" || words[idx + 2] == "percent" ||
-                words[idx + 2] == "percentage" || words[idx + 2] == "percent" ||
-                words[idx + 2] == "percentage")) { return 2; }
-            return 0;
+            if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) && (words[idx + 2] == "%" || words[idx + 2] == "percent" ||words[idx + 2] == "percentage" || words[idx + 2] == "percent" ||words[idx + 2] == "percentage"))
+            { j = idx + 2; return words[idx] + " " + words[idx + 1] + "%"; }
+
+            else{ j = idx + 1;  return words[idx]+"%"; }
         }
         /// <summary>
         /// takes a existing term with numeric valueand edited it 
@@ -409,10 +406,10 @@ namespace IR_engine
                 if (option == 1) { dbl = dbl * 1000; }
                 if (option == 2) { dbl = dbl * 1000000; }
                 if (option == 3) { dbl = dbl * 1000000000; }
-                if (dbl >= 1000 && dbl < 1000000) { dbl = dbl / 1000 + (dbl % 1000) * (1 / 1000); return (dbl.ToString() + "K"); }
-                else if (dbl >= 1000000 && dbl < 1000000000) { dbl = dbl / 1000000 + (dbl % 1000000) * (1 / 1000000); return (dbl.ToString() + "M"); }
-                else if (dbl >= 1000000000) { dbl = dbl / 1000000000 + (dbl % 1000000000) * (1 / 1000000000); return (dbl.ToString() + "B"); }
-                else { return (dbl.ToString()); }
+                if (dbl >= 1000 && dbl < 1000000) { dbl = dbl / 1000 + (dbl % 1000) * (1 / 1000); j=idx+1; return (dbl.ToString() + "K"); }
+                else if (dbl >= 1000000 && dbl < 1000000000) { dbl = dbl / 1000000 + (dbl % 1000000) * (1 / 1000000); j = idx + 1; return (dbl.ToString() + "M"); }
+                else if (dbl >= 1000000000) { dbl = dbl / 1000000000 + (dbl % 1000000000) * (1 / 1000000000); j = idx + 1; return (dbl.ToString() + "B"); }
+                else { j = idx; return (dbl.ToString()); }
             }
             int nt;
             if (int.TryParse(input, out nt))
@@ -420,10 +417,10 @@ namespace IR_engine
                 if (option == 1) { nt = nt * 1000; }
                 if (option == 2) { nt = nt * 1000000; }
                 if (option == 3) { nt = nt * 1000000000; }
-                if (nt >= 1000 && nt < 1000000) { nt = nt / 1000 + (nt % 1000) * (1 / 1000); return (nt.ToString() + "K"); }
-                else if (nt >= 1000000 && nt < 1000000000) { nt = nt / 1000000 + (nt % 1000000) * (1 / 1000000); return (nt.ToString() + "M"); }
-                else if (nt >= 1000000000) { nt = nt / 1000000000 + (nt % 1000000000) * (1 / 1000000000); return (nt.ToString() + "B"); }
-                else { return (nt.ToString()); }
+                if (nt >= 1000 && nt < 1000000) { nt = nt / 1000 + (nt % 1000) * (1 / 1000); j = idx + 1; return (nt.ToString() + "K"); }
+                else if (nt >= 1000000 && nt < 1000000000) { nt = nt / 1000000 + (nt % 1000000) * (1 / 1000000); j = idx + 1; return (nt.ToString() + "M"); }
+                else if (nt >= 1000000000) { nt = nt / 1000000000 + (nt % 1000000000) * (1 / 1000000000); j = idx + 1; return (nt.ToString() + "B"); }
+                else { j = idx ; return (nt.ToString()); }
             }
             long lng;
             if (long.TryParse(input, out lng))
@@ -431,70 +428,26 @@ namespace IR_engine
                 if (option == 1) { lng = lng * 1000; }
                 if (option == 2) { lng = lng * 1000000; }
                 if (option == 3) { lng = lng * 1000000000; }
-                if (lng >= 1000 && lng < 1000000) { lng = lng / 1000 + (lng % 1000) * (1 / 1000); return (lng.ToString() + "K"); }
-                else if (lng >= 1000000 && lng < 1000000000) { lng = lng / 1000000 + (lng % 1000000) * (1 / 1000000); return (lng.ToString() + "M"); }
-                else if (lng >= 1000000000) { lng = lng / 1000000000 + (lng % 1000000000) * (1 / 1000000000); return (lng.ToString() + "B"); }
-                else { return (lng.ToString()); }
+                if (lng >= 1000 && lng < 1000000) { lng = lng / 1000 + (lng % 1000) * (1 / 1000); j = idx + 1; return (lng.ToString() + "K"); }
+                else if (lng >= 1000000 && lng < 1000000000) { lng = lng / 1000000 + (lng % 1000000) * (1 / 1000000); j = idx + 1; return (lng.ToString() + "M"); }
+                else if (lng >= 1000000000) { lng = lng / 1000000000 + (lng % 1000000000) * (1 / 1000000000); j = idx + 1; return (lng.ToString() + "B"); }
+                else { j = idx; return (lng.ToString()); }
             }
             decimal dec;
             if (decimal.TryParse(input, out dec))
             {
-                if (option == 1)
-                {
-                    dec = dec * 1000;
-                }
-
-                if (option == 2)
-                {
-                    dec = dec * 1000000;
-                }
-
-                if (option == 3)
-                {
-                    dec = dec * 1000000000;
-                }
-
-                if (dec >= 1000 && dec < 1000000)
-                {
-                    dec = dec / 1000 + (dec % 1000) * (1 / 1000);
-                    return (dec.ToString() + "K");
-                }
-                else if (lng >= 1000000 && lng < 1000000000)
-                {
-                    dec = dec / 1000000 + (dec % 1000000) * (1 / 1000000);
-                    return (dec.ToString() + "M");
-                }
-                else if (dec >= 1000000000)
-                {
-                    dec = dec / 1000000000 + (dec % 1000000000) * (1 / 1000000000);
-                    return (dec.ToString() + "B");
-                }
-                else
-                {
-                    return (dec.ToString());
-                }
-            }
-            else
-            {
-                if (option == 1)
-                {
-                    return input + "K";
-                }
-
-                if (option == 2)
-                {
-                    return input + "M";
-                }
-
-                if (option == 3)
-                {
-                    return input + "B";
-                }
-                else
-                {
-                    return input;
-                }
-            }
+                if (option == 1) {dec = dec * 1000; }
+                if (option == 2) { dec = dec * 1000000; }  
+                if (option == 3) { dec = dec * 1000000000; }
+                if (dec >= 1000 && dec < 1000000) {dec = dec / 1000 + (dec % 1000) * (1 / 1000); j = idx + 1; return (dec.ToString() + "K");}
+                else if (lng >= 1000000 && lng < 1000000000) { dec = dec / 1000000 + (dec % 1000000) * (1 / 1000000); j = idx + 1; return (dec.ToString() + "M"); }
+                else if (dec >= 1000000000){dec = dec / 1000000000 + (dec % 1000000000) * (1 / 1000000000); j = idx + 1; return (dec.ToString() + "B");}
+                else { j = idx; return (dec.ToString()); } }
+            else{
+                if (option == 1) { j = idx + 1; return input + "K";}
+                if (option == 2) { j = idx + 1; return input + "M"; }
+                if (option == 3) { j = idx + 1; return input + "B";}
+                else { j = idx ; return input;} }
 
         }
 
@@ -566,8 +519,117 @@ namespace IR_engine
             return sol;
         }
         string SetLetterType(int idx, List<string> words) { return null; }
-        string Setprice(int idx, List<string> words, out int j) { return null; }
-        string[] SetParExp(int idx, List<string> words, out int j) { return null; }
+        string Setprice(int idx, List<string> words, out int j) {
+            string val = "";
+            if (words[idx][0] == '$' && IsComNum(words[idx].Remove(0, 1)))
+            {
+                string numOnly = words[idx].Remove(0, 1);
+                if (numOnly.Contains("."))
+                {
+                    /*
+                     * the word looks like $6.5 Million or $6.5
+                     */
+                    string lvl = words[idx + 1].ToUpper();
+                    double amount = Double.Parse(numOnly);
+                    if (amount > 1000000) { amount = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
+                    else if (lvl == "M" || lvl == "MILLION") { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx+1; }
+                    else if (lvl == "BILLION" || lvl == "BN") { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                    else if (lvl == "TRILLION") { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx+1; }
+                    else { val = amount.ToString("#,##0.##"); j = idx; }
+                    val = val + " Dollars";
+                    return val;}
+                else
+                {
+                    /*
+                     * the word looks like $78 Billion or $78
+                     */
+                    string lvl = words[idx + 1].ToUpper();
+                    int amount = int.Parse(numOnly);
+                    if (amount > 1000000) { double amount2 = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
+                    else if (lvl == "M" || lvl == "MILLION") { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                    else if (lvl == "BILLION" || lvl == "BN") { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                    else if (lvl == "TRILLION") { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                    else { val = amount.ToString("#,##0.##"); j = idx; }
+                    val = val + " Dollars";
+
+                    return val;
+                }
+            }
+            else {
+                /*
+                 * the word looks like 45 4/5 dollars
+                 */
+                if(IsComNum(words[idx+1]) && words[idx + 1].Contains("/")){
+                    val = words[idx] + " " + words[idx + 1] + " Dollars";
+                    j = idx + 2;
+                    return val;
+                }
+                /*
+                 * the word looks like 45 Dollars or 45 M dollars or 45 M U.S. dollars
+                 */
+                else
+                {
+                    string lvl = words[idx + 1].ToUpper();
+                    if(lvl=="M" || lvl == "MILLION")
+                    {
+                        val = words[idx] + " M " + "Dollars";
+                        if(words[idx+2]=="US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
+                        {j = idx + 3;}j = idx + 2;
+                        return val;
+                    }
+                    else if (lvl == "BILLION" || lvl == "BN")
+                    {
+                        if (words[idx].Contains("."))
+                        {
+                            double value = double.Parse(words[idx]);
+                            value = value * 1000;
+                            val = value + " M " + "Dollars";
+                            if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
+                            { j = idx + 3; }
+                            j = idx + 2;
+                            return val;
+                        }
+                        else
+                        {
+                            int value = int.Parse(words[idx]);
+                            value = value * 1000;
+                            val = value + " M " + "Dollars";
+                            if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
+                            { j = idx + 3; }
+                            j = idx + 2;
+                            return val;
+
+                        }
+                    }
+                    else if (lvl == "TRILLION" || lvl == "BN")
+                    {
+                            if (words[idx].Contains("."))
+                            {
+                                double value = double.Parse(words[idx]);
+                                value = value * 1000*1000;
+                                val = value + " M " + "Dollars";
+                                if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
+                                { j = idx + 3; }
+                                j = idx + 2;
+                                return val;
+                            }
+                            else
+                            {
+                                int value = int.Parse(words[idx]);
+                                value = value * 1000*1000;
+                                val = value + " M " + "Dollars";
+                                if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
+                                { j = idx + 3; }
+                                j = idx + 2;
+                                return val;
+          
+                            }   
+                    }
+                    else { val = words[idx] + " Dollars";j = idx + 1;return val; }
+                }
+                
+            } }
+        string[] SetParExp(int idx, List<string> words, out int j) { j = idx;  return null; }
         string Fixword(string word)
         {
             word = word.Replace(" ", "");
@@ -584,11 +646,14 @@ namespace IR_engine
                     word = word.Remove(word.Length - 1);
                 }
 
-                //removes non-relative end characters from words
-                if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' ||
-                    word[0] == '"' || word[0] == '<')
+                if (word != "" && word != "\n" && word[0] != '<')
                 {
-                    word = word.Remove(0, 1);
+                    //removes non-relative end characters from words
+                    if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' ||
+                        word[0] == '"' || word[0] == '<')
+                    {
+                        word = word.Remove(0, 1);
+                    }
                 }
             }
 
@@ -599,6 +664,6 @@ namespace IR_engine
 
             return null;
         }
+        
     }
 }
-
