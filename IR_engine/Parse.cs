@@ -567,7 +567,6 @@ namespace IR_engine
         }
         string SetLetterType(int idx, List<string> words) { return null; }
         string Setprice(int idx, List<string> words, out int j) { return null; }
-        string[] SetParExp(int idx, List<string> words, out int j) { return null; }
         string Fixword(string word)
         {
             word = word.Replace(" ", "");
