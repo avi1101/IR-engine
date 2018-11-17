@@ -105,11 +105,12 @@ namespace IR_engine
         private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
 
         List<string> pre_terms;
-        Dictionary<string, term> terms;
+        public static Dictionary<string, term> terms = new Dictionary<string, term>();
         HashSet<string> stopwords;
         Stemmer stem;
         bool toStem;
         string path;
+        string DocName;
 
         /// <summary>
         /// this is the constructor for the Parser class
@@ -121,7 +122,6 @@ namespace IR_engine
             this.path = path;
             toStem = tostem;
             stopwords = new HashSet<string>();
-            terms = new Dictionary<string, term>();
             stem = new Stemmer();
             if (!File.Exists(path + "\\postingList.txt"))
                 File.CreateText(path + "\\postingList.txt");
@@ -142,6 +142,7 @@ namespace IR_engine
             string tmp_txt = document.Doc;
             string[] text = tmp_txt.Split(' ');
             pre_terms = text.ToList();
+            this.DocName = document.DocID;
             parseText(pre_terms, toStem, document.DocID);
         }
         private bool IsNumber(string str)
@@ -178,25 +179,7 @@ namespace IR_engine
                      * checked for no first minus '-' to eliminate negative numbers
                      * in this case, we found a range\expression, we'll deal with this here by splitting it and save the terms
                      */
-                    string[] splittedExpression = word.Split('-');
-                    string exp = "";
-                    int part = 0;
-                    for(part = 0; part < word.Length; part++)
-                    {
-                        //TODO: complete last rule here
-                        exp = splittedExpression[part];
-                        if (ToStem && !containsNumbers(exp))
-                            exp = stem.stemTerm(exp);
-                        t = new term(exp);
-                        if (terms.ContainsKey(exp))
-                            t = terms[exp];
-                        else
-                            terms.Add(exp, t);
-                        t.AddToCount(DocName);
-                        if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
-                    }
-                    i = part;
-                    phrase = word;
+                    phrase = SetExp(i, words, out j);
                 }
                 else if(word[0] == '\"')
                 {
@@ -204,6 +187,7 @@ namespace IR_engine
                      * our own rule, in case of an expression that start and end with ""
                      * we need to save it as according to the expression rules
                      */
+                    phrase = SetQuotationExp(i, words, out j);
                 }
                 else if (containsNumbers(word))
                 {
@@ -220,6 +204,7 @@ namespace IR_engine
                          * time to call the correct rule method
                          * it will return the string phrase we will use to create the term
                          */
+                        phrase = Setprice(i, words, out j);
                     }
                     else if (isPercentage(words, i))
                     {
@@ -227,6 +212,7 @@ namespace IR_engine
                          * the number is a percentage format
                          * time to call the correct rule method
                          */
+                        phrase = Isprecent(words, i, out j);
                     }
                     else if(isDate(words, i))
                     {
@@ -234,6 +220,7 @@ namespace IR_engine
                          * the number is in date format
                          */
                         phrase = ToDate(words[i], words[i + 1]);
+                        j++;
                     }
                     else
                     {
@@ -254,7 +241,11 @@ namespace IR_engine
                      * 2- its a regular word with no rule to apply
                      */
                     if (isDate(words, i))
+                    {
                         phrase = ToDate(words[i], words[i + 1]);
+                        if(phrase.Equals(""))
+                            phrase = toStem ? stem.stemTerm(word) : word;
+                    }
                     else
                         phrase = toStem ? stem.stemTerm(word) : word;
                 }
@@ -290,7 +281,26 @@ namespace IR_engine
         {
             return false;
         }
-
+        /// <summary>
+        /// checks if the enum contains a month equal to the given date is any possible occurance
+        /// </summary>
+        /// <param name="date">the string that holds the month</param>
+        /// <returns>true is contains, false otherwise</returns>
+        private bool EnumContains(string date)
+        {
+            date = date.ToLower();
+            foreach(months m in Enum.GetValues(typeof(months)))
+            {
+                string m2 = m.ToString();
+                string mon = m2.Substring(0, 3);
+                //checks all possible combinations
+                if (date.Equals(m2) || date.Equals(mon))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         /// <summary>
         /// this method checks if a given word in the words list is a start of a percent format
         /// </summary>
@@ -469,12 +479,13 @@ namespace IR_engine
             }
             else                                                                //if the number is the second term
             {
+                if (!IsNumber(secondTerm)) return "";                           //some month shortcuts can be a word like 'may'. this will tell us it is it
                 month = firstTerm;
                 number = secondTerm;
             }
             int value = int.Parse(number);                                      //get the numeric value of the year/day
             month = month.ToLower();                                            //easier to only check lower case strings
-            foreach (months m in Enum.GetValues(typeof(months)))                 //iterate to find out which month it is
+            foreach (months m in Enum.GetValues(typeof(months)))                //iterate to find out which month it is
             {
                 string m2 = m.ToString();
                 string mon = m2.Substring(0, 3);
@@ -629,7 +640,89 @@ namespace IR_engine
                 }
                 
             } }
-        string[] SetParExp(int idx, List<string> words, out int j) { j = idx;  return null; }
+        string SetExp(int idx, List<string> words, out int j)
+        {
+            string word = words[idx];
+            string[] splittedExpression = word.Split('-');
+            string exp = "";
+            int part = 0;
+            List<string> expression = new List<string>();
+                                                                                        //if its a range then we need to seperate it to both ends and format it with correct rule
+            if(splittedExpression.Length == 2 && IsNumber(splittedExpression[0]) && IsNumber(splittedExpression[1]))
+            {                                                                                   //for example 6-7 (expression)
+                term right, left;
+                if(EnumContains(words[idx+1]))
+                {
+                    left = new term(splittedExpression[0]+" "+ words[idx + 1].ToLower());       //term phrase = "6 may"
+                    right = new term(splittedExpression[1] + " " + words[idx + 1].ToLower());   //term phrase = "7 may"
+                }
+                else if(isPercentage(words, idx))
+                {
+                    left = new term(splittedExpression[0] + "%");                               //term phrase = "6%"
+                    right = new term(splittedExpression[1] + "%");                              //term phrase = "7%"
+                }
+                else if(isPrice(words, idx))
+                {
+                    words[idx] = splittedExpression[0];
+                    left = new term(Setprice(idx, words, out part));                            //term phrase = "6 million dollars"
+                    words[idx] = splittedExpression[1];
+                    right = new term(Setprice(idx, words, out part));                           //term phrase = "7 million dollars"
+                }
+                else
+                {
+                    left = new term(splittedExpression[0]);                                     //normal range
+                    right = new term(splittedExpression[1]);
+                }
+                AddTerm(left);
+                AddTerm(right);
+                j = part;
+                return word;
+            }
+            for (part = 0; part < splittedExpression.Length; part++)                    //when we meet an expression we need to format it is an expression
+            {
+                exp = splittedExpression[part];                                         //taking the i word of the expression
+                if (toStem)                                                             //stem if needed
+                    exp = stem.stemTerm(exp);
+                term t = new term(exp);
+                AddTerm(t);                                                             //adding a new term or updating an existing term
+            }
+            j = part;                                                                   //returns the index
+            return word;                                                                //returns the whole expression
+        }
+        string SetQuotationExp(int idx, List<string> words, out int j)
+        {
+            // TODO: remove this line after debug
+            Console.WriteLine("Pasring an expression at doc: " + DocName + " starting at: " + words[idx]);
+
+            string exp = "";
+            bool expEnd = false;                                                        //will check if the end word has been reached 
+            List<string> newWords = new List<string>();
+            int i = idx;
+            for (; i < words.Count && !expEnd; i++)
+            {
+                string word = words[idx];
+                if (word[word.Length - 1] == '\"') expEnd = true;                       //check if the last word has been reached
+                if (word[0] == '\"' || word[word.Length - 1] == '\"')
+                    word = Fixword(word);                                               //removes any unwanted sign from the word
+                if(expEnd || i == words.Count-1) exp += word;                           //end word is added without a space
+                else exp += word + " ";
+                if (toStem)
+                    word = stem.stemTerm(word);
+                newWords.Add(word);                                                     //adding to word to the new list
+                //term t = new term(word);                                                //creating a new term our of the word
+                //if (terms.ContainsKey(word))                                            //checks if the term already exist
+                //    t = terms[word];
+                //else
+                //    terms.Add(word, t);
+                //bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;
+                //t.AddToCount(DocName);                                                  //add the document to the term postng list
+                //if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
+            }
+            parseText(newWords, toStem, DocName);                                       //will parse the new list in case for double rule
+            j = i-1;
+            return exp;
+
+        }
         string Fixword(string word)
         {
             word = word.Replace(" ", "");
@@ -664,6 +757,15 @@ namespace IR_engine
 
             return null;
         }
-        
+        private void AddTerm(term t)
+        {
+            if (terms.ContainsKey(t.Phrase))
+                t = terms[t.Phrase];
+            else
+                terms.Add(t.Phrase, t);
+            bool isUpperFirstLetter = t.Phrase[0] >= 'A' && t.Phrase[0] <= 'Z' ? true : false;
+            t.AddToCount(DocName);
+            if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
+        }
     }
 }

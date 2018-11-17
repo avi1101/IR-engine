@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace IR_engine
 {
-     class term
+     public class term
     {
         public static int postingFileLine = 0; //global variable to assign pointers
 
