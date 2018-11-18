@@ -29,7 +29,7 @@ namespace IR_engine
 
             foreach(KeyValuePair<string, term> entery in list) {
                 TextBox t = new TextBox();
-                t.Text = entery.Value.Phrase + " " + entery.Value.printPosting();
+                t.Text = entery.Value.Phrase + " ";/* + entery.Value.printPosting();*/
                 t.FontSize = 14;
                 stack.Children.Add(t);
                 

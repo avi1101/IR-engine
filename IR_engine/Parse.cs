@@ -272,7 +272,7 @@ namespace IR_engine
                 }
                 t.AddToCount(DocName);
                 if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
-                Console.WriteLine(word);
+                //Console.WriteLine(word);
             }
 
             /*
@@ -551,27 +551,46 @@ namespace IR_engine
                     /*
                      * the word looks like $6.5 Million or $6.5
                      */
-                    string lvl = words[idx + 1].ToUpper();
+
                     double amount = Double.Parse(numOnly);
                     if (amount > 1000000) { amount = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
-                    else if (lvl == "M" || lvl == "MILLION") { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx+1; }
-                    else if (lvl == "BILLION" || lvl == "BN") { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
-                    else if (lvl == "TRILLION") { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx+1; }
-                    else { val = amount.ToString("#,##0.##"); j = idx; }
-                    val = val + " Dollars";
-                    return val;}
+                    else
+                    {
+                        if (idx + 1 == words.Count && words[idx][0] == '$')
+                        {
+                            j = idx;
+                            val = words[idx].Remove(0, 1);
+                            return val + " Dollars";
+                        }
+                        string lvl = words[idx + 1].ToUpper();
+                        if (lvl == "M" || lvl == "MILLION") { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                        else if (lvl == "BILLION" || lvl == "BN") { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                        else if (lvl == "TRILLION") { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                        else { val = amount.ToString("#,##0.##"); j = idx; }
+                    }
+                        val = val + " Dollars";
+                        return val; }
+                
                 else
                 {
                     /*
                      * the word looks like $78 Billion or $78
                      */
-                    string lvl = words[idx + 1].ToUpper();
+                    
                     int amount = int.Parse(numOnly);
                     if (amount > 1000000) { double amount2 = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
-                    else if (lvl == "M" || lvl == "MILLION") { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
-                    else if (lvl == "BILLION" || lvl == "BN") { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
-                    else if (lvl == "TRILLION") { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
-                    else { val = amount.ToString("#,##0.##"); j = idx; }
+                    else {
+                        if (idx + 1 == words.Count && words[idx][0] == '$')
+                        {
+                            j = idx;
+                            val = words[idx].Remove(0, 1);
+                            return val + " Dollars";
+                        }
+                        string lvl = words[idx + 1].ToUpper();
+                        if (lvl == "M" || lvl == "MILLION") { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                         else if (lvl == "BILLION" || lvl == "BN") { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                        else if (lvl == "TRILLION") { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                         else { val = amount.ToString("#,##0.##"); j = idx; } }
                     val = val + " Dollars";
 
                     return val;
@@ -613,6 +632,7 @@ namespace IR_engine
                         }
                         else
                         {
+                            string w = words[idx];
                             int value = int.Parse(words[idx]);
                             value = value * 1000;
                             val = value + " M " + "Dollars";
@@ -704,7 +724,7 @@ namespace IR_engine
         string SetQuotationExp(int idx, List<string> words, out int j)
         {
             // TODO: remove this line after debug
-            Console.WriteLine("Pasring an expression at doc: " + DocName + " starting at: " + words[idx]);
+            //Console.WriteLine("Pasring an expression at doc: " + DocName + " starting at: " + words[idx]);
             if (words[idx].Equals("\"Weekly"))
                 j = idx;
             string exp = "";
@@ -754,7 +774,7 @@ namespace IR_engine
 
                     if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' ||
                         word[word.Length - 1] == ')' || word[word.Length - 1] == '}' ||
-                        word[word.Length - 1] == '>' || word[word.Length - 1] == '-')
+                        word[word.Length - 1] == '>' || word[word.Length - 1] == '-' || word[word.Length - 1] == ']' || word[word.Length - 1] == ';')
                     {
                         done = false;
                         word = word.Remove(word.Length - 1);
@@ -764,7 +784,7 @@ namespace IR_engine
                     {
                         //removes non-relative end characters from words
                         if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' ||
-                           word[0] == '<')
+                           word[0] == '<' || word[0] == '[' || word[0] == '?')
                         {
                             done = false;
                             word = word.Remove(0, 1);
