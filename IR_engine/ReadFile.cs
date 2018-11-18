@@ -26,6 +26,7 @@ namespace IR_engine
             string[] tmp = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
             allfiles = tmp.ToList();
             allfiles.Remove(path + "\\stop_words.txt");
+            //TODO: remove also posting list files and index file
             allfilesSize = tmp.Length;
         }
         /// <summary>

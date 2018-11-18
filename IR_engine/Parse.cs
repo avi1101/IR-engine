@@ -162,7 +162,9 @@ namespace IR_engine
                 string phrase = "";
                 int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
                 string word = words[j];
-                if (word.Length > 0 && word[word.Length] == '\n') word = word.TrimEnd('\n');            //remove \n from the end of a word
+                word = Fixword(word);
+                if (word == null || stopwords.Contains(word.ToLower())) continue;
+                if (word.Length > 0 && word[word.Length-1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
                 if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
                 bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
                 //checking for rule
@@ -681,6 +683,7 @@ namespace IR_engine
             for (part = 0; part < splittedExpression.Length; part++)                    //when we meet an expression we need to format it is an expression
             {
                 exp = splittedExpression[part];                                         //taking the i word of the expression
+                if (exp.Equals("")) continue;
                 if (toStem)                                                             //stem if needed
                     exp = stem.stemTerm(exp);
                 term t = new term(exp);
@@ -734,7 +737,7 @@ namespace IR_engine
 
                 if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' ||
                     word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == '"' ||
-                    word[word.Length - 1] == '>')
+                    word[word.Length - 1] == '>' || word[word.Length - 1] == '-')
                 {
                     word = word.Remove(word.Length - 1);
                 }
@@ -767,5 +770,6 @@ namespace IR_engine
             t.AddToCount(DocName);
             if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
         }
+
     }
 }

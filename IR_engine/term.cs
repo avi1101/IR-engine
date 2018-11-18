@@ -11,6 +11,7 @@ namespace IR_engine
         public static int postingFileLine = 0; //global variable to assign pointers
 
         int pointer;   // pointer to the line in the posting list file
+        string postingFile;// pointer to the posting list file
         string phrase; // the phrase itself
         int numOfDocs; // the number of docs this term is in
 
@@ -31,6 +32,7 @@ namespace IR_engine
 
         public term()
         {
+            postingFile = "";
             IsUpperInCurpus = true;
             postingList = new List<string>();
             numOfDocs = globalOccurances = 0;
@@ -44,6 +46,7 @@ namespace IR_engine
             IsUpperInCurpus = true;
             postingList = new List<string>();
             numOfDocs = globalOccurances = 0;
+            currectDoc = "";
         }
 
         public string Phrase
@@ -60,6 +63,7 @@ namespace IR_engine
         public int GlobalOccurances { get => globalOccurances; set => globalOccurances = value; }
         public bool IsUpperInCurpus { get => isUpperInCurpus; set => isUpperInCurpus = value; }
         public int Pointer { get => pointer; set => pointer = value; }
+        public string PostingFile { get => postingFile; set => postingFile = value; }
 
         /// <summary>
         /// this method check equality between this object and a given object
