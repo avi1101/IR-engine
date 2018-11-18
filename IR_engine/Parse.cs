@@ -740,7 +740,7 @@ namespace IR_engine
                 {
 
                     if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' ||
-                        word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == '' ||
+                        word[word.Length - 1] == ')' || word[word.Length - 1] == '}' ||
                         word[word.Length - 1] == '>' || word[word.Length - 1] == '-')
                     {
                         done = false;
@@ -751,7 +751,7 @@ namespace IR_engine
                     {
                         //removes non-relative end characters from words
                         if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' ||
-                            word[0] == '' || word[0] == '<')
+                           word[0] == '<')
                         {
                             done = false;
                             word = word.Remove(0, 1);
