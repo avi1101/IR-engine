@@ -732,27 +732,33 @@ namespace IR_engine
             word = word.Replace(":", "");
             word = word.Replace("\n", "");
             word = word.Replace(",", "");
-            if (word != "" && word != "\n" && word[0] != '<')
+            bool done = false;
+            while (!done)
             {
-
-                if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' ||
-                    word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == '"' ||
-                    word[word.Length - 1] == '>' || word[word.Length - 1] == '-')
-                {
-                    word = word.Remove(word.Length - 1);
-                }
-
+                done = true;
                 if (word != "" && word != "\n" && word[0] != '<')
                 {
-                    //removes non-relative end characters from words
-                    if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' ||
-                        word[0] == '"' || word[0] == '<')
+
+                    if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' ||
+                        word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == '"' ||
+                        word[word.Length - 1] == '>' || word[word.Length - 1] == '-')
                     {
-                        word = word.Remove(0, 1);
+                        done = false;
+                        word = word.Remove(word.Length - 1);
+                    }
+
+                    if (word != "" && word != "\n" && word[0] != '<')
+                    {
+                        //removes non-relative end characters from words
+                        if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' ||
+                            word[0] == '"' || word[0] == '<')
+                        {
+                            done = false;
+                            word = word.Remove(0, 1);
+                        }
                     }
                 }
             }
-
             if (word != "")
             {
                 return word;
