@@ -27,6 +27,7 @@ namespace IR_engine
     {
         private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
         string path=null;
+        Model m;
         public MainWindow()
         {
             InitializeComponent();
@@ -76,7 +77,7 @@ namespace IR_engine
             }
             if (!path.Equals(""))
             {
-                Model m = new Model(path, false);
+                m = new Model(path, false);
                 m.index();
             }
             else
@@ -87,10 +88,12 @@ namespace IR_engine
         private void showDic_Click(object sender, RoutedEventArgs e)
         {
             Window dictionary;
-            if (path == null || path.Equals("") || !File.Exists(path+ "\\index_elad_avi.txt"))
-                dictionary = new DictionaryList(null);
-            else
-                dictionary = new DictionaryList(null);
+            //if (path == null || path.Equals("") || !File.Exists(path+ "\\index_elad_avi.txt"))
+            //    dictionary = new DictionaryList(null);
+            //else
+            //    dictionary = new DictionaryList(null);
+            Dictionary<string, term> index = m.getDictionary();
+            dictionary = new DictionaryList(index);
             dictionary.Show();
         }
     }

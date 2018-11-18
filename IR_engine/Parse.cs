@@ -175,6 +175,8 @@ namespace IR_engine
                 * for my first step is to determind if the first is a term with '-' or any other since its special
                 * than I will check if word contains a number what so ever
                 */
+                if (word.Equals("Fr14.6"))
+                    j = i;
                 if(word.Contains('-') && word[0] != '-')
                 {
                     /* 
@@ -231,7 +233,7 @@ namespace IR_engine
                          * is a normal number that has to be formatted by the numbers rule
                          * we'll call the rule method here
                          */
-                        phrase = NumberSet(word, i, words, out j);
+                         phrase = NumberSet(word, i, words, out j);
                     }
                 }
                 else
@@ -314,6 +316,7 @@ namespace IR_engine
         {
             int size = words[idx].Length - 1;
             if (words[idx][size] == '%') return true;
+            if (idx + 1 == words.Count) return false;
             string word = words[idx + 1].ToLower();
             if (word.Equals("percent") || word.Equals("percentage")) return true;
             return false;
@@ -328,22 +331,26 @@ namespace IR_engine
         private bool isPrice(List<string> words, int idx)
         {
             string word = "";
-
+            if (words[idx][0] == '$') return true;
+            if (idx + 1 == words.Count) return false;
             word = words[idx + 1].ToUpper();
-            if (words[idx][0] == '$' || word.Equals("DOLLARS")) return true;
+            if (word.Equals("DOLLARS")) return true;
             if ((word.Equals("M") || word.Equals("BN")) &&
                 (words[idx + 2].Equals("DOLLARS") || words[idx + 2].Equals("dollars") || words[idx + 2].Equals("Dollars")))
                 return true;
             //checking for million billion trillion after the price number
-            if (word.Equals("MILLION") || word.Equals("BILLION") || word.Equals("TRILLION")) return true;
+            if (words[idx][0] == '$' && (word.Equals("MILLION") || word.Equals("BILLION") || word.Equals("TRILLION"))) return true;
             return false;
         }
 
         private bool containsNumbers(string s)
         {
+            //for (int i = 0; i < s.Length; i++)
+            //    if (s[i] <= '9' && s[i] >= '0') return true;
+            //return false;
             for (int i = 0; i < s.Length; i++)
-                if (s[i] <= '9' && s[i] >= '0') return true;
-            return false;
+                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-') return false;
+            return true;
         }
         /// <summary>
         /// checks if the word is all made of upper case letter
@@ -410,9 +417,10 @@ namespace IR_engine
             {
                 input = input.Replace(c, string.Empty);
             }
-            if (words[idx + 1] == "Thousand" || words[idx + 1] == "thousand") { option = 1; }
-            if (words[idx + 1] == "Million" || words[idx + 1] == "million") { option = 2; }
-            if (words[idx + 1] == "Billion" || words[idx + 1] == "Trillion" || words[idx + 1] == "billion" || words[idx + 1] == "trillion") { option = 3; }
+            if (idx + 1 == words.Count) { option = 0; }
+            else if (words[idx + 1] == "Thousand" || words[idx + 1] == "thousand") { option = 1; }
+            else if (words[idx + 1] == "Million" || words[idx + 1] == "million") { option = 2; }
+            else if (words[idx + 1] == "Billion" || words[idx + 1] == "Trillion" || words[idx + 1] == "billion" || words[idx + 1] == "trillion") { option = 3; }
             double dbl;
             if (double.TryParse(input, out dbl))
             {
@@ -471,7 +479,7 @@ namespace IR_engine
         /// <param name="secondTerm">second token of the date</param>
         /// <returns></returns>
         string ToDate(string firstTerm, string secondTerm)
-        {
+        {// TODO: change the method to support beckward term checking
             string month = "";
             string number = "";
             string sol = "";
@@ -654,7 +662,7 @@ namespace IR_engine
             if(splittedExpression.Length == 2 && IsNumber(splittedExpression[0]) && IsNumber(splittedExpression[1]))
             {                                                                                   //for example 6-7 (expression)
                 term right, left;
-                if(EnumContains(words[idx+1]))
+                if(idx+1 < words.Count && EnumContains(words[idx+1]))
                 {
                     left = new term(splittedExpression[0]+" "+ words[idx + 1].ToLower());       //term phrase = "6 may"
                     right = new term(splittedExpression[1] + " " + words[idx + 1].ToLower());   //term phrase = "7 may"
@@ -697,18 +705,22 @@ namespace IR_engine
         {
             // TODO: remove this line after debug
             Console.WriteLine("Pasring an expression at doc: " + DocName + " starting at: " + words[idx]);
-
+            if (words[idx].Equals("\"Weekly"))
+                j = idx;
             string exp = "";
             bool expEnd = false;                                                        //will check if the end word has been reached 
             List<string> newWords = new List<string>();
             int i = idx;
             for (; i < words.Count && !expEnd; i++)
             {
-                string word = words[idx];
+                string word = words[i];
+                if (word.Equals("")) continue;
                 if (word[word.Length - 1] == '\"') expEnd = true;                       //check if the last word has been reached
                 if (word[0] == '\"' || word[word.Length - 1] == '\"')
-                    word = Fixword(word);                                               //removes any unwanted sign from the word
-                if(expEnd || i == words.Count-1) exp += word;                           //end word is added without a space
+                    word = word.Trim('"');                                               //removes any unwanted sign from the word
+                word = Fixword(word);
+                if (word == null) continue;
+                if (expEnd || i == words.Count-1) exp += word;                           //end word is added without a space
                 else exp += word + " ";
                 if (toStem)
                     word = stem.stemTerm(word);

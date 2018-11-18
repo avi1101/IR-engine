@@ -50,6 +50,11 @@ namespace IR_engine
             }
 
         }
+
+        public Dictionary<string, term> getDictionary()
+        {
+            return Parse.terms;
+        }
     }
 
 }

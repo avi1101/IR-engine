@@ -19,7 +19,7 @@ namespace IR_engine
     /// </summary>
     public partial class DictionaryList : Window
     {
-        public DictionaryList(List<Tuple<string, string>> list)
+        public DictionaryList(Dictionary<string, term> list)
         {
             InitializeComponent();
             dictionary.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
@@ -27,10 +27,10 @@ namespace IR_engine
             stack.HorizontalAlignment = HorizontalAlignment.Left;
             stack.VerticalAlignment = VerticalAlignment.Top;
 
-            for (int i = 0; i < 400; i++) {
+            foreach(KeyValuePair<string, term> entery in list) {
                 TextBox t = new TextBox();
-                t.Text = "line " + i + "dfdfsdfdsfdsfsdfsdfsdfdsfsdfsdfsdfsdfsdfdsfdsf";
-                t.FontSize = 24;
+                t.Text = entery.Value.Phrase + " " + entery.Value.printPosting();
+                t.FontSize = 14;
                 stack.Children.Add(t);
                 
             }

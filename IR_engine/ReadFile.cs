@@ -35,7 +35,7 @@ namespace IR_engine
         /// <param name="path"></param>
         public List<document> getDocs()
         {
-            if (index < allfilesSize)
+            if (index + 1< allfilesSize)
             {
                 index++;
                 string[] ext = allfiles[index].Split('.');
