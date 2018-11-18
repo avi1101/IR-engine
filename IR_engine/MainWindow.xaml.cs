@@ -69,16 +69,29 @@ namespace IR_engine
 
         private void Run_Click(object sender, RoutedEventArgs e)
         {
+            test.Content = "";
             if (path == null)
             {
-                
+                path = pathText.Text;
+            }
+            if (!path.Equals(""))
+            {
+                Model m = new Model(path, false);
+                m.index();
             }
             else
-            {
-                Model m = new Model(path,false);
-            }
+                test.Content = "path not provided.";
 
         }
 
+        private void showDic_Click(object sender, RoutedEventArgs e)
+        {
+            Window dictionary;
+            if (path == null || path.Equals("") || !File.Exists(path+ "\\index_elad_avi.txt"))
+                dictionary = new DictionaryList(null);
+            else
+                dictionary = new DictionaryList(null);
+            dictionary.Show();
+        }
     }
 }
