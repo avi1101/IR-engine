@@ -30,7 +30,7 @@ namespace IR_engine
         public MainWindow()
         {
             InitializeComponent();
-            
+            Console.WriteLine("START");
 
         }
 

@@ -270,6 +270,7 @@ namespace IR_engine
                 }
                 t.AddToCount(DocName);
                 if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
+                Console.WriteLine(word);
             }
 
             /*
