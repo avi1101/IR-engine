@@ -41,8 +41,13 @@ namespace IR_engine
             for (int i = 0; i < readfo.returnSize(); i++)
             {
                 List<document> f = readfo.getDocs();
+                if (f == null) continue;
+                foreach(document d in f)
+                {
+                    parser.Text2list(d);
+                }
 
-            }            
+            }
         }
     }
 
