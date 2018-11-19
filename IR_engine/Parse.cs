@@ -543,7 +543,7 @@ namespace IR_engine
         string SetLetterType(int idx, List<string> words) { return null; }
         string Setprice(int idx, List<string> words, out int j) {
             string val = "";
-            if (words[idx][0] == '$' && IsComNum(words[idx].Remove(0, 1)))
+            if (words[idx][0] == '$' && IsComNum(words[idx].Remove(0, 1).Replace(",","")))
             {
                 string numOnly = words[idx].Remove(0, 1);
                 if (numOnly.Contains("."))
@@ -551,7 +551,13 @@ namespace IR_engine
                     /*
                      * the word looks like $6.5 Million or $6.5
                      */
-
+                    if (!Char.IsDigit(numOnly[numOnly.Length - 1])){numOnly=numOnly.Remove(numOnly.Length - 1);}
+                    bool ans = true;
+                    while (ans)
+                    {
+                        if (Char.IsDigit(numOnly[numOnly.Length - 1])) { ans = false; }
+                         numOnly = numOnly.Remove(numOnly.Length - 1);
+                    }
                     double amount = Double.Parse(numOnly);
                     if (amount > 1000000) { amount = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else
@@ -576,8 +582,8 @@ namespace IR_engine
                     /*
                      * the word looks like $78 Billion or $78
                      */
-                    
-                    int amount = int.Parse(numOnly);
+                    string num2 = numOnly.Replace(",", "");
+                    int amount = int.Parse(num2);
                     if (amount > 1000000) { double amount2 = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else {
                         if (idx + 1 == words.Count && words[idx][0] == '$')
@@ -600,6 +606,7 @@ namespace IR_engine
                 /*
                  * the word looks like 45 4/5 dollars
                  */
+                if (idx + 1 == words.Count) {}
                 if(IsComNum(words[idx+1]) && words[idx + 1].Contains("/")){
                     val = words[idx] + " " + words[idx + 1] + " Dollars";
                     j = idx + 2;
@@ -622,7 +629,9 @@ namespace IR_engine
                     {
                         if (words[idx].Contains("."))
                         {
-                            double value = double.Parse(words[idx]);
+                            string w = words[idx];
+                            string w1 = w.Replace(",", "").Replace("$", "");
+                            double value = double.Parse(w1);
                             value = value * 1000;
                             val = value + " M " + "Dollars";
                             if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
@@ -633,7 +642,8 @@ namespace IR_engine
                         else
                         {
                             string w = words[idx];
-                            int value = int.Parse(words[idx]);
+                            string w1 = w.Replace(",", "").Replace("$", "");
+                            int value = int.Parse(w1);
                             value = value * 1000;
                             val = value + " M " + "Dollars";
                             if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
