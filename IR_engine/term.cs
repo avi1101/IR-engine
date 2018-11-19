@@ -119,8 +119,8 @@ namespace IR_engine
         public string printPosting()
         {
             string res = "";
-            foreach (string str in postingList)
-                res += str + ",";
+            //foreach (string str in postingList)
+            //    res += str + ",";
             return res;
         }
     }

@@ -839,5 +839,36 @@ namespace IR_engine
             if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
         }
 
+        /// <summary>
+        /// this method gets a string that represents a number and format it into double representation 
+        /// of the same string
+        /// </summary>
+        /// <param name="num">a string that contains the number</param>
+        /// <returns>a double number formatted out of the string</returns>
+        private double FormatNumber(string num)
+        {
+            double interval = 1;
+            double number = 0;
+            int floatingPoint = num.IndexOf('.');
+            for (int i = num.Length - 1; i > floatingPoint; i--)
+            {
+                if (num[i] > '9' || num[i] < '0') num = num.Remove(i, 1);
+            }
+            for (int i = num.Length - 1; i >= 0; i--)
+            {
+                if (num[i] <= '9' && num[i] >= '0')
+                {
+                    number += Char.GetNumericValue(num[i]) * interval;
+                    interval *= 10;
+                }
+            }
+            if (floatingPoint >= 0)
+            {
+                int len = num.Length - floatingPoint - 1;
+                number *= Math.Pow(10, -1 * len);
+            }
+            return number;
+        }
+
     }
 }
