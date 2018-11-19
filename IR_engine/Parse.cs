@@ -555,9 +555,10 @@ namespace IR_engine
                     bool ans = true;
                     while (ans)
                     {
-                        if (Char.IsDigit(numOnly[numOnly.Length - 1])) { ans = false; }
+                        if (Char.IsDigit(numOnly[numOnly.Length - 1])) { ans = false;break; }
                          numOnly = numOnly.Remove(numOnly.Length - 1);
                     }
+                    
                     double amount = Double.Parse(numOnly);
                     if (amount > 1000000) { amount = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else
@@ -583,6 +584,24 @@ namespace IR_engine
                      * the word looks like $78 Billion or $78
                      */
                     string num2 = numOnly.Replace(",", "");
+                    if (num2.Contains("/"))
+                    {
+                        val = num2.Replace("$", "");
+                        if(idx + 1 < words.Count)
+                        {
+                            string lvl = words[idx + 1].ToUpper();
+                            if (lvl == "M" || lvl == "MILLION") { val = val + " Million"; j = idx + 1; return val + " Dollars"; }
+                            else if (lvl == "BILLION" || lvl == "BN") { val = val + " Billion"; j = idx + 1; return val + " Dollars"; }
+                            else if (lvl == "TRILLION") { val = val + " Trillion"; j = idx + 1; return val + " Dollars"; }
+                            else {  j = idx; return val + " Dollars"; }
+                        }
+                        else
+                        {
+                            j = idx; return val + " Dollars";
+                        }
+                        
+                    }
+                    
                     int amount = int.Parse(num2);
                     if (amount > 1000000) { double amount2 = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else {
