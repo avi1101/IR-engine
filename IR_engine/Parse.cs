@@ -576,8 +576,8 @@ namespace IR_engine
                         else { val = amount.ToString("#,##0.##"); j = idx; }
                     }
                         val = val + " Dollars";
-                        return val; }
-                
+                        return val;
+                }
                 else
                 {
                     /*
@@ -601,7 +601,7 @@ namespace IR_engine
                         }
                         
                     }
-                    
+                    if (num2 == "") { j = idx; return " "; }
                     int amount = int.Parse(num2);
                     if (amount > 1000000) { double amount2 = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else {
