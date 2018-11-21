@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using NSoup;
+using NSoup.Nodes;
 
 namespace IR_engine
 {
@@ -26,6 +28,7 @@ namespace IR_engine
         public void index()
         {
             // step one, the parsing
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             int filesNum = readfo.returnSize();
             bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
             if (hasIndex == true)
@@ -42,13 +45,14 @@ namespace IR_engine
             {
                 List<document> f = readfo.getDocs();
                 if (f == null) continue;
-                foreach(document d in f)
+                for(int j = 0; j < f.Count; j++)
                 {
-                    parser.Text2list(d);
+                    parser.Text2list(f[j]);
                 }
-
             }
-
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            Console.WriteLine("Time: " + elapsedMs);
         }
 
         public Dictionary<string, term> getDictionary()

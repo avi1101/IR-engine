@@ -26,8 +26,10 @@ namespace IR_engine
             string[] tmp = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
             allfiles = tmp.ToList();
             allfiles.Remove(path + "\\stop_words.txt");
+            allfiles.Remove(path + "\\postingList.txt");
+            allfiles.Remove(path + "\\index_elad_avi.txt");
             //TODO: remove also posting list files and index file
-            allfilesSize = tmp.Length;
+            allfilesSize = allfiles.Count;
         }
         /// <summary>
         /// this function gets all docs in the corpus folder and its sub-folders.
@@ -35,12 +37,20 @@ namespace IR_engine
         /// <param name="path"></param>
         public List<document> getDocs()
         {
-            if (index + 1< allfilesSize)
+            if (index < allfilesSize)
             {
-                index++;
                 string[] ext = allfiles[index].Split('.');
                 if (ext[ext.Length - 1].Equals("txt")) return null;
-                return readfile(File.ReadAllText(allfiles[index++]));
+                StringBuilder str = new StringBuilder();
+                using (StreamReader sr = File.OpenText(allfiles[index++]))
+                {
+                    string s = String.Empty;
+                    while ((s = sr.ReadLine()) != null)
+                    {
+                        str.Append(s + " ");
+                    }
+                }
+                return readfile(str.ToString());
             }
             return null;
         }
@@ -64,16 +74,16 @@ namespace IR_engine
                 {
                     int st = doc.IndexOf("<DOCNO>");
                     int end = doc.IndexOf("</DOCNO");
-                    if (st != -1 || end != -1) { docNo = doc.Substring(st + 7, (end - st) - 8).Trim(); }
+                    if (st != -1 || end != -1) { docNo = RemoveStringReader(doc.Substring(st + 7, (end - st) - 8)); }
                     st = doc.IndexOf("<DATE1>");
                     end = doc.IndexOf("</DATE1>");
-                    if (st != -1 || end != -1) {  date = doc.Substring(st + 7, (end - st) - 8).Trim(); }
+                    if (st != -1 || end != -1) { date = RemoveStringReader(doc.Substring(st + 7, (end - st) - 8)); }
                     st = doc.IndexOf("<TI>");
                     end = doc.IndexOf("</TI>");
-                    if (st != -1 || end != -1) {  head = doc.Substring(st + 4, (end - st) - 4).Trim(); }
+                    if (st != -1 || end != -1) { head = RemoveStringReader(doc.Substring(st + 4, (end - st) - 4)); }
                     st = doc.IndexOf("<TEXT>");
                     end = doc.IndexOf("</TEXT>");
-                    if (st != -1 || end != -1) {  data = doc.Substring(st + 6, (end - st) - 7).Trim(); }
+                    if (st != -1 || end != -1) { data = RemoveStringReader(doc.Substring(st + 6, (end - st) - 7)); }
                     st = doc.IndexOf("<F P=104>");
                     if (st != -1)
                     {
@@ -85,13 +95,36 @@ namespace IR_engine
                     docslist.Add(d);
                     counter++;
                 }
-                
+                 
             }
             return docslist;
         }
         public int returnSize()
         {
             return allfilesSize;
+        }
+        public static string RemoveStringReader(string input)
+        {
+            var s = new StringBuilder(input.Length); // (input.Length);
+            using (var reader = new StringReader(input))
+            {
+                int i = 0;
+                char c;
+                for (; i < input.Length; i++)
+                {
+                    c = (char)reader.Read();
+                    if (!char.IsWhiteSpace(c))
+                    {
+                        s.Append(c);
+                    }
+                }
+            }
+
+            return s.ToString();
+        }
+        public void WriteToDisk()
+        {
+
         }
     }
 }

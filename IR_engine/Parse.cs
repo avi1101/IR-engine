@@ -111,6 +111,7 @@ namespace IR_engine
         bool toStem;
         string path;
         string DocName;
+        public double time = 0;
 
         /// <summary>
         /// this is the constructor for the Parser class
@@ -141,9 +142,9 @@ namespace IR_engine
         {
             string tmp_txt = document.Doc;
             string[] text = tmp_txt.Split(' ');
-            pre_terms = text.ToList();
+            //pre_terms = text.ToList();
             this.DocName = document.DocID;
-            parseText(pre_terms, toStem, document.DocID);
+            parseText(text, toStem, document.DocID);
         }
         private bool IsNumber(string str)
         {
@@ -154,135 +155,139 @@ namespace IR_engine
             }
             return true;
         }
-        public void parseText(List<string> words, bool ToStem, string DocName)
+        public void parseText(string[] words, bool ToStem, string DocName)
         {
-            for (int i = 0; i < words.Count; i++)
+            try
             {
-                term t;
-                string phrase = "";
-                int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
-                string word = words[j];
-                word = Fixword(word);
-                if (word == null || stopwords.Contains(word.ToLower())) continue;
-                if (word.Length > 0 && word[word.Length-1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
-                if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
-                bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
-                //checking for rule
-                /*
-                * each term to parse is build from up to 4 words
-                * aside of a special date case, all of them starts with numbers
-                * for example: 'price MILLION US dollars'
-                * for my first step is to determind if the first is a term with '-' or any other since its special
-                * than I will check if word contains a number what so ever
-                */
-                if (word.Equals("Fr14.6"))
-                    j = i;
-                if(word.Contains('-') && word[0] != '-')
+                for (int i = 0; i < words.Length; i++)
                 {
-                    /* 
-                     * checked for no first minus '-' to eliminate negative numbers
-                     * in this case, we found a range\expression, we'll deal with this here by splitting it and save the terms
-                     */
-                    phrase = SetExp(i, words, out j);
-                }
-                else if(word[0] == '\"')
-                {
-                    /*
-                     * our own rule, in case of an expression that start and end with ""
-                     * we need to save it as according to the expression rules
-                     */
-                    phrase = SetQuotationExp(i, words, out j);
-                }
-                else if (containsNumbers(word))
-                {
-                    /* 
-                     * the first word contains a number, which means it can apply one of the rules
-                     * here i'll check which rule to apply
-                     */
+                    term t;
+                    string phrase = "";
+                    int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
+                    string word = words[j];
+                    word = Fixword(word);
+                    if (word == null || stopwords.Contains(word.ToLower())) continue;
+                    if (word.Length > 0 && word[word.Length - 1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
+                    if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
+                    bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
+                                                                                                            //checking for rule
+                   /*
+                    * each term to parse is build from up to 4 words
+                    * aside of a special date case, all of them starts with numbers
+                    * for example: 'price MILLION US dollars'
+                    * for my first step is to determind if the first is a term with '-' or any other since its special
+                    * than I will check if word contains a number what so ever
+                    */
+                    if (word.Equals("Fr14.6"))
+                        j = i;
+                    if (word.Contains('-') && word[0] != '-')
+                    {
+                        /* 
+                         * checked for no first minus '-' to eliminate negative numbers
+                         * in this case, we found a range\expression, we'll deal with this here by splitting it and save the terms
+                         */
+                        phrase = SetExp(i, words, out j);
+                    }
+                    else if (word[0] == '\"')
+                    {
+                        /*
+                         * our own rule, in case of an expression that start and end with ""
+                         * we need to save it as according to the expression rules
+                         */
+                        phrase = SetQuotationExp(i, words, out j);
+                    }
+                    else if (containsNumbers(word))
+                    {
+                        /* 
+                         * the first word contains a number, which means it can apply one of the rules
+                         * here i'll check which rule to apply
+                         */
 
-                    // checking for price existance
-                    if(isPrice(words, i))
-                    {
-                        /*
-                         * we found that word[i] is a price expression
-                         * time to call the correct rule method
-                         * it will return the string phrase we will use to create the term
-                         */
-                        phrase = Setprice(i, words, out j);
-                    }
-                    else if (isPercentage(words, i))
-                    {
-                        /*
-                         * the number is a percentage format
-                         * time to call the correct rule method
-                         */
-                        phrase = Isprecent(words, i, out j);
-                    }
-                    else if(isDate(words, i))
-                    {
-                        /*
-                         * the number is in date format
-                         */
-                        phrase = ToDate(words[i], words[i + 1]);
-                        j++;
+                        // checking for price existance
+                        if (isPrice(words, i))
+                        {
+                            /*
+                             * we found that word[i] is a price expression
+                             * time to call the correct rule method
+                             * it will return the string phrase we will use to create the term
+                             */
+                            phrase = Setprice(i, words, out j);
+                        }
+                        else if (isPercentage(words, i))
+                        {
+                            /*
+                             * the number is a percentage format
+                             * time to call the correct rule method
+                             */
+                            phrase = Isprecent(words, i, out j);
+                        }
+                        else if (isDate(words, i))
+                        {
+                            /*
+                             * the number is in date format
+                             */
+                            phrase = ToDate(words[i], words[i + 1]);
+                            j++;
+                        }
+                        else
+                        {
+                            /*
+                             * which no latter condition is fulfilled, that means the number we found
+                             * is a normal number that has to be formatted by the numbers rule
+                             * we'll call the rule method here
+                             */
+                            phrase = NumberSet(word, i, words, out j);
+                        }
                     }
                     else
                     {
                         /*
-                         * which no latter condition is fulfilled, that means the number we found
-                         * is a normal number that has to be formatted by the numbers rule
-                         * we'll call the rule method here
+                         * it has been found that 'word' has no numbers in it what so ever
+                         * so there are 3 cases for that to happen:
+                         * 1- date that starts with month, like MAY 14 where word = MAY
+                         * 2- its a regular word with no rule to apply
                          */
-                         phrase = NumberSet(word, i, words, out j);
-                    }
-                }
-                else
-                {
-                    /*
-                     * it has been found that 'word' has no numbers in it what so ever
-                     * so there are 3 cases for that to happen:
-                     * 1- date that starts with month, like MAY 14 where word = MAY
-                     * 2- its a regular word with no rule to apply
-                     */
-                    if (isDate(words, i))
-                    {
-                        phrase = ToDate(words[i], words[i + 1]);
-                        if(phrase.Equals(""))
+                        if (isDate(words, i))
+                        {
+                            phrase = ToDate(words[i], words[i + 1]);
+                            if (phrase.Equals(""))
+                                phrase = toStem ? stem.stemTerm(word) : word;
+                        }
+                        else
                             phrase = toStem ? stem.stemTerm(word) : word;
                     }
+                    if (terms.ContainsKey(phrase))
+                    {
+                        /*
+                         * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
+                         * the dictionary is implemented as a hash table with chaining
+                         * so it should give us the best resaults
+                         */
+                        t = terms[phrase]; //reference to the original term
+                    }
                     else
-                        phrase = toStem ? stem.stemTerm(word) : word;
+                    {
+                        /*
+                         * this is a new tern that needs to be created
+                         */
+                        t = new term(phrase);
+                        terms.Add(t.Phrase, t);
+                    }
+                    t.AddToCount(DocName);
+                    if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
+                    //Console.WriteLine(word);
                 }
-                t = new term(phrase);
-                if(terms.ContainsKey(t.Phrase))
-                {
-                    /*
-                     * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
-                     * the dictionary is implemented as a hash table with chaining
-                     * so it should give us the best resaults
-                     */
-                    t = terms[t.Phrase]; //reference to the original term
-                }
-                else
-                {
-                    /*
-                     * this is a new tern that needs to be created
-                     */
-                    terms.Add(t.Phrase, t);
-                }
-                t.AddToCount(DocName);
-                if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
-                //Console.WriteLine(word);
-            }
 
-            /*
-             * at the end of the doc parsing, I should end all opened doc counts for the terms
-             */
-            foreach(KeyValuePair<string, term> tn in terms)
-                tn.Value.addDocumentToPostingList();
+                /*
+                 * at the end of the doc parsing, I should end all opened doc counts for the terms
+                 */
+                foreach (KeyValuePair<string, term> tn in terms)
+                    tn.Value.addDocumentToPostingList();
+            }
+            catch (Exception e) { }
         }
         //TODO: need to implement isDate
-        private bool isDate(List<string> words, int idx)
+        private bool isDate(string[] words, int idx)
         {
             return false;
         }
@@ -312,11 +317,11 @@ namespace IR_engine
         /// <param name="words">the list of words in working on</param>
         /// <param name="idx">the index of the word in the list</param>
         /// <returns></returns>
-        private bool isPercentage(List<string> words, int idx)
+        private bool isPercentage(string[] words, int idx)
         {
             int size = words[idx].Length - 1;
             if (words[idx][size] == '%') return true;
-            if (idx + 1 == words.Count) return false;
+            if (idx + 1 == words.Length) return false;
             string word = words[idx + 1].ToLower();
             if (word.Equals("percent") || word.Equals("percentage")) return true;
             return false;
@@ -328,11 +333,11 @@ namespace IR_engine
         /// <param name="words">the list of words in working on</param>
         /// <param name="idx">the index of the word in the list</param>
         /// <returns></returns>
-        private bool isPrice(List<string> words, int idx)
+        private bool isPrice(string[] words, int idx)
         {
             string word = "";
             if (words[idx][0] == '$') return true;
-            if (idx + 1 == words.Count) return false;
+            if (idx + 1 == words.Length) return false;
             word = words[idx + 1].ToUpper();
             if (word.Equals("DOLLARS")) return true;
             if ((word.Equals("M") || word.Equals("BN")) &&
@@ -371,11 +376,11 @@ namespace IR_engine
         /// </summary>
         /// <param name="input">cheked term</param>
         /// <returns></returns>
-         bool IsRegNumber(List<string> words, int idx)
+         bool IsRegNumber(string[] words, int idx)
         {
             for (int i = 0; i < words[idx].Length; i++)
             {
-                if ((!Char.IsDigit(words[idx][i]) && words[idx][i] != ',' && words[idx][i] != '.' && words[idx][i] != '\\' && words[idx][i] != '/') || words[idx] == "")
+                if ((!(words[idx][i] >= '0' && words[idx][i] <= '9') && words[idx][i] != ',' && words[idx][i] != '.' && words[idx][i] != '\\' && words[idx][i] != '/') || words[idx] == "")
                     return false;
             }
             if (words[idx + 1] == "$" || words[idx + 1] == "%" || words[idx + 1] == "percent" || words[idx + 1] == "percentage" || words[idx + 1] == "Dollars") { return false; }
@@ -390,12 +395,12 @@ namespace IR_engine
         {
             for (int i = 0; i < input.Length; i++)
             {
-                if (!Char.IsDigit(input[i]) && input[i] != '.' && input[i] != '/')
+                if (!(input[i] >= '0' && input[i] <= '9') && input[i] != '.' && input[i] != '/')
                     return false;
             }
             return true;
         }
-        string Isprecent(List<string> words, int idx,out int j)
+        string Isprecent(string[] words, int idx,out int j)
         {
             if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) && (words[idx + 2] == "%" || words[idx + 2] == "percent" ||words[idx + 2] == "percentage" || words[idx + 2] == "percent" ||words[idx + 2] == "percentage"))
             { j = idx + 2; return words[idx] + " " + words[idx + 1] + "%"; }
@@ -409,7 +414,7 @@ namespace IR_engine
         /// <param name="idx"></param>
         /// <param name="words"></param>
         /// <returns></returns>
-        string NumberSet(string input, int idx, List<string> words, out int j)
+        string NumberSet(string input, int idx, string[] words, out int j)
         {
             int option = 0;
             var charsToRemove = new string[] { "," };
@@ -417,7 +422,7 @@ namespace IR_engine
             {
                 input = input.Replace(c, string.Empty);
             }
-            if (idx + 1 == words.Count) { option = 0; }
+            if (idx + 1 == words.Length) { option = 0; }
             else if (words[idx + 1] == "Thousand" || words[idx + 1] == "thousand") { option = 1; }
             else if (words[idx + 1] == "Million" || words[idx + 1] == "million") { option = 2; }
             else if (words[idx + 1] == "Billion" || words[idx + 1] == "Trillion" || words[idx + 1] == "billion" || words[idx + 1] == "trillion") { option = 3; }
@@ -517,31 +522,8 @@ namespace IR_engine
                 sol = month + "-" + number;
             return sol;
         }
-        /// <summary>
-        /// this is a testing method for the ToDate method
-        /// </summary>
-        /// <returns>the formatted string equal to the rules we were provided</returns>
-        public string testToDate(int numberOfTests)
-        {
-            Random r = new Random();
-            string sol = "";
-            for (int i = 0; i < numberOfTests; i++)
-            {
-                Array values = Enum.GetValues(typeof(months));
-                string randomBar = ((months)values.GetValue(r.Next(values.Length))).ToString();
-                int n = r.Next(1, 50);
-                int rand = r.Next(0, 3);
-                if (rand == 0) randomBar = randomBar.Substring(0, 3);
-                if (rand == 1) randomBar = randomBar.ToUpper();
-                if (r.Next(0, 1) == 1)
-                    sol += ToDate(n + "", randomBar.ToString()) + "\t" + n + " " + randomBar.ToString() + "\n";
-                else
-                    sol += ToDate(randomBar.ToString(), n + "") + "\t" + n + " " + randomBar.ToString() + "\n";
-            }
-            return sol;
-        }
-        string SetLetterType(int idx, List<string> words) { return null; }
-        string Setprice(int idx, List<string> words, out int j) {
+        string SetLetterType(int idx, string[] words) { return null; }
+        string Setprice(int idx, string[] words, out int j) {
             string val = "";
             if (words[idx][0] == '$' && IsComNum(words[idx].Remove(0, 1).Replace(",","")))
             {
@@ -555,14 +537,23 @@ namespace IR_engine
                     bool ans = true;
                     while (ans)
                     {
-                        if (Char.IsDigit(numOnly[numOnly.Length - 1])) { ans = false; }
+                        if (Char.IsDigit(numOnly[numOnly.Length - 1])) { ans = false; break; }
                          numOnly = numOnly.Remove(numOnly.Length - 1);
                     }
-                    double amount = Double.Parse(numOnly);
+                    double amount = 0;
+                    try
+                    {
+                        amount = Double.Parse(numOnly);
+                    }
+                    catch(Exception e)
+                    {
+                        j = idx;
+                        return words[idx];
+                    }
                     if (amount > 1000000) { amount = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else
                     {
-                        if (idx + 1 == words.Count && words[idx][0] == '$')
+                        if (idx + 1 == words.Length && words[idx][0] == '$')
                         {
                             j = idx;
                             val = words[idx].Remove(0, 1);
@@ -586,7 +577,7 @@ namespace IR_engine
                     int amount = int.Parse(num2);
                     if (amount > 1000000) { double amount2 = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else {
-                        if (idx + 1 == words.Count && words[idx][0] == '$')
+                        if (idx + 1 == words.Length && words[idx][0] == '$')
                         {
                             j = idx;
                             val = words[idx].Remove(0, 1);
@@ -606,7 +597,7 @@ namespace IR_engine
                 /*
                  * the word looks like 45 4/5 dollars
                  */
-                if (idx + 1 == words.Count) {}
+                if (idx + 1 == words.Length) {}
                 if(IsComNum(words[idx+1]) && words[idx + 1].Contains("/")){
                     val = words[idx] + " " + words[idx + 1] + " Dollars";
                     j = idx + 2;
@@ -680,8 +671,9 @@ namespace IR_engine
                     else { val = words[idx] + " Dollars";j = idx + 1;return val; }
                 }
                 
-            } }
-        string SetExp(int idx, List<string> words, out int j)
+            }
+        }
+        string SetExp(int idx, string[] words, out int j)
         {
             string word = words[idx];
             string[] splittedExpression = word.Split('-');
@@ -692,7 +684,7 @@ namespace IR_engine
             if(splittedExpression.Length == 2 && IsNumber(splittedExpression[0]) && IsNumber(splittedExpression[1]))
             {                                                                                   //for example 6-7 (expression)
                 term right, left;
-                if(idx+1 < words.Count && EnumContains(words[idx+1]))
+                if(idx+1 < words.Length && EnumContains(words[idx+1]))
                 {
                     left = new term(splittedExpression[0]+" "+ words[idx + 1].ToLower());       //term phrase = "6 may"
                     right = new term(splittedExpression[1] + " " + words[idx + 1].ToLower());   //term phrase = "7 may"
@@ -731,7 +723,7 @@ namespace IR_engine
             j = part;                                                                   //returns the index
             return word;                                                                //returns the whole expression
         }
-        string SetQuotationExp(int idx, List<string> words, out int j)
+        string SetQuotationExp(int idx, string[] words, out int j)
         {
             // TODO: remove this line after debug
             //Console.WriteLine("Pasring an expression at doc: " + DocName + " starting at: " + words[idx]);
@@ -739,9 +731,10 @@ namespace IR_engine
                 j = idx;
             string exp = "";
             bool expEnd = false;                                                        //will check if the end word has been reached 
-            List<string> newWords = new List<string>();
+            string[] newWords = new string[words.Length];
             int i = idx;
-            for (; i < words.Count && !expEnd; i++)
+            int k = 0;
+            for (; i < words.Length && !expEnd; i++)
             {
                 string word = words[i];
                 if (word.Equals("")) continue;
@@ -750,11 +743,11 @@ namespace IR_engine
                     word = word.Trim('"');                                               //removes any unwanted sign from the word
                 word = Fixword(word);
                 if (word == null) continue;
-                if (expEnd || i == words.Count-1) exp += word;                           //end word is added without a space
+                if (expEnd || i == words.Length-1) exp += word;                           //end word is added without a space
                 else exp += word + " ";
                 if (toStem)
                     word = stem.stemTerm(word);
-                newWords.Add(word);                                                     //adding to word to the new list
+                newWords[k++]=word;                                                     //adding to word to the new list
                 //term t = new term(word);                                                //creating a new term our of the word
                 //if (terms.ContainsKey(word))                                            //checks if the term already exist
                 //    t = terms[word];
@@ -771,10 +764,7 @@ namespace IR_engine
         }
         string Fixword(string word)
         {
-            word = word.Replace(" ", "");
             word = word.Replace(":", "");
-            word = word.Replace("\n", "");
-            word = word.Replace(",", "");
             bool done = false;
             while (!done)
             {
@@ -830,6 +820,7 @@ namespace IR_engine
         {
             double interval = 1;
             double number = 0;
+            bool isNumber = false;
             int floatingPoint = num.IndexOf('.');
             for (int i = num.Length - 1; i > floatingPoint; i--)
             {
@@ -841,8 +832,11 @@ namespace IR_engine
                 {
                     number += Char.GetNumericValue(num[i]) * interval;
                     interval *= 10;
+                    isNumber = true;
                 }
             }
+            if (!isNumber)
+                throw new NotSupportedException();
             if (floatingPoint >= 0)
             {
                 int len = num.Length - floatingPoint - 1;
@@ -850,6 +844,5 @@ namespace IR_engine
             }
             return number;
         }
-
     }
 }

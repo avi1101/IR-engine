@@ -70,6 +70,7 @@ namespace IR_engine
 
         private void Run_Click(object sender, RoutedEventArgs e)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             test.Content = "";
             if (path == null)
             {
@@ -82,6 +83,8 @@ namespace IR_engine
             }
             else
                 test.Content = "path not provided.";
+            var elapsedMs = watch.ElapsedMilliseconds;
+            test.Content = "time "+elapsedMs.ToString();
 
         }
 
