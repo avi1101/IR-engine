@@ -11,12 +11,15 @@ namespace IR_engine
     {
         Parse parser;
         ReadFile readfo;
+
         string path;
         bool ToStem;
-
+        public static long time_getDoc = 0;
+        double st;
         public Model(string path,bool Tostem)
         {
-
+            
+            //  st = DateTime.Now.Second;
             readfo = new ReadFile(path);
             this.path = path;
             this.ToStem = Tostem;
@@ -40,15 +43,20 @@ namespace IR_engine
             }
             for (int i = 0; i < readfo.returnSize(); i++)
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 List<document> f = readfo.getDocs();
+                watch.Stop();
+                time_getDoc = time_getDoc + watch.ElapsedMilliseconds;
                 if (f == null) continue;
                 foreach(document d in f)
                 {
-                    parser.Text2list(d);
+                  //  parser.Text2list(d);
                 }
 
             }
-
+            Console.WriteLine("get doc time = " + time_getDoc);
+            //Double nd = DateTime.Now.Second;
+            // Console.WriteLine("time to work : " + (nd - st));
         }
 
         public Dictionary<string, term> getDictionary()

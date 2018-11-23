@@ -140,6 +140,7 @@ namespace IR_engine
         public void Text2list(document document)
         {
             string tmp_txt = document.Doc;
+           // string[] text = split(tmp_txt,new char[' ']);
             string[] text = tmp_txt.Split(' ');
             pre_terms = text.ToList();
             this.DocName = document.DocID;
@@ -339,7 +340,7 @@ namespace IR_engine
                 (words[idx + 2].Equals("DOLLARS") || words[idx + 2].Equals("dollars") || words[idx + 2].Equals("Dollars")))
                 return true;
             //checking for million billion trillion after the price number
-            if (words[idx][0] == '$' && (word.Equals("MILLION") || word.Equals("BILLION") || word.Equals("TRILLION"))) return true;
+            //if (words[idx][0] == '$' && (word.Equals("MILLION") || word.Equals("BILLION") || word.Equals("TRILLION"))) return true;
             return false;
         }
 
@@ -792,8 +793,7 @@ namespace IR_engine
         {
             word = word.Replace(" ", "");
             word = word.Replace(":", "");
-            word = word.Replace("\n", "");
-            word = word.Replace(",", "");
+
             bool done = false;
             while (!done)
             {
@@ -809,7 +809,7 @@ namespace IR_engine
                         word = word.Remove(word.Length - 1);
                     }
 
-                    if (word != "" && word != "\n" && word[0] != '<')
+                    if (word != "" && word != "\n" )
                     {
                         //removes non-relative end characters from words
                         if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' ||
@@ -847,6 +847,7 @@ namespace IR_engine
         /// <returns>a double number formatted out of the string</returns>
         private double FormatNumber(string num)
         {
+            //TODO: add if contains "/" do the math function to find the value/ 1/8.7=0.1149
             double interval = 1;
             double number = 0;
             int floatingPoint = num.IndexOf('.');
@@ -869,6 +870,46 @@ namespace IR_engine
             }
             return number;
         }
+        public static string[] split(string txt, char[] delim)
+        {
+            char[] text = txt.ToCharArray();
+            string[] result = new string[txt.Length];
+            char[] buff = new char[txt.Length];
+            int count = 0;
+            int i = 0;
+            int j = 0;
 
+            while (i < text.Length)
+            {
+                bool found = false;
+                foreach (char del in delim)
+                {
+                    if (del == txt[i])
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found)
+                {
+                    count++;
+                    result[count - 1] = new string(buff);
+  
+                }
+                else
+                {
+                    buff[j++] = txt[i];
+                }
+                i++;
+            }
+
+            if (buff.Length != 0)
+            {
+                count++;
+                result[count - 1] = buff.ToString();
+            }
+
+            return (result);
+        }
     }
 }
