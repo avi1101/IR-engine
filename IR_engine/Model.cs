@@ -47,12 +47,13 @@ namespace IR_engine
                 if (f == null) continue;
                 for(int j = 0; j < f.Count; j++)
                 {
-                    parser.Text2list(f[j]);
+                    //parser.Text2list(f[j]);
                 }
             }
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
             Console.WriteLine("Time: " + elapsedMs);
+            Console.WriteLine("Time in getDoc: " + readfo.time);
         }
 
         public Dictionary<string, term> getDictionary()

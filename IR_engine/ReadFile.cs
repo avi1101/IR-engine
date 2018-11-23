@@ -15,116 +15,152 @@ namespace IR_engine
     /// </summary>
     public class ReadFile
     {
-        List<string> allfiles = null;
+        public double time = 0;
+        //List<string> allfiles = null;
+        string[] files;
+        Parse parser;
+
         int index = 0;
         int allfilesSize = 0;
         string path;
         static int counter = 0;
-        public ReadFile(string path)
+        public ReadFile(string path, Parse parser)
         {
             this.path = path;
-            string[] tmp = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
-            allfiles = tmp.ToList();
-            allfiles.Remove(path + "\\stop_words.txt");
-            allfiles.Remove(path + "\\postingList.txt");
-            allfiles.Remove(path + "\\index_elad_avi.txt");
-            //TODO: remove also posting list files and index file
-            allfilesSize = allfiles.Count;
+            files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
+            allfilesSize = files.Length;
+            this.parser = parser;
+            //allfiles = tmp.ToList();
+            //allfiles.Remove(path + "\\stop_words.txt");
+            //allfiles.Remove(path + "\\postingList.txt");
+            //allfiles.Remove(path + "\\index_elad_avi.txt");
+            ////TODO: remove also posting list files and index file
+            //allfilesSize = allfiles.Count;
         }
-        /// <summary>
-        /// this function gets all docs in the corpus folder and its sub-folders.
-        /// </summary>
-        /// <param name="path"></param>
-        public List<document> getDocs()
+
+        public void ParseDocs()
         {
-            if (index < allfilesSize)
+            bool stopwords = false;
+            StringBuilder DocContent = new StringBuilder();
+
+            for(int i = 0; i < files.Length; i++)
             {
-                string[] ext = allfiles[index].Split('.');
-                if (ext[ext.Length - 1].Equals("txt")) return null;
-                StringBuilder str = new StringBuilder();
-                using (StreamReader sr = File.OpenText(allfiles[index++]))
-                {
-                    string s = String.Empty;
-                    while ((s = sr.ReadLine()) != null)
-                    {
-                        str.Append(s + " ");
-                    }
+                string currect = files[i];
+                if(!stopwords && currect.Equals(path+ "\\stop_words.txt"))
+                {                                       //pass the stop words file
+                    stopwords = true;                   //its cheaper to check for bool than call Equals
+                    continue;
                 }
-                return readfile(str.ToString());
+                string line = "";
+                using (StreamReader sr = new StreamReader(currect))
+                {
+
+                }
             }
-            return null;
         }
-        /// <summary>
-        /// this function create an document type objects from the string file, and sends it to the parser
-        /// 
-        /// </summary>
-        /// <param name="file"> the string that constains all the data in the file</param>
-        public static List<document> readfile(string file)
-        {
-            List<document> docslist = new List<document>();
-            string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.None);
-            foreach (string doc in docs)
-            {
-                if (doc.Equals("")) continue;
-                string docNo = "";
-                string date = "";
-                string head = "";
-                string data = " ";
-                if (doc != "" && doc != "\n")
-                {
-                    int st = doc.IndexOf("<DOCNO>");
-                    int end = doc.IndexOf("</DOCNO");
-                    if (st != -1 || end != -1) { docNo = RemoveStringReader(doc.Substring(st + 7, (end - st) - 8)); }
-                    st = doc.IndexOf("<DATE1>");
-                    end = doc.IndexOf("</DATE1>");
-                    if (st != -1 || end != -1) { date = RemoveStringReader(doc.Substring(st + 7, (end - st) - 8)); }
-                    st = doc.IndexOf("<TI>");
-                    end = doc.IndexOf("</TI>");
-                    if (st != -1 || end != -1) { head = RemoveStringReader(doc.Substring(st + 4, (end - st) - 4)); }
-                    st = doc.IndexOf("<TEXT>");
-                    end = doc.IndexOf("</TEXT>");
-                    if (st != -1 || end != -1) { data = RemoveStringReader(doc.Substring(st + 6, (end - st) - 7)); }
-                    st = doc.IndexOf("<F P=104>");
-                    if (st != -1)
-                    {
-                        end = doc.IndexOf("</F>", st);
-                    }
-                    string city = "";
-                    if (st != -1) { city = doc.Substring(st + 9, (end - st) - 4).Trim(); }
-                    document d = new document(data, docNo, date, head, city);
-                    docslist.Add(d);
-                    counter++;
-                }
+        ///// <summary>
+        ///// this function gets all docs in the corpus folder and its sub-folders.
+        ///// </summary>
+        ///// <param name="path"></param>
+        //public List<document> getDocs()
+        //{
+        //    long t;
+        //    var watch = System.Diagnostics.Stopwatch.StartNew();
+        //    if (index < allfilesSize)
+        //    {
+        //        string[] ext = allfiles[index].Split('.');
+        //        if (ext[ext.Length - 1].Equals("txt")) return null;
+        //        StringBuilder str = new StringBuilder();
+        //        //using (StreamReader sr = File.OpenText(allfiles[index++]))
+        //        //{
+        //        //    string s = String.Empty;
+        //        //    while ((s = sr.ReadLine()) != null)
+        //        //    {
+        //        //        str.Append(s + " ");
+        //        //    }
+        //        //}
+        //        str.Append(File.ReadAllText(allfiles[index++]));
+        //        watch.Stop();
+        //        t = watch.ElapsedMilliseconds;
+        //        time += t;
+        //        return readfile(str.ToString());
+        //    }
+        //    t = watch.ElapsedMilliseconds;
+        //    time += t;
+        //    return null;
+        //}
+        ///// <summary>
+        ///// this function create an document type objects from the string file, and sends it to the parser
+        ///// 
+        ///// </summary>
+        ///// <param name="file"> the string that constains all the data in the file</param>
+        //public static List<document> readfile(string file)
+        //{
+        //    List<document> docslist = new List<document>();
+        //    string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.None);
+        //    foreach (string doc in docs)
+        //    {
+        //        if (doc.Equals("")) continue;
+        //        string docNo = "";
+        //        string date = "";
+        //        string head = "";
+        //        string data = " ";
+        //        if (doc != "" && doc != "\n")
+        //        {
+        //            int st = doc.IndexOf("<DOCNO>");
+        //            int end = doc.IndexOf("</DOCNO");
+        //            if (st != -1 || end != -1) { docNo = RemoveStringReader(doc.Substring(st + 7, (end - st) - 8)); }
+        //            st = doc.IndexOf("<DATE1>");
+        //            end = doc.IndexOf("</DATE1>");
+        //            if (st != -1 || end != -1) { date = RemoveStringReader(doc.Substring(st + 7, (end - st) - 8)); }
+        //            st = doc.IndexOf("<TI>");
+        //            end = doc.IndexOf("</TI>");
+        //            if (st != -1 || end != -1) { head = RemoveStringReader(doc.Substring(st + 4, (end - st) - 4)); }
+        //            st = doc.IndexOf("<TEXT>");
+        //            end = doc.IndexOf("</TEXT>");
+        //            if (st != -1 || end != -1) { data = RemoveStringReader(doc.Substring(st + 6, (end - st) - 7)); }
+        //            st = doc.IndexOf("<F P=104>");
+        //            if (st != -1)
+        //            {
+        //                end = doc.IndexOf("</F>", st);
+        //            }
+        //            string city = "";
+        //            if (st != -1) { city = doc.Substring(st + 9, (end - st) - 4).Trim(); }
+        //            document d = new document(data, docNo, date, head, city);
+        //            docslist.Add(d);
+        //            counter++;
+        //        }
                  
-            }
-            return docslist;
-        }
-        public int returnSize()
-        {
-            return allfilesSize;
-        }
-        public static string RemoveStringReader(string input)
-        {
-            var s = new StringBuilder(input.Length); // (input.Length);
-            using (var reader = new StringReader(input))
-            {
-                int i = 0;
-                char c;
-                for (; i < input.Length; i++)
-                {
-                    c = (char)reader.Read();
-                    if (!char.IsWhiteSpace(c))
-                    {
-                        s.Append(c);
-                    }
-                }
-            }
+        //    }
+        //    return docslist;
+        //}
+        //public int returnSize()
+        //{
+        //    return allfilesSize;
+        //}
+        //public static string RemoveStringReader(string input)
+        //{
+        //    var s = new StringBuilder(input.Length); // (input.Length);
+        //    using (var reader = new StringReader(input))
+        //    {
+        //        int i = 0;
+        //        char c;
+        //        for (; i < input.Length; i++)
+        //        {
+        //            c = (char)reader.Read();
+        //            if (!char.IsWhiteSpace(c))
+        //            {
+        //                s.Append(c);
+        //            }
+        //        }
+        //    }
 
-            return s.ToString();
-        }
-        public void WriteToDisk()
-        {
+        //    return s.ToString();
+        //}
+        //public void WriteToDisk()
+        //{
 
-        }
+        //}
+
     }
 }
