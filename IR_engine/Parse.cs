@@ -141,7 +141,6 @@ namespace IR_engine
         public void Text2list(document document)
         {
             string tmp_txt = document.Doc;
-           // string[] text = split(tmp_txt,new char[' ']);
             string[] text = tmp_txt.Split(' ');
             pre_terms = text.ToList();
             this.DocName = document.DocID;
@@ -177,8 +176,6 @@ namespace IR_engine
                 * for my first step is to determind if the first is a term with '-' or any other since its special
                 * than I will check if word contains a number what so ever
                 */
-                if (word.Equals("Fr14.6"))
-                    j = i;
                 if(word.Contains('-') && word[0] != '-')
                 {
                     /* 
@@ -344,7 +341,6 @@ namespace IR_engine
             //if (words[idx][0] == '$' && (word.Equals("MILLION") || word.Equals("BILLION") || word.Equals("TRILLION"))) return true;
             return false;
         }
-
         private bool containsNumbers(string s)
         {
             //for (int i = 0; i < s.Length; i++)
@@ -399,7 +395,8 @@ namespace IR_engine
         }
         string Isprecent(List<string> words, int idx,out int j)
         {
-            if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) && (words[idx + 2] == "%" || words[idx + 2] == "percent" ||words[idx + 2] == "percentage" || words[idx + 2] == "percent" ||words[idx + 2] == "percentage"))
+            if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) && (words[idx + 2] == "%" || words[idx + 2] == "percent"
+                ||words[idx + 2] == "percentage" || words[idx + 2] == "percent" ||words[idx + 2] == "percentage"))
             { j = idx + 2; return words[idx] + " " + words[idx + 1] + "%"; }
 
             else{ j = idx + 1;  return words[idx]+"%"; }
@@ -523,25 +520,6 @@ namespace IR_engine
         /// this is a testing method for the ToDate method
         /// </summary>
         /// <returns>the formatted string equal to the rules we were provided</returns>
-        public string testToDate(int numberOfTests)
-        {
-            Random r = new Random();
-            string sol = "";
-            for (int i = 0; i < numberOfTests; i++)
-            {
-                Array values = Enum.GetValues(typeof(months));
-                string randomBar = ((months)values.GetValue(r.Next(values.Length))).ToString();
-                int n = r.Next(1, 50);
-                int rand = r.Next(0, 3);
-                if (rand == 0) randomBar = randomBar.Substring(0, 3);
-                if (rand == 1) randomBar = randomBar.ToUpper();
-                if (r.Next(0, 1) == 1)
-                    sol += ToDate(n + "", randomBar.ToString()) + "\t" + n + " " + randomBar.ToString() + "\n";
-                else
-                    sol += ToDate(randomBar.ToString(), n + "") + "\t" + n + " " + randomBar.ToString() + "\n";
-            }
-            return sol;
-        }
         string SetLetterType(int idx, List<string> words) { return null; }
         string Setprice(int idx, List<string> words, out int j) {
             string val = "";
