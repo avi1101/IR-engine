@@ -111,6 +111,7 @@ namespace IR_engine
         bool toStem;
         string path;
         string DocName;
+        StringBuilder strbld = new StringBuilder();
 
         /// <summary>
         /// this is the constructor for the Parser class
@@ -791,10 +792,32 @@ namespace IR_engine
         }
         string Fixword(string word)
         {
-            word = word.Replace(" ", "");
-            word = word.Replace(":", "");
+            bool ended = false;
+            strbld.Clear();
+            for(int i = 0; i < word.Length; i++)
+            {
+                if ((word[i] == '.' && strbld.Length == 0) || (word[i] == ',' && strbld.Length == 0))
+                {
+                    continue;
+                }
+               
+                if ((word[word.Length-i-1] == '.' && !ended) || (word[word.Length - i-1] == ',' && !ended))
+                {
+                    continue;
+                }
+                else { ended = true;}
+                if ((word[i] <= 'z' && word[i] >= 'a') || (word[i] <= 'Z' && word[i] >= 'A')
+                    || (word[i] <= '9' && word[i] >= '0') || (word[i] == '-')) strbld.Append(word[i]);
+            }
+            return strbld.ToString();
+        }
 
-            bool done = false;
+
+        /*
+        word = word.Replace(" ", "");
+        word = word.Replace(":", "");
+      
+        bool done = false;
             while (!done)
             {
                 done = true;
@@ -827,7 +850,7 @@ namespace IR_engine
             }
 
             return null;
-        }
+        }*/
         private void AddTerm(term t)
         {
             if (terms.ContainsKey(t.Phrase))
