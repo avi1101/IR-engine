@@ -167,7 +167,7 @@ namespace IR_engine
                 term t;
                 string phrase = "";
                 int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
-                if(words[i]==null||words[i].Equals("")) { continue; }
+                if (words[i] == null || words[i].Equals("")) { continue; }
                 string word = words[j];
                 word = Fixword(word);
                 if (word == null /*|| stopwords.Contains(word.ToLower())*/) continue;
@@ -250,38 +250,40 @@ namespace IR_engine
                     }
                     else
                         phrase = toStem ? stem.stemTerm(word) : word;
+
+                    t = new term(phrase);
+                    //if (terms.ContainsKey(phrase))
+                    //{
+                    //    /*
+                    //     * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
+                    //     * the dictionary is implemented as a hash table with chaining
+                    //     * so it should give us the best resaults
+                    //     */
+                    //    t = terms[phrase]; //reference to the original term
+                    //}
+                    //else
+                    //{
+                    //    /*
+                    //     * this is a new tern that needs to be created
+                    //     */
+                    //    t = new term(phrase);
+                    //    terms.Add(t.Phrase, t);
+                    //}
+                    //t.AddToCount(DocName);
+                    Model.queueList[queue].Enqueue(t);
+                    if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
+                    //Console.WriteLine(word);
                 }
-                t = new term(phrase);
-                //if (terms.ContainsKey(phrase))
-                //{
-                //    /*
-                //     * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
-                //     * the dictionary is implemented as a hash table with chaining
-                //     * so it should give us the best resaults
-                //     */
-                //    t = terms[phrase]; //reference to the original term
-                //}
-                //else
-                //{
-                //    /*
-                //     * this is a new tern that needs to be created
-                //     */
-                //    t = new term(phrase);
-                //    terms.Add(t.Phrase, t);
-                //}
-                //t.AddToCount(DocName);
-                Model.queueList[queue].Enqueue(t);
-                if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
-                //Console.WriteLine(word);
-            }
 
                 /*
                  * at the end of the doc parsing, I should end all opened doc counts for the terms
                  */
                 foreach (KeyValuePair<string, term> tn in terms)
-                    tn.Value.addDocumentToPostingList();
-            }
+                    tn.Value.addDocumentToPostingList(); 
+
+
             catch (Exception e) { }
+            }
         }
         //TODO: need to implement isDate
         private bool isDate(string[] words, int idx)
@@ -545,6 +547,7 @@ namespace IR_engine
             if (words[idx][0] == '$' && words[idx].Length == 1) { j = idx + 1; return "$"; }
             if (words[idx][0] == '$' && IsComNum(words[idx].Remove(0, 1).Replace(",","")))
             {
+                bool cooma = hasChar(words[idx], ',');
                 string numOnly = words[idx].Remove(0, 1);
                 if (hasChar(numOnly, '.'))
                 {
@@ -569,7 +572,7 @@ namespace IR_engine
                         j = idx;
                         return words[idx];
                     }
-                    if (amount > 1000000) { amount = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
+                    if (amount > 1000000) { amount = amount / 1000000;  x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else
                     {
                         if (idx + 1 == words.Length && words[idx][0] == '$')
@@ -596,7 +599,7 @@ namespace IR_engine
                      */
  
                     double amount = FormatNumber(numOnly);
-                    if (amount > 1000000) { double amount2 = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
+                    if (amount > 1000000) { double amount2 = amount / 1000000;  x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else {
                         if (idx + 1 == words.Length && words[idx][0] == '$')
                         {
