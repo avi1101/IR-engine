@@ -340,7 +340,6 @@ namespace IR_engine
             if (words[idx][0] == '$' && (word.Equals("MILLION") || word.Equals("BILLION") || word.Equals("TRILLION"))) return true;
             return false;
         }
-
         private bool containsNumbers(string s)
         {
             //for (int i = 0; i < s.Length; i++)
@@ -395,7 +394,8 @@ namespace IR_engine
         }
         string Isprecent(string[] words, int idx,out int j)
         {
-            if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) && (words[idx + 2] == "%" || words[idx + 2] == "percent" ||words[idx + 2] == "percentage" || words[idx + 2] == "percent" ||words[idx + 2] == "percentage"))
+            if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) && (words[idx + 2] == "%" || words[idx + 2] == "percent"
+                ||words[idx + 2] == "percentage" || words[idx + 2] == "percent" ||words[idx + 2] == "percentage"))
             { j = idx + 2; return words[idx] + " " + words[idx + 1] + "%"; }
 
             else{ j = idx + 1;  return words[idx]+"%"; }

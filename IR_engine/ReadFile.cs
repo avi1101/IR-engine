@@ -43,8 +43,8 @@ namespace IR_engine
         /// <param name="path"></param>
         public List<document> getDocs()
         {
-           
-            if (index + 1< allfilesSize)
+
+            if (index + 1 < allfilesSize)
             {
                 index++;
                 string[] ext = allfiles[index].Split('.');
@@ -105,7 +105,6 @@ namespace IR_engine
                     counter++;
                     parser.Text2list(d, queue);
                 }
-                
             }
             return docslist;
         }
@@ -113,6 +112,9 @@ namespace IR_engine
         {
             return allfilesSize;
         }
+    }
+}
+        /*
         public static string RemoveStringReader(string input)
         {
             var s = new StringBuilder(input.Length); // (input.Length);
@@ -133,3 +135,4 @@ namespace IR_engine
         }
     }
 }
+*/
