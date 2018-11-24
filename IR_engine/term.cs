@@ -14,7 +14,6 @@ namespace IR_engine
         string postingFile;// pointer to the posting list file
         string phrase; // the phrase itself
         int numOfDocs; // the number of docs this term is in
-        public int idf = 0;
 
         //used for global information, global occurances of the term in the curpus and if upper
         int globalOccurances;
