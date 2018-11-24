@@ -103,7 +103,10 @@ namespace IR_engine
     public class Parse
     {
         private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
-
+        HashSet<string> hash_month = new HashSet<string> { "january", "february", "march","april","may","june","july","august","september","october","november","december"
+            ,"January", "February", "March","April","May","June","July","August","September","October","November","December","JANUARY", "FEBRUARY", "MARCH","APRIL","MAY",
+            "JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVENBER","DECEMBER","jan", "feb", "mar","apr","may","jun","jul","aug","sep","oct","nov","dec","Jan", "Feb",
+            "Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","JAN", "FEB", "MAR","APR","MAY", "JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
         List<string> pre_terms;
         public static Dictionary<string, term> terms = new Dictionary<string, term>();
         HashSet<string> stopwords;
@@ -143,6 +146,7 @@ namespace IR_engine
         {
             string tmp_txt = document.Doc;
             string[] text = tmp_txt.Split(' ');
+            text = text.Where(x => !string.IsNullOrEmpty(x)).ToArray();
             //pre_terms = text.ToList();
             DocName = document.DocID;
             parseText(text, queue);
@@ -165,12 +169,12 @@ namespace IR_engine
                 term t;
                 string phrase = "";
                 int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
-                if (words[i] == null || words[i].Equals("")) { continue; }
+                if (words[i] == null || words[i].Equals("")||words[i].Equals(" ")) { continue; }
                 string word = words[j];
                 word = Fixword(word);
-                if (word == null /*|| stopwords.Contains(word.ToLower())*/) continue;
+                if (word == null) continue;
                 if (word.Length > 0 && word[word.Length - 1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
-                if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
+                if (word == null||word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
                 bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
                                                                                                         //checking for rule
                 if (hasChar(word, '-') && word[0] != '-')
@@ -375,7 +379,7 @@ namespace IR_engine
             //    if (s[i] <= '9' && s[i] >= '0') return true;
             //return false;
             for (int i = 0; i < s.Length; i++)
-                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-') return false;
+                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != ',') return false;
             return true;
         }
         /// <summary>
@@ -782,26 +786,25 @@ namespace IR_engine
         }
         string Fixword(string word)
         {
-            word = word.Replace(":", "");
             bool done = false;
             while (!done)
             {
                 done = true;
-                if (word != "" && word != "\n" && word[0] != '<')
-                {
+                if (word == "" || word == "\n" || word[0] == '<') { return null; }
+                else{
 
                     if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' ||
-                        word[word.Length - 1] == ')' || word[word.Length - 1] == '}' ||
-                        word[word.Length - 1] == '>' || word[word.Length - 1] == '-' || word[word.Length - 1] == ']' || word[word.Length - 1] == ';')
+                        word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':'||
+                        word[word.Length - 1] == '>' || word[word.Length - 1] == '-' || word[word.Length - 1] == ']' || word[word.Length - 1] == ';' || word[word.Length - 1] == '?')
                     {
                         done = false;
                         word = word.Remove(word.Length - 1);
                     }
 
-                    if (word != "" && word != "\n" && word[0] != '<')
-                    {
+                    if (word == "" || word == "\n" || word[0] == '<') { return null; }
+                    else{
                         //removes non-relative end characters from words
-                        if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' ||
+                        if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{'  || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':' ||
                            word[0] == '<' || word[0] == '[' || word[0] == '?')
                         {
                             done = false;
@@ -825,7 +828,7 @@ namespace IR_engine
             else
                 terms.Add(t.Phrase, t);
             bool isUpperFirstLetter = t.Phrase[0] >= 'A' && t.Phrase[0] <= 'Z' ? true : false;
-            t.AddToCount(DocName);
+            t.AddToPosting(DocName);
             if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
         }
 

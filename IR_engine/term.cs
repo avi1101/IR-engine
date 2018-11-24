@@ -14,7 +14,7 @@ namespace IR_engine
         string postingFile;// pointer to the posting list file
         string phrase; // the phrase itself
         int numOfDocs; // the number of docs this term is in
-
+        public int idf = 0;
         //used for global information, global occurances of the term in the curpus and if upper
         int globalOccurances;
         bool isUpperInCurpus;
@@ -37,6 +37,7 @@ namespace IR_engine
             numOfDocs = globalOccurances = 0;
             phrase = "";
             currectDoc = "";
+            posting = new Dictionary<string, int>();
         }
 
         public term(string phrase)
@@ -46,6 +47,7 @@ namespace IR_engine
             postingList = new List<string>();
             numOfDocs = globalOccurances = 0;
             currectDoc = "";
+            posting = new Dictionary<string, int>();
         }
 
         public string Phrase
@@ -93,7 +95,14 @@ namespace IR_engine
 
         public void AddToPosting(string doc)
         {
-            posting.Add(doc, 1);
+            if (posting.ContainsKey(doc))
+            {
+                posting[doc]++;
+            }
+            else
+            {
+                posting.Add(doc, 1);
+            }
         }
 
         public string printPosting()

@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using NSoup;
-using NSoup.Nodes;
+
 using System.ComponentModel;
 using System.Collections.Concurrent;
 
@@ -62,8 +61,8 @@ namespace IR_engine
             //}
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-            int tasks = Environment.ProcessorCount - 4;             //get the number of logical proccesors 
-            //int tasks = 1;             //get the number of logical proccesors 
+            //int tasks = Environment.ProcessorCount;             //get the number of logical proccesors 
+            int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
                 queueList.Add(new ConcurrentQueue<term>());
             int k = 0, chunk = 0, id = 0;
@@ -83,13 +82,13 @@ namespace IR_engine
                     foreach (Task ts in t)
                         ts.Wait();
                     manageResources();
-                    using (StreamWriter sw = new StreamWriter(path+ "\\Posting_and_indexes\\index" + chunk + ".txt"))
-                    {
-                        foreach (KeyValuePair<term, term> entry in terms2)
-                        {
-                            sw.WriteLine(entry.Key.Phrase + "\t" + entry.Value.IsUpperInCurpus + '\t' + entry.Value.printPosting());
-                        }
-                    }
+                    //using (StreamWriter sw = new StreamWriter(path+ "\\Posting_and_indexes\\index" + chunk + ".txt"))
+                    //{
+                    //    foreach (KeyValuePair<term, term> entry in terms2)
+                    //    {
+                    //        sw.WriteLine(entry.Key.Phrase + "\t" + entry.Value.IsUpperInCurpus + '\t' + entry.Value.printPosting());
+                    //    }
+                    //}
                     terms2.Clear();
                     Console.WriteLine("{0} tasks done, total done: {1}", tasks, id);
                 }
@@ -116,13 +115,13 @@ namespace IR_engine
                     if (terms2.ContainsKey(t))
                     {
                         terms2[t].idf += 1;
-                        if (!Parse.DocName.Equals(""))
-                            terms2[t].AddToPosting(Parse.DocName);
+                        //if (!Parse.DocName.Equals(""))
+                        //    terms2[t].AddToPosting(Parse.DocName);
                     }
                     else
                     {
-                        if (!Parse.DocName.Equals(""))
-                            t.AddToPosting(Parse.DocName);
+                        //if (!Parse.DocName.Equals(""))
+                        //    t.AddToPosting(Parse.DocName);
                         terms2.Add(t, t);
                     }
                 }
