@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using NSoup;
-using NSoup.Nodes;
 using System.ComponentModel;
 using System.Collections.Concurrent;
 
@@ -15,7 +13,7 @@ namespace IR_engine
     {
         //concurrent variables
         static int i = 0;                                                           //use to index the queues in the list
-        public static List<ConcurrentQueue<term>> queueList = new List<ConcurrentQueue<term>>();        //list of Queues 
+        public static List<ConcurrentDictionary<string, term>> queueList = new List<ConcurrentDictionary<string,term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
         //end concurrent variables
 
@@ -65,7 +63,7 @@ namespace IR_engine
             int tasks = Environment.ProcessorCount - 4;             //get the number of logical proccesors 
             //int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
-                queueList.Add(new ConcurrentQueue<term>());
+                queueList.Add(new ConcurrentDictionary<string, term>());
             int k = 0, chunk = 0, id = 0;
             foreach(string file in files)
             {
@@ -102,34 +100,52 @@ namespace IR_engine
 
         public void manageResources()
         {
-            //while (!stop)
-            //{
-            //semaphore.WaitOne();
+            Int32 len = 0;
             for (int i = 0; i < queueList.Count; i++)
             {
+                Int32 j;
                 term t = null;
-                for (int j = 0; j < queueList[i].Count; j++)
+                len = queueList[i].Count;
+                foreach (KeyValuePair<string, term> entry in queueList[i])
                 {
-                    int len = queueList[i].Count;
-                    queueList[i].TryDequeue(out t);
+                    t = entry.Value;
                     if (t == null) break;
                     if (terms2.ContainsKey(t))
                     {
-                        terms2[t].idf += 1;
-                        if (!Parse.DocName.Equals(""))
-                            terms2[t].AddToPosting(Parse.DocName);
+                        terms2[t].AddToPosting(t.posting);
                     }
                     else
                     {
-                        if (!Parse.DocName.Equals(""))
-                            t.AddToPosting(Parse.DocName);
                         terms2.Add(t, t);
                     }
                 }
+                queueList[i].Clear();
             }
-            //}
-            //Console.WriteLine("end");
         }
+
+        //public void manageResources()
+        //{
+        //    Int32 len = 0;
+        //    for (int i = 0; i < queueList.Count; i++)
+        //    {
+        //        Int32 j;
+        //        term t = null;
+        //        len = queueList[i].Count;
+        //        for (j = 0; j < len; j++)
+        //        {
+        //            queueList[i].TryRemove(out t);
+        //            if (t == null) break;
+        //            if (terms2.ContainsKey(t))
+        //            {
+        //                terms2[t].idf += 1;
+        //            }
+        //            else
+        //            {
+        //                terms2.Add(t, t);
+        //            }
+        //        }
+        //    }
+        //}
 
         public Dictionary<string, term> getDictionary()
         {
