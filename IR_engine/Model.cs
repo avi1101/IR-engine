@@ -14,8 +14,8 @@ namespace IR_engine
 
         string path;
         bool ToStem;
-        public static long time_getDoc = 0;
-        double st;
+       // public static long time_getDoc = 0;
+      //  double st;
         public Model(string path,bool Tostem)
         {
             
@@ -43,20 +43,19 @@ namespace IR_engine
             }
             for (int i = 0; i < readfo.returnSize(); i++)
             {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
+            //    var watch = System.Diagnostics.Stopwatch.StartNew();
                 List<document> f = readfo.getDocs();
-                watch.Stop();
-                time_getDoc = time_getDoc + watch.ElapsedMilliseconds;
+             //   watch.Stop();
+             //   time_getDoc = time_getDoc + watch.ElapsedMilliseconds;
                 if (f == null) continue;
                 foreach(document d in f)
                 {
-                  //  parser.Text2list(d);
-                }
 
+                 parser.Text2list(d);
+                }
+                //System.Diagnostics.Debug.WriteLine("Done with: " + i + " of Files");
             }
-            Console.WriteLine("get doc time = " + time_getDoc);
-            //Double nd = DateTime.Now.Second;
-            // Console.WriteLine("time to work : " + (nd - st));
+
         }
 
         public Dictionary<string, term> getDictionary()

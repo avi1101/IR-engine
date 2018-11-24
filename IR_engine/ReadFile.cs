@@ -74,7 +74,7 @@ namespace IR_engine
                 if (doc != "\n")
                 {
                     st1 = doc.IndexOf("<DOCNO>");
-                    if (st1 != 0)
+                    if (st1 != -1)
                         end1 = doc.IndexOf("</DOCNO>", st1);
                     if (st1 != -1 && end1 != -1) { docNo = /*RemoveStringReader*/(/*doc.Substring(st1 + 7, (end1 - st1) - 8));*/sb.ToString(st1 + 7, (end1 - st1) - 8)); }
                     st2 = doc.IndexOf("<DATE1>", end1, 50);
@@ -95,7 +95,7 @@ namespace IR_engine
                     string city = "";
                     if (st5 != -1 && end5 != -1) { city =( /*doc.Substring(st5 + 9, (end5 - st5) - 4).Trim();*/sb.ToString(st5 + 9, (end5 - st5) - 9)); }
                     document d = new document(data, docNo, date, head, city);
-                    docslist.Add(d);
+                     docslist.Add(d);
                     counter++;
                 }
             }

@@ -70,8 +70,7 @@ namespace IR_engine
 
         private void Run_Click(object sender, RoutedEventArgs e)
         {
-            long time = 0;
-            var watch2 = System.Diagnostics.Stopwatch.StartNew();
+
             test.Content = "";
             if (path == null)
             {
@@ -84,9 +83,7 @@ namespace IR_engine
             }
             else
                 test.Content = "path not provided.";
-            watch2.Stop();
-            time = time + watch2.ElapsedMilliseconds;
-            Console.WriteLine("total run time = " + time);
+
         }
 
         private void showDic_Click(object sender, RoutedEventArgs e)
