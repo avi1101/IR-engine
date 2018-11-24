@@ -87,7 +87,6 @@ namespace IR_engine
             watch2.Stop();
             time = time + watch2.ElapsedMilliseconds;
             Console.WriteLine("total run time = " + time);
-            test.Content = "total time run: "+((time / 1000.0) / 60.0);
         }
 
         private void showDic_Click(object sender, RoutedEventArgs e)
