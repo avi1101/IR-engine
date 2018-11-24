@@ -26,8 +26,7 @@ namespace IR_engine
         int currectCount;
         //end currect variables
 
-        Dictionary<string, int> numInDoc;  
-        Dictionary<string, Tuple<string, int>> forPosting;
+        Dictionary<string, int> posting; //string = doc name, int = occurances
 
         List<string> postingList; //this will be used in the format: <docname>_<number> of occurances of the term>
 
@@ -93,28 +92,9 @@ namespace IR_engine
             postingList.Add(filename + "_" + occurances);
         }
 
-        public void addDocumentToPostingList()
+        public void AddToPosting(string doc)
         {
-            if (currectDoc.Equals("")) return;
-            postingList.Add(currectDoc + "_" + currectCount);
-            currectDoc = "";
-        }
-
-        private void StartNewDocumentCount(string docname)
-        {
-            currectDoc = docname;
-            currectCount = 0;
-        }
-
-        public void AddToCount(string docname)
-        {
-            if(!currectDoc.Equals(docname))
-            {
-                if(!currectDoc.Equals(""))
-                    addDocumentToPostingList();
-                StartNewDocumentCount(docname);
-            }
-            currectCount++;
+            posting.Add(doc, 1);
         }
 
         public string printPosting()

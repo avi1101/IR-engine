@@ -28,6 +28,7 @@ namespace IR_engine
         private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
         string path=null;
         Model m;
+        double time = 0;
         public MainWindow()
         {
             InitializeComponent();
@@ -70,7 +71,7 @@ namespace IR_engine
 
         private void Run_Click(object sender, RoutedEventArgs e)
         {
-
+            var watch2 = System.Diagnostics.Stopwatch.StartNew();
             test.Content = "";
             if (path == null)
             {

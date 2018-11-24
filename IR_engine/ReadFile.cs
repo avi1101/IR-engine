@@ -36,6 +36,12 @@ namespace IR_engine
             //TODO: remove also posting list files and index file
             allfilesSize = allfiles.Count;
             parser = new Parse(path, false);
+            string root = path+@"\Posting_and_indexes";
+            // If directory does not exist, don't even try 
+            if (!Directory.Exists(root))
+            {
+                Directory.CreateDirectory(root);
+            }
         }
         /// <summary>
         /// this function gets all docs in the corpus folder and its sub-folders.
@@ -50,7 +56,7 @@ namespace IR_engine
                 string[] ext = allfiles[index].Split('.');
                 if (ext[ext.Length - 1].Equals("txt")) return null;
                 //List < document > ans = readfile(File.ReadAllText(allfiles[index++]));
-                
+
                 //return ans;
             }
             return null;
@@ -62,7 +68,7 @@ namespace IR_engine
         /// <param name="file"> the string that constains all the data in the file</param>
         public List<document> readfile(string file2, int queue)
         {
-            
+
             var watch2 = System.Diagnostics.Stopwatch.StartNew();
             List<document> docslist = new List<document>();
             string file = File.ReadAllText(file2);
@@ -101,7 +107,7 @@ namespace IR_engine
                     string city = "";
                     if (st5 != -1 && end5 != -1) { city = ( /*doc.Substring(st5 + 9, (end5 - st5) - 4).Trim();*/sb.ToString(st5 + 9, (end5 - st5) - 9)); }
                     document d = new document(data, docNo, date, head, city);
-                     docslist.Add(d);
+                    docslist.Add(d);
                     counter++;
                     parser.Text2list(d, queue);
                 }
@@ -114,25 +120,25 @@ namespace IR_engine
         }
     }
 }
-        /*
-        public static string RemoveStringReader(string input)
+/*
+public static string RemoveStringReader(string input)
+{
+    var s = new StringBuilder(input.Length); // (input.Length);
+    using (var reader = new StringReader(input))
+    {
+        int i = 0;
+        char c;
+        for (; i < input.Length; i++)
         {
-            var s = new StringBuilder(input.Length); // (input.Length);
-            using (var reader = new StringReader(input))
+            c = (char)reader.Read();
+            if (!char.IsWhiteSpace(c))
             {
-                int i = 0;
-                char c;
-                for (; i < input.Length; i++)
-                {
-                    c = (char)reader.Read();
-                    if (!char.IsWhiteSpace(c))
-                    {
-                        s.Append(c);
-                    }
-                }
+                s.Append(c);
             }
-            return s.ToString();
         }
     }
+    return s.ToString();
+}
+}
 }
 */

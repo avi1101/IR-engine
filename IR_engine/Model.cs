@@ -62,7 +62,7 @@ namespace IR_engine
             //}
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-            int tasks = Environment.ProcessorCount;             //get the number of logical proccesors 
+            int tasks = Environment.ProcessorCount - 4;             //get the number of logical proccesors 
             //int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
                 queueList.Add(new ConcurrentQueue<term>());
@@ -83,11 +83,11 @@ namespace IR_engine
                     foreach (Task ts in t)
                         ts.Wait();
                     manageResources();
-                    using (StreamWriter sw = new StreamWriter("index" + chunk + ".txt"))
+                    using (StreamWriter sw = new StreamWriter(path+ "\\Posting_and_indexes\\index" + chunk + ".txt"))
                     {
                         foreach (KeyValuePair<term, term> entry in terms2)
                         {
-                            sw.WriteLine(entry.Key.Phrase + "\t" + entry.Value.printPosting());
+                            sw.WriteLine(entry.Key.Phrase + "\t" + entry.Value.IsUpperInCurpus + '\t' + entry.Value.printPosting());
                         }
                     }
                     terms2.Clear();
@@ -117,12 +117,12 @@ namespace IR_engine
                     {
                         terms2[t].idf += 1;
                         if (!Parse.DocName.Equals(""))
-                            terms2[t].AddToCount(Parse.DocName);
+                            terms2[t].AddToPosting(Parse.DocName);
                     }
                     else
                     {
                         if (!Parse.DocName.Equals(""))
-                            t.AddToCount(Parse.DocName);
+                            t.AddToPosting(Parse.DocName);
                         terms2.Add(t, t);
                     }
                 }
