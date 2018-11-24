@@ -867,7 +867,6 @@ namespace IR_engine
         }
         public int wordCase(string[] words, int idx)
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
             StringBuilder sb = new StringBuilder(words[idx]);
             if (words[idx][0] == '\"')
             {
