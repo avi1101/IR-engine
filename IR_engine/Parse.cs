@@ -131,7 +131,7 @@ namespace IR_engine
             if (!File.Exists(path + "\\postingList.txt"))
                 File.CreateText(path + "\\postingList.txt");
             string stopPath = path + "\\stop_words.txt";
-           List<string> stops = split(File.ReadAllText(stopPath),'\n');
+            List<string> stops = split(File.ReadAllText(stopPath), '\n');
             foreach (string word in stops)
             {
                 string stpword = word.Trim();
@@ -162,31 +162,27 @@ namespace IR_engine
         }
         public void parseText(string[] words, int queue)
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
 
-            words = words.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
-            watch.Stop();
-            chartime += watch.ElapsedMilliseconds;
-            for (int i = 0; i < words.Count; i++)
-
+            //words = words.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
             for (int i = 0; i < words.Length; i++)
             {
                 term t;
                 string phrase = "";
                 int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
-                if(words[i]==null||words[i].Equals("")) { continue; }
+                if (words[i] == null || words[i].Equals("")) { continue; }
                 string word = words[j];
                 words[i] = Fixword(word);
                 if (words[i] == null || words[i] == "" || words[i] == "\n"/* || word[0] == '<' || stopwords.Contains(word)*/) continue; //stip white characters, tags and stop words
                 bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
-                                                                                                        //checking for rule
-                if (word.Contains('-') && word[0] != '-')
+                int Case = wordCase(words, i);
+                switch (Case)
                 {
+
                     case 101:
-                        phrase = SetQuotationExp(i, words, out j);
+                        phrase = SetQuotationExp(i, words, out j, queue);
                         break;
                     case 102:
-                        phrase = SetExp(i, words, out j);
+                        phrase = SetExp(i, words, out j, queue);
                         break;
                     case 103:
                         phrase = Setprice(i, words, out j);
@@ -201,13 +197,11 @@ namespace IR_engine
                     case 106:
                         phrase = NumberSet(word, i, words, out j);
                         break;
-                    case 107:
+                    default:
                         phrase = toStem ? stem.stemTerm(word) : word;
                         break;
                 }
-                watch2.Stop();
-                caseTime = caseTime + watch2.ElapsedMilliseconds;
-
+        
                 t = new term(phrase);
                 //if (terms.ContainsKey(phrase))
                 //{
@@ -250,21 +244,21 @@ namespace IR_engine
         /// </summary>
         /// <param name="date">the string that holds the month</param>
         /// <returns>true is contains, false otherwise</returns>
-        private bool EnumContains(string date)
-        {
-            date = date.ToLower();
-            foreach (months m in Enum.GetValues(typeof(months)))
-            {
-                string m2 = m.ToString();
-                string mon = m2.Substring(0, 3);
-                //checks all possible combinations
-                if (date.Equals(m2) || date.Equals(mon))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+        //private bool EnumContains(string date)
+        //{
+        //    date = date.ToLower();
+        //    foreach (months m in Enum.GetValues(typeof(months)))
+        //    {
+        //        string m2 = m.ToString();
+        //        string mon = m2.Substring(0, 3);
+        //        //checks all possible combinations
+        //        if (date.Equals(m2) || date.Equals(mon))
+        //        {
+        //            return true;
+        //        }
+        //    }
+        //    return false;
+        //}
         /// <summary>
         /// this method checks if a given word in the words list is a start of a percent format
         /// </summary>
@@ -275,9 +269,9 @@ namespace IR_engine
         {
             int size = words[idx].Length - 1;
             if (words[idx][size] == '%') return true;
-            if (idx + 1 == words.Count) return false;
-            if (words[idx + 1].Equals("percent") || words[idx + 1].Equals("percentage")|| words[idx + 1].Equals("Percent")||words[idx + 1].Equals("PERCENT")
-                || words[idx + 1].Equals("Percentage")|| words[idx + 1].Equals("PERCENTAGE")) return true;
+            if (idx + 1 == words.Length) return false;
+            if (words[idx + 1].Equals("percent") || words[idx + 1].Equals("percentage") || words[idx + 1].Equals("Percent") || words[idx + 1].Equals("PERCENT")
+                || words[idx + 1].Equals("Percentage") || words[idx + 1].Equals("PERCENTAGE")) return true;
             return false;
         }
 
@@ -330,7 +324,7 @@ namespace IR_engine
         /// </summary>
         /// <param name="input">cheked term</param>
         /// <returns></returns>
-         bool IsRegNumber(string[] words, int idx)
+        bool IsRegNumber(string[] words, int idx)
         {
             for (int i = 0; i < words[idx].Length; i++)
             {
@@ -354,14 +348,14 @@ namespace IR_engine
             }
             return true;
         }
-        string Isprecent(string[] words, int idx,out int j)
+        string Isprecent(string[] words, int idx, out int j)
         {
             if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) && (words[idx + 2] == "%" || words[idx + 2] == "percent"
                 || words[idx + 2] == "percentage" || words[idx + 2] == "percent" || words[idx + 2] == "percentage"))
             { j = idx + 2; return words[idx] + " " + words[idx + 1] + "%"; }
 
             else { j = idx + 1; return words[idx] + "%"; }
-        }  
+        }
 
         //    if (words[idx][words[idx].Length - 1] == '%' && words.Count>idx+1 && IsComNum(words[idx + 1]))
         //    { j = idx + 2; return words[idx].Remove(0, 1) + " " + words[idx + 1] + "%"; }
@@ -383,7 +377,7 @@ namespace IR_engine
             {
                 input = input.Replace(c, string.Empty);
             }
-            if (idx + 1 == words.Count) { option = 0; }
+            if (idx + 1 == words.Length) { option = 0; }
             else if (words[idx + 1] == "Thousand" || words[idx + 1] == "thousand" || words[idx + 1] == "THOUSAND") { option = 1; }
             else if ((words[idx + 1].Equals("M") || words[idx + 1].Equals("m") || words[idx + 1].Equals("Million") || words[idx + 1].Equals("MILLION") ||
                     words[idx + 1].Equals("million"))) { option = 2; }
@@ -472,7 +466,7 @@ namespace IR_engine
                 number = secondTerm;
             }
             double value = FormatNumber(number);
-           // int value = int.Parse(number);                                      //get the numeric value of the year/day
+            // int value = int.Parse(number);                                      //get the numeric value of the year/day
             month = month.ToLower();                                            //easier to only check lower case strings
             foreach (months m in Enum.GetValues(typeof(months)))                //iterate to find out which month it is
             {
@@ -497,6 +491,7 @@ namespace IR_engine
         }
         string SetLetterType(int idx, string[] words) { return null; }
         string Setprice(int idx, string[] words, out int j) {
+            string x2;
             string val = "";
             //bool coomas = words[idx].Contains(',');
             bool cooma = hasChar(words[idx], ',');
@@ -546,7 +541,7 @@ namespace IR_engine
                     if (hasChar(num2, '/'))
                     {
                         val = num2.Replace("$", "");
-                        if (idx + 1 < words.Count)
+                        if (idx + 1 < words.Length)
                         {
 
                             if ((words[idx + 1].Equals("M") || words[idx + 1].Equals("m") || words[idx + 1].Equals("Million") || words[idx + 1].Equals("MILLION") ||
@@ -567,7 +562,7 @@ namespace IR_engine
                     if (amount > 1000000) { double amount2 = amount / 1000000; if (cooma) { x2 = amount.ToString("#,##0.##"); } else { x2 = amount.ToString(); } val = x2 + " M"; j = idx; }
                     else
                     {
-                        if (idx + 1 == words.Count && words[idx][0] == '$')
+                        if (idx + 1 == words.Length && words[idx][0] == '$')
                         {
                             j = idx;
                             val = words[idx].Remove(0, 1);
@@ -591,7 +586,7 @@ namespace IR_engine
                 /*
                  * the word looks like 45 4/5 dollars
                  */
-                if (idx + 1 == words.Count) { }
+                if (idx + 1 == words.Length) { }
                 if (IsComNum(words[idx + 1]) && hasChar(words[idx + 1], '/'))
                 {
                     val = words[idx] + " " + words[idx + 1] + " Dollars";
@@ -673,8 +668,8 @@ namespace IR_engine
 
             }
         }
-  
-        string SetExp(int idx, List<string> words, out int j)
+
+        string SetExp(int idx, string[] words, out int j,int queue)
         {
             string word = words[idx];
             string[] splittedExpression = word.Split('-');
@@ -685,9 +680,9 @@ namespace IR_engine
             if (splittedExpression.Length == 2 && IsNumber(splittedExpression[0]) && IsNumber(splittedExpression[1]))
             {                                                                                   //for example 6-7 (expression)
                 term right, left;
-                if(idx+1 < words.Length && EnumContains(words[idx+1]))
+                if (idx + 1 < words.Length && EnumContains(words[idx + 1]))
                 {
-                    left = new term(splittedExpression[0]+" "+ words[idx + 1].ToLower());       //term phrase = "6 may"
+                    left = new term(splittedExpression[0] + " " + words[idx + 1].ToLower());       //term phrase = "6 may"
                     right = new term(splittedExpression[1] + " " + words[idx + 1].ToLower());   //term phrase = "7 may"
                 }
                 else if (isPercentage(words, idx))
@@ -744,13 +739,13 @@ namespace IR_engine
                 newWords.Add(word);
             }
             parseText(newWords.ToArray(), queue);                                       //will parse the new list in case for double rule
-            j = i-1;
+            j = i - 1;
             return exp;
 
         }
         static string Fixword(string word)
         {
-           
+
             bool done = false;
             while (!done)
             {
@@ -827,8 +822,6 @@ namespace IR_engine
                 int len = num.Length - floatingPoint - 1;
                 number *= Math.Pow(10, -1 * len);
             }
-            watch.Stop();
-            formattime = formattime + watch.ElapsedMilliseconds;
             return number;
         }
         public static string[] split(string txt, char[] delim)
@@ -872,7 +865,7 @@ namespace IR_engine
 
             return (result);
         }
-        public int wordCase(List<string> words, int idx)
+        public int wordCase(string[] words, int idx)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             StringBuilder sb = new StringBuilder(words[idx]);
@@ -883,8 +876,7 @@ namespace IR_engine
                  * returns a number so it will go to 
                  * the correct function
                  */
-                watch.Stop();
-                caseTime2 = caseTime2 + watch.ElapsedMilliseconds;
+
                 return 101;
             }
             else if (words[idx][0] != '-' && hasChar(words[idx], '-'))
@@ -894,8 +886,7 @@ namespace IR_engine
                  * returns a number so it will go to 
                  * the correct function
                  */
-                watch.Stop();
-                caseTime2 = caseTime2 + watch.ElapsedMilliseconds;
+
                 return 102;
             }
             else if (containsNumbers(words[idx]))
@@ -906,44 +897,40 @@ namespace IR_engine
                  * */
                 if (words[idx][0] == '$')
                 {
-                    watch.Stop();
-                    caseTime2 = caseTime2 + watch.ElapsedMilliseconds; return 103;
+                    return 103;
                 }//103--> is Price
-                if (idx + 1 < words.Count)
+                if (idx + 1 < words.Length)
                     if (words[idx + 1].Equals("Dollars") || words[idx + 1].Equals("DOLLARS") || words[idx + 1].Equals("dollars"))
                     {
-                        watch.Stop();
-                        caseTime2 = caseTime2 + watch.ElapsedMilliseconds;
+
                         return 103;
                     }
-                if (idx + 2 < words.Count)
+                if (idx + 2 < words.Length)
                     if ((words[idx + 2].Equals("Dollars") || words[idx + 2].Equals("DOLLARS") || words[idx + 2].Equals("dollars")) &&
                     (words[idx + 1].Equals("M") || words[idx + 1].Equals("m") || words[idx + 1].Equals("Million") || words[idx + 1].Equals("MILLION") ||
-                    words[idx + 1].Equals("million") || (words[idx + 1].Equals("BN")) || words[idx + 1].Equals("bn") || words[idx + 1].Equals("Billion") || words[idx + 1].Equals("BILLION") ||
+                    words[idx + 1].Equals("million") || (words[idx + 1].Equals("BN")) || words[idx + 1].Equals("bn") || words[idx + 1].Equals("Billion") 
+                    || words[idx + 1].Equals("BILLION") ||
                     words[idx + 1].Equals("billion") ||
                    words[idx + 1].Equals("Trillion") || words[idx + 1].Equals("TRILLION") ||
                     words[idx + 1].Equals("trillion")
                     ))
                     {
-                        watch.Stop();
-                        caseTime2 = caseTime2 + watch.ElapsedMilliseconds;
+
                         return 103;//103--> is Price
                     }
 
                 if (words[idx][words[idx].Length - 1] == '%')
                 {
-                    watch.Stop();
-                    caseTime2 = caseTime2 + watch.ElapsedMilliseconds; return 104;
+                    return 104;
                 }//104--> is Percentage
-                if (idx + 1 < words.Count && (words[idx + 1].Equals("percent") || words[idx + 1].Equals("Percent") || words[idx + 1].Equals("percent") || words[idx + 1].Equals("PERCENT")
+                if ((idx + 1 < words.Length) && (words[idx + 1].Equals("percent") || words[idx + 1].Equals("Percent") || words[idx + 1].Equals("percent") || words[idx + 1].Equals("PERCENT")
                         || words.Equals("percentage") || words.Equals("percentage") || words.Equals("Percentage") || words.Equals("PERCENTAGE")))
                 {
-                    watch.Stop();
-                    caseTime2 = caseTime2 + watch.ElapsedMilliseconds;
+
                     return 104;//104--> is Percentage
                 }
 
-                if (idx + 1 < words.Count && (words[idx + 1].Equals("january") || words[idx + 1].Equals("January") || words[idx + 1].Equals("JANUARY") || words[idx + 1].Equals("february") ||
+                if ((idx + 1 < words.Length) && (words[idx + 1].Equals("january") || words[idx + 1].Equals("January") || words[idx + 1].Equals("JANUARY") || words[idx + 1].Equals("february") ||
                         words[idx + 1].Equals("February") || words[idx + 1].Equals("FEBRUARY") || words[idx + 1].Equals("march") || words[idx + 1].Equals("March") ||
                     words[idx + 1].Equals("MARCH") || words[idx + 1].Equals("april") || words[idx + 1].Equals("April") || words[idx + 1].Equals("APRIL") ||
                     words[idx + 1].Equals("may") || words[idx + 1].Equals("May") || words[idx + 1].Equals("MAY") || words[idx + 1].Equals("june") ||
@@ -953,12 +940,10 @@ namespace IR_engine
                     words[idx + 1].Equals("October") || words[idx + 1].Equals("OCTOBER") || words[idx + 1].Equals("november") || words[idx + 1].Equals("November") ||
                     words[idx + 1].Equals("NOVEMBER") || words[idx + 1].Equals("december") || words[idx + 1].Equals("December") || words[idx + 1].Equals("DECEMBER")))
                 {
-                    watch.Stop();
-                    caseTime2 = caseTime2 + watch.ElapsedMilliseconds;
+
                     return 105;//105--> is Date
                 }
-                watch.Stop();
-                caseTime2 = caseTime2 + watch.ElapsedMilliseconds;
+
                 return 106;//106--> is Normal number
             }
             else if (((words[idx].Equals("january") || words[idx].Equals("January") || words[idx].Equals("JANUARY") || words[idx].Equals("february") ||
@@ -970,67 +955,67 @@ namespace IR_engine
                     words[idx].Equals("september") || words[idx].Equals("September") || words[idx].Equals("SEPTEMBER") || words[idx].Equals("october") ||
                     words[idx].Equals("October") || words[idx].Equals("OCTOBER") || words[idx].Equals("november") || words[idx].Equals("November") ||
                     words[idx].Equals("NOVEMBER") || words[idx].Equals("december") || words[idx].Equals("December") || words[idx].Equals("DECEMBER"))) &&
-                  (idx + 1 < words.Count) && (IsNumber(words[idx + 1])))
+                  ((idx + 1 < words.Length)) && (IsNumber(words[idx + 1])))
             {
-                watch.Stop();
-                caseTime2 = caseTime2 + watch.ElapsedMilliseconds;
+
                 return 105;//105--> is Date
 
             }
             else
             {
-                watch.Stop();
-                caseTime2 = caseTime2 + watch.ElapsedMilliseconds; return 107; }//105--> is Normal word
-        }
-        static bool hasChar(string word, char del)
-        {
-            for (int i = 0; i < word.Length; i++)
-            {
-                if (word[i] == del || word[word.Length - i - 1] == del)
-                    return true;
+                return 107;
             }
-            return false;
         }
-        static bool hasChar(string word, char[] del)
-        {
-            for (int j = 0; j < del.Length; j++)
+            bool hasChar(string word, char del)
             {
-                char del1 = del[j];
                 for (int i = 0; i < word.Length; i++)
                 {
-                    if (word[i] == del1 || word[word.Length - i - 1] == del1)
+                    if (word[i] == del || word[word.Length - i - 1] == del)
                         return true;
                 }
+                return false;
             }
-            return false;
-        }
-        static public List<string> split(string word, char del)
-        {
-            List<string> newList = new List<string>();
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < word.Length; i++)
+            bool hasChar(string word, char[] del)
             {
-                if (word[i] != del)
+                for (int j = 0; j < del.Length; j++)
                 {
-                    sb.Append(word[i]);
-                    continue;
+                    char del1 = del[j];
+                    for (int i = 0; i < word.Length; i++)
+                    {
+                        if (word[i] == del1 || word[word.Length - i - 1] == del1)
+                            return true;
+                    }
                 }
-                else if (word[i] == del && sb.Length == 0)
-                {
-                    continue;
-                }
-                else if (word[i] == del)
-                {
-                    newList.Add(sb.ToString());
-                    sb.Clear();
-                    continue;
-
-                }
+                return false;
             }
-            return newList;
+            public List<string> split(string word, char del)
+            {
+                List<string> newList = new List<string>();
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < word.Length; i++)
+                {
+                    if (word[i] != del)
+                    {
+                        sb.Append(word[i]);
+                        continue;
+                    }
+                    else if (word[i] == del && sb.Length == 0)
+                    {
+                        continue;
+                    }
+                    else if (word[i] == del)
+                    {
+                        newList.Add(sb.ToString());
+                        sb.Clear();
+                        continue;
+
+                    }
+                }
+                return newList;
+            }
         }
     }
-}
+
 
 
 //{
