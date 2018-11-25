@@ -103,10 +103,7 @@ namespace IR_engine
     public class Parse
     {
         private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
-        HashSet<string> hash_month = new HashSet<string> { "january", "february", "march","april","may","june","july","august","september","october","november","december"
-            ,"January", "February", "March","April","May","June","July","August","September","October","November","December","JANUARY", "FEBRUARY", "MARCH","APRIL","MAY",
-            "JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVENBER","DECEMBER","jan", "feb", "mar","apr","may","jun","jul","aug","sep","oct","nov","dec","Jan", "Feb",
-            "Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","JAN", "FEB", "MAR","APR","MAY", "JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
+
         List<string> pre_terms;
         public static Dictionary<string, term> terms = new Dictionary<string, term>();
         HashSet<string> stopwords;
@@ -146,7 +143,6 @@ namespace IR_engine
         {
             string tmp_txt = document.Doc;
             string[] text = tmp_txt.Split(' ');
-            text = text.Where(x => !string.IsNullOrEmpty(x)).ToArray();
             //pre_terms = text.ToList();
             DocName = document.DocID;
             parseText(text, queue);
@@ -169,12 +165,12 @@ namespace IR_engine
                 term t;
                 string phrase = "";
                 int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
-                if (words[i] == null || words[i].Equals("")||words[i].Equals(" ")) { continue; }
+                if (words[i] == null || words[i].Equals("")) { continue; }
                 string word = words[j];
                 word = Fixword(word);
-                if (word == null) continue;
+                if (word == null /*|| stopwords.Contains(word.ToLower())*/) continue;
                 if (word.Length > 0 && word[word.Length - 1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
-                if (word == null||word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
+                if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
                 bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
                                                                                                         //checking for rule
                 if (hasChar(word, '-') && word[0] != '-')
@@ -254,8 +250,8 @@ namespace IR_engine
                     else
                         phrase = toStem ? stem.stemTerm(word) : word;
                 }
-                t = new term(phrase);
-                
+                //t = new term(phrase);
+                //t.AddToPosting(DocName);
                 //if (terms.ContainsKey(phrase))
                 //{
                 //    /*
@@ -274,7 +270,13 @@ namespace IR_engine
                 //    terms.Add(t.Phrase, t);
                 //}
                 //t.AddToCount(DocName);
-                Model.queueList[queue].Enqueue(t);
+                //Model.queueList[queue].Enqueue(t);
+                t = new term(phrase);
+                Model.queueList[queue].AddOrUpdate(phrase, t, (key, value) => {
+                    value.AddToPosting(DocName, 1);
+                    if (!isUpperFirstLetter) value.IsUpperInCurpus = false;
+                    return value;
+                });
                 if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
                 //Console.WriteLine(word);
             }
@@ -379,7 +381,7 @@ namespace IR_engine
             //    if (s[i] <= '9' && s[i] >= '0') return true;
             //return false;
             for (int i = 0; i < s.Length; i++)
-                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != ',') return false;
+                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-') return false;
             return true;
         }
         /// <summary>
@@ -740,11 +742,11 @@ namespace IR_engine
                 }
                 else
                 {
-                    left = new term(splittedExpression[0]);                                     //normal range
-                    right = new term(splittedExpression[1]);
+                    left = new term(Fixword(splittedExpression[0]));                                     //normal range
+                    right = new term(Fixword(splittedExpression[1]));
                 }
-                Model.queueList[queue].Enqueue(left);
-                Model.queueList[queue].Enqueue(right);
+                AddTerm(queue, left);
+                AddTerm(queue, right);
                 j = part;
                 return word;
             }
@@ -755,10 +757,18 @@ namespace IR_engine
                 if (toStem)                                                             //stem if needed
                     exp = stem.stemTerm(exp);
                 term t = new term(exp);
-                Model.queueList[queue].Enqueue(t);                                      //adding a new term or updating an existing term
+                AddTerm(queue, t);                                      //adding a new term or updating an existing term
             }
             j = part;                                                                   //returns the index
             return word;                                                                //returns the whole expression
+        }
+        void AddTerm(int queue, term t)
+        {
+            Model.queueList[queue].AddOrUpdate(t.Phrase, t, (key, value) => {
+                value.AddToPosting(DocName, 1);
+                if (!(t.Phrase[0] >= 'A' && t.Phrase[0] <= 'Z')) value.IsUpperInCurpus = false;
+                return value;
+            });
         }
         string SetQuotationExp(int idx, string[] words, out int j, int queue)
         {
@@ -792,21 +802,25 @@ namespace IR_engine
             {
                 done = true;
                 if (word == "" || word == "\n" || word[0] == '<') { return null; }
-                else{
+                if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
+                else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return null;
+                else
+                {
 
                     if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' ||
-                        word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':'||
-                        word[word.Length - 1] == '>' || word[word.Length - 1] == '-' || word[word.Length - 1] == ']' || word[word.Length - 1] == ';' || 
-                        word[word.Length - 1] == '?'|| (word[word.Length - 2]=='.' && word[word.Length - 1]>'9' && word[word.Length - 1] < '0') ||word[word.Length - 2] == ',')
+                        word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':' ||
+                        word[word.Length - 1] == '>' || word[word.Length - 1] == '-' || word[word.Length - 1] == ']' || word[word.Length - 1] == ';' ||
+                        word[word.Length - 1] == '?' || (word[word.Length - 2] == '.' && word[word.Length - 1] > '9' && word[word.Length - 1] < '0') || (word.Length > 1 && word[word.Length - 2] == ','))
                     {
                         done = false;
                         word = word.Remove(word.Length - 1);
                     }
 
                     if (word == "" || word == "\n" || word[0] == '<') { return null; }
-                    else{
+                    else
+                    {
                         //removes non-relative end characters from words
-                        if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{'  || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':' ||
+                        if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':' ||
                            word[0] == '<' || word[0] == '[' || word[0] == '?')
                         {
                             done = false;
@@ -821,17 +835,6 @@ namespace IR_engine
             }
 
             return null;
-        }
-
-        private void AddTerm(term t)
-        {
-            if (terms.ContainsKey(t.Phrase))
-                t = terms[t.Phrase];
-            else
-                terms.Add(t.Phrase, t);
-            bool isUpperFirstLetter = t.Phrase[0] >= 'A' && t.Phrase[0] <= 'Z' ? true : false;
-            t.AddToPosting(DocName);
-            if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
         }
 
         /// <summary>

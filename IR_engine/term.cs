@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace IR_engine
 {
@@ -15,6 +16,7 @@ namespace IR_engine
         string phrase; // the phrase itself
         int numOfDocs; // the number of docs this term is in
         public int idf = 0;
+
         //used for global information, global occurances of the term in the curpus and if upper
         int globalOccurances;
         bool isUpperInCurpus;
@@ -25,7 +27,7 @@ namespace IR_engine
         int currectCount;
         //end currect variables
 
-        Dictionary<string, int> posting; //string = doc name, int = occurances
+        public ConcurrentDictionary<string, int> posting; //string = doc name, int = occurances
 
         List<string> postingList; //this will be used in the format: <docname>_<number> of occurances of the term>
 
@@ -37,7 +39,7 @@ namespace IR_engine
             numOfDocs = globalOccurances = 0;
             phrase = "";
             currectDoc = "";
-            posting = new Dictionary<string, int>();
+            posting = new ConcurrentDictionary<string, int>();
         }
 
         public term(string phrase)
@@ -47,7 +49,7 @@ namespace IR_engine
             postingList = new List<string>();
             numOfDocs = globalOccurances = 0;
             currectDoc = "";
-            posting = new Dictionary<string, int>();
+            posting = new ConcurrentDictionary<string, int>();
         }
 
         public string Phrase
@@ -93,24 +95,31 @@ namespace IR_engine
             postingList.Add(filename + "_" + occurances);
         }
 
-        public void AddToPosting(string doc)
+        public void AddToPosting(string doc, int tf)
         {
-            if (posting.ContainsKey(doc))
+            posting.AddOrUpdate(doc, tf, (key, value) => {
+                value += tf;
+                return value;
+            });
+        }
+
+        public void AddToPosting(ConcurrentDictionary<string, int> dictionary)
+        {
+            foreach(KeyValuePair<string, int> entry in dictionary)
             {
-                posting[doc]++;
+                AddToPosting(entry.Key, entry.Value);
             }
-            else
-            {
-                posting.Add(doc, 1);
-            }
+            dictionary.Clear();
         }
 
         public string printPosting()
         {
-            string res = "";
-            //foreach (string str in postingList)
-            //    res += str + ",";
-            return res;
+            StringBuilder res = new StringBuilder();
+            foreach(KeyValuePair<string, int> entry in posting)
+            {
+                res.Append(entry.Key + "[" + entry.Value + "],");
+            }
+            return res.ToString();
         }
     }
 }
