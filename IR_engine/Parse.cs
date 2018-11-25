@@ -786,6 +786,7 @@ namespace IR_engine
         }
         string Fixword(string word)
         {
+            word.Replace("\'", "");
             bool done = false;
             while (!done)
             {
@@ -795,7 +796,8 @@ namespace IR_engine
 
                     if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' ||
                         word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':'||
-                        word[word.Length - 1] == '>' || word[word.Length - 1] == '-' || word[word.Length - 1] == ']' || word[word.Length - 1] == ';' || word[word.Length - 1] == '?')
+                        word[word.Length - 1] == '>' || word[word.Length - 1] == '-' || word[word.Length - 1] == ']' || word[word.Length - 1] == ';' || 
+                        word[word.Length - 1] == '?'|| (word[word.Length - 2]=='.' && word[word.Length - 1]>'9' && word[word.Length - 1] < '0') ||word[word.Length - 2] == ',')
                     {
                         done = false;
                         word = word.Remove(word.Length - 1);
