@@ -108,7 +108,8 @@ namespace IR_engine
         static public Dictionary<string, term> terms = new Dictionary<string, term>();
         static public HashSet<string> dollars = new HashSet<string>() { "Dollars", "DOLLARS", "dollars" };
         static public HashSet<string> million = new HashSet<string>() { "M", "m", "Million", "MILLION", "million" };
-        static public HashSet<string> thousends = new HashSet<string>() { "Thousand", "thousand" };
+        static public HashSet<string> thousends = new HashSet<string>() { "Thousand", "thousand", "THOUSAND" };
+        static public HashSet<string> allAmounts = new HashSet<string>() {"M", "m", "Million", "MILLION", "million","Thousand", "thousand", "THOUSAND", "trillion", "Trillion", "TRILLION", "BN", "bn", "Billion", "billion", "BILLION" };
         static public HashSet<string> US = new HashSet<string>() { "US", "U.S" };
         static public HashSet<string> billion = new HashSet<string>() { "BN", "bn", "Billion", "billion", "BILLION" };
         static public HashSet<string> trillion = new HashSet<string>() { "trillion", "Trillion", "TRILLION" };
@@ -190,9 +191,10 @@ namespace IR_engine
                 int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
                 if (words[i] == null || words[i].Equals("")) { continue; }
                 string word = words[j];
+                int len = word.Length;
                 word = Fixword(word);
                 if (word == null /*|| stopwords.Contains(word.ToLower())*/) continue;
-                if (word.Length > 0 && word[word.Length - 1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
+                if (len > 0 && word[len - 1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
                 if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
                 bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
                                                                                                         //checking for rule
@@ -315,14 +317,15 @@ namespace IR_engine
         //TODO: need to implement isDate
         private bool isDate(string[] words, int idx)
         {
+            int i = idx + 1;
             if (IsNumber(words[idx]))
             {
-                if (idx + 1 < words_length && months.Contains(words[idx + 1]))
+                if (i < words_length && months.Contains(words[i]))
                     return true;
             }
             else
             {
-                if (idx + 1 < words_length && IsNumber(words[idx + 1]) && months.Contains(words[idx]))
+                if (i < words_length && IsNumber(words[i]) && months.Contains(words[idx]))
                     return true;
             }
             return false;
@@ -382,7 +385,8 @@ namespace IR_engine
             //for (int i = 0; i < s.Length; i++)
             //    if (s[i] <= '9' && s[i] >= '0') return true;
             //return false;
-            for (int i = 0; i < s.Length; i++)
+            int len = s.Length;
+            for (int i = 0; i < len; i++)
                 if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-') return false;
             return true;
         }
@@ -407,22 +411,26 @@ namespace IR_engine
         /// <returns></returns>
         bool IsRegNumber(string[] words, int idx)
         {
+            int index = idx + 1;
+            int index2 = idx + 2;
             for (int i = 0; i < words[idx].Length; i++)
             {
-                if ((!(words[idx][i] >= '0' && words[idx][i] <= '9') && words[idx][i] != ',' && words[idx][i] != '.' && words[idx][i] != '\\' && words[idx][i] != '/') || words[idx] == "")
+                char ch = words[idx][i];
+                if ((!(ch >= '0' && ch <= '9') && ch != ',' && ch != '.' && ch != '\\' && ch != '/') || words[idx] == "")
                     return false;
             }
-            if (words[idx + 1] == "$" || words[idx + 1] == "%" || words[idx + 1] == "percent" || words[idx + 1] == "percentage" || words[idx + 1] == "Dollars") { return false; }
-            if (words[idx + 1] == "Thousand" || words[idx + 1] == "thousand" || words[idx + 1] == "Million" || words[idx + 1] == "million" || words[idx + 1] == "Billion" || words[idx + 1] == "Trillion" || words[idx + 1] == "billion" || words[idx + 1] == "trillion")
+            if (words[index] == "$" || words[index] == "%" || percent.Contains(words[index]) || words[index] == "Dollars") { return false; }
+            if (allAmounts.Contains(words[index]))
             {
-                if (words[idx + 2] == "$" || words[idx + 2] == "%" || words[idx + 2] == "percent" || words[idx + 2] == "percentage" || words[idx + 2] == "Dollars") { return false; }
+                if (words[index2] == "$" || words[index2] == "%" || percent.Contains(words[index]) || words[index2] == "Dollars") { return false; }
             }
             return true;
         }
 
         bool IsComNum(string input)
         {
-            for (int i = 0; i < input.Length; i++)
+            int len = input.Length;
+            for (int i = 0; i < len; i++)
             {
                 if (!(input[i] >= '0' && input[i] <= '9') && input[i] != '.' && input[i] != '/')
                     return false;
@@ -431,9 +439,8 @@ namespace IR_engine
         }
         string Isprecent(string[] words, int idx, out int j)
         {
-            if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) && (words[idx + 2] == "%" || words[idx + 2] == "percent"
-                || words[idx + 2] == "percentage" || words[idx + 2] == "percent" || words[idx + 2] == "percentage"))
-            { j = idx + 2; return words[idx] + " " + words[idx + 1] + "%"; }
+            if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) && (words[idx + 2] == "%" || percent.Contains(words[idx + 2])))
+            { j = idx + 2; return words[idx] + " " + words[j] + "%"; }
 
             else { j = idx + 1; return words[idx] + "%"; }
         }
@@ -447,17 +454,18 @@ namespace IR_engine
         string NumberSet(string input, int idx, string[] words, out int j)
         {
             int option = 0;
+            int index = idx + 1;
             var charsToRemove = new string[] { "," };
             foreach (var c in charsToRemove)
             {
                 input = input.Replace(c, string.Empty);
             }
             if (idx + 1 == words_length) { option = 0; }
-            else if (thousends.Contains(words[idx + 1])) { option = 1; }
-            else if (million.Contains(words[idx + 1])) { option = 2; }
-            else if (billion.Contains(words[idx + 1])) { option = 3; }
-            else if (trillion.Contains(words[idx + 1])) { option = 4; }
-            double dbl;
+            else if (thousends.Contains(words[index])) { option = 1; }
+            else if (million.Contains(words[index])) { option = 2; }
+            else if (billion.Contains(words[index])) { option = 3; }
+            else if (trillion.Contains(words[index])) { option = 4; }
+            Double dbl;
             if (double.TryParse(input, out dbl))
             {
                 if (option == 1) { dbl = dbl * 1000; }
@@ -881,7 +889,8 @@ namespace IR_engine
             Double number = 0;
             Boolean isNumber = false;
             int floatingPoint = num.IndexOf('.');
-            for (int i = num.Length - 1; i > floatingPoint; i--)
+            int len = num.Length;
+            for (int i = len - 1; i > floatingPoint; i--)
             {
                 if (num[i] > '9' || num[i] < '0') num = num.Remove(i, 1);
             }
@@ -898,8 +907,8 @@ namespace IR_engine
                 throw new NotSupportedException();
             if (floatingPoint >= 0)
             {
-                int len = num.Length - floatingPoint - 1;
-                number *= Math.Pow(10, -1 * len);
+                int len1 = len - floatingPoint - 1;
+                number *= Math.Pow(10, -1 * len1);
             }
             return number;
         }

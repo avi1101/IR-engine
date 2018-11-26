@@ -86,7 +86,9 @@ namespace IR_engine
                 test.Content = "path not provided.";
             watch2.Stop();
             time = time + watch2.ElapsedMilliseconds;
+            time = (time / 1000.0) / 60.0;
             Console.WriteLine("total run time = " + time);
+            test.Content = time;
         }
 
         private void showDic_Click(object sender, RoutedEventArgs e)
