@@ -191,9 +191,9 @@ namespace IR_engine
                 int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
                 if (words[i] == null || words[i].Equals("")) { continue; }
                 string word = words[j];
-                int len = word.Length;
                 word = Fixword(word);
-                if (word == null /*|| stopwords.Contains(word.ToLower())*/) continue;
+                //if (word == null /*|| stopwords.Contains(word.ToLower())*/) continue;
+                int len = word.Length;
                 if (len > 0 && word[len - 1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
                 if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
                 bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
@@ -809,9 +809,9 @@ namespace IR_engine
             //while (!done)
             //{
             //  done = true;
-            if (word == "" || word == "\n" || word[0] == '<') { return null; }
+            if (word == "" || word == "\n" || word[0] == '<') { return ""; }
             if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
-            else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return null;
+            else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return "";
             else
             {
                 word = word.TrimEnd('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
@@ -874,7 +874,7 @@ namespace IR_engine
             {
                 return word;
             }
-            return null;
+            return "";
         }
 
         /// <summary>

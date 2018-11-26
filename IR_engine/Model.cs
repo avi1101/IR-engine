@@ -62,7 +62,6 @@ namespace IR_engine
             //    }
             //}
             List<Task> t;
-            Mutex m = new Mutex();
             List<string> files = readfo.allfiles;               //gets the files list
             int tasks = cores;                                  //get the number of logical proccesors 
             //int tasks = 4;             //get the number of logical proccesors 
@@ -75,9 +74,6 @@ namespace IR_engine
                 int tsk = i % tasks;
                 t.Add(Task.Factory.StartNew(() => {
                     readfo.readfile(file, tsk);
-                    m.WaitOne();
-                    fileCount++;
-                    m.ReleaseMutex();
                 }));
                 id++;
                 i++;
@@ -103,6 +99,21 @@ namespace IR_engine
                 }
             }
 
+            {
+                Console.WriteLine("awaiting {0} tasks to finish", tasks);
+                foreach (Task ts in t)
+                    ts.Wait();
+                manageResources();
+                using (StreamWriter sw = new StreamWriter(path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
+                {
+                    foreach (KeyValuePair<term, term> entry in terms2)
+                    {
+                        sw.WriteLine(entry.Key.Phrase + "\t" + entry.Value.IsUpperInCurpus + '\t' + entry.Value.printPosting());
+                    }
+                }
+                terms2.Clear();
+                Console.WriteLine("{0} tasks done, total done: {1}", tasks, id);
+            }
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
             Console.WriteLine("Time: " + elapsedMs);
