@@ -804,20 +804,19 @@ namespace IR_engine
         string Fixword(string word)
         {
             word.Replace("\'", "");
-            word.Replace("--", "");
-            bool done = false;
+            word.Replace("--", " ");
+            word = word.Trim('!', '?', '\n', '|', '[', ']', '(', ')', '{',
+    '}', '&', ':', '<', '>', ';','#','*','^','@','=');
+            word.TrimEnd('-');
+            //bool done = false;
             //while (!done)
             //{
             //  done = true;
             if (word == "" || word == "\n" || word[0] == '<') { return ""; }
             if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
             else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return "";
-            else
             {
-                word = word.TrimEnd('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
-                    '}', '&', ':', '<', '>', ';', '-');
-                word.TrimStart('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
-                    '}', '&', ':', '<', '>', ';');
+                
 
                 //trim//
                 /* if (word[word.Length - 1] == '.' ||word[word.Length-1]=='!'|| word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' || word[word.Length - 1] == '|'||
