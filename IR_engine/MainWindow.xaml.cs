@@ -79,7 +79,7 @@ namespace IR_engine
             }
             if (!path.Equals(""))
             {
-                m = new Model(path, false);
+                m = new Model(path, stem.IsChecked.Value);
                 m.index();
             }
             else

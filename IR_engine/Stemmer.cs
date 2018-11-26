@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 //using System.Windows.Forms;
 
@@ -466,6 +467,7 @@ namespace IR_engine
         /* step4() deals with -ic-, -full, -ness etc. similar strategy to step3. */
         private void step4()
         {
+            char ch = b[k];
             switch (b[k])
             {
                 case 'e':

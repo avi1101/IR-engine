@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.ComponentModel;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace IR_engine
 {
@@ -15,6 +16,8 @@ namespace IR_engine
         static int i = 0;                                                           //use to index the queues in the list
         public static List<ConcurrentDictionary<string, term>> queueList = new List<ConcurrentDictionary<string,term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
+        public static int cores = Environment.ProcessorCount - 4;
+        public static int fileCount = 0;
         //end concurrent variables
 
         Parse parser;
@@ -26,7 +29,7 @@ namespace IR_engine
         public Model(string path, bool Tostem)
         {
 
-            readfo = new ReadFile(path);
+            readfo = new ReadFile(path, Tostem, cores);
             this.path = path;
             this.ToStem = Tostem;
             parser = new Parse(path, ToStem);
@@ -59,19 +62,25 @@ namespace IR_engine
             //    }
             //}
             List<Task> t;
+            Mutex m = new Mutex();
             List<string> files = readfo.allfiles;               //gets the files list
-            int tasks = Environment.ProcessorCount - 4;             //get the number of logical proccesors 
-            //int tasks = 1;             //get the number of logical proccesors 
+            int tasks = cores;                                  //get the number of logical proccesors 
+            //int tasks = 4;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
                 queueList.Add(new ConcurrentDictionary<string, term>());
             int k = 0, chunk = 0, id = 0;
-            foreach(string file in files)
+            t = new List<Task>();
+            foreach (string file in files)
             {
-                t = new List<Task>();
+                int tsk = i % tasks;
                 t.Add(Task.Factory.StartNew(() => {
-                    readfo.readfile(file, (i++ % tasks));
+                    readfo.readfile(file, tsk);
+                    m.WaitOne();
+                    fileCount++;
+                    m.ReleaseMutex();
                 }));
                 id++;
+                i++;
                 k++;
                 if (k % tasks == 0)
                     chunk++;
@@ -90,6 +99,7 @@ namespace IR_engine
                     }
                     terms2.Clear();
                     Console.WriteLine("{0} tasks done, total done: {1}", tasks, id);
+                    t = new List<Task>();
                 }
             }
 
@@ -110,6 +120,7 @@ namespace IR_engine
                 {
                     t = entry.Value;
                     if (t == null) break;
+                    queueList[i].TryRemove(t.Phrase, out t);
                     if (terms2.ContainsKey(t))
                     {
                         terms2[t].AddToPosting(t.posting);

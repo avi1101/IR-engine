@@ -19,23 +19,27 @@ namespace IR_engine
 
         public static long timepertDoc = 0;
         public static long readFiles_time = 0;
+        bool ToStem;
         int index = 0;
         int allfilesSize = 0;
         string path;
         static int counter = 0;
-        Parse parser;
+        Parse[] parser;
 
-        public ReadFile(string path)
+        public ReadFile(string path, bool ToStem, int cores)
         {
 
             this.path = path;
+            this.ToStem = ToStem;
             string[] tmp = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
             allfiles = tmp.ToList();
             allfiles.Remove(path + "\\stop_words.txt");
             allfiles.Remove(path + "\\postingList.txt");
             //TODO: remove also posting list files and index file
             allfilesSize = allfiles.Count;
-            parser = new Parse(path, false);
+            parser = new Parse[cores];
+            for(int i = 0; i < cores; i++)
+                parser[i] = new Parse(path, ToStem);
             string root = path+@"\Posting_and_indexes";
             // If directory does not exist, don't even try 
             if (!Directory.Exists(root))
@@ -109,7 +113,7 @@ namespace IR_engine
                     document d = new document(data, docNo, date, head, city);
                     docslist.Add(d);
                     counter++;
-                    parser.Text2list(d, queue);
+                    parser[queue].Text2list(d, queue);
                 }
             }
             return docslist;

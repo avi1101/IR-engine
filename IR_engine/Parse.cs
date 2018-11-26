@@ -102,15 +102,38 @@ namespace IR_engine
 /// </summary>
     public class Parse
     {
-        private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
+        //private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
 
         List<string> pre_terms;
-        public static Dictionary<string, term> terms = new Dictionary<string, term>();
-        HashSet<string> stopwords;
+        static public Dictionary<string, term> terms = new Dictionary<string, term>();
+        static public HashSet<string> dollars = new HashSet<string>() { "Dollars", "DOLLARS", "dollars" };
+        static public HashSet<string> million = new HashSet<string>() { "M", "m", "Million", "MILLION", "million" };
+        static public HashSet<string> thousends = new HashSet<string>() { "Thousand", "thousand" };
+        static public HashSet<string> US = new HashSet<string>() { "US", "U.S" };
+        static public HashSet<string> billion = new HashSet<string>() { "BN", "bn", "Billion", "billion", "BILLION" };
+        static public HashSet<string> trillion = new HashSet<string>() { "trillion", "Trillion", "TRILLION" };
+        static public HashSet<string> months = new HashSet<string>() { "january","January","JANUARY","february","February",
+                        "FEBRUARY","march", "March","MARCH","april","April","APRIL","may","May","MAY","june","June",
+                        "JUNE","july","July","JULY","august","August","AUGUST","september","September",
+                        "SEPTEMBER","october","October","OCTOBER","november","November","NOVEMBER","december",
+                       "December","DECEMBER", "Jun", "JUN", "jun", "JAN", "jan", "Jan", "FEB","Feb","feb", "SEP", "Sep", "sep",
+                        "OCT", "Oct", "oct", "NOV", "Nov", "nov", "DEC", "Dec", "dec"};
+        static Dictionary<string, string> monthsToNumber = new Dictionary<string, string>(){ {"january", "01" },{"January", "01" },{"JANUARY", "01" },{"february", "02" },{"February", "02" },
+            { "FEBRUARY", "02" },{"march", "03" }, {"March", "03" },{"MARCH", "03" },{"april", "04" },{"April", "04" },{"APRIL", "04" },{"may", "05"},{"May", "05"},{"MAY", "05"},{"june","06" },{"June","06" },
+            { "JUNE","06" },{"july", "07"},{"July", "07"},{"JULY", "07"},{"august", "08" },{"August", "08" },{"AUGUST", "08" },{"september", "09" },{"September", "09" },
+            { "SEPTEMBER", "09" },{"october", "10" },{"October", "10" },{"OCTOBER", "10" },{"november", "11" },{"November", "11" },{"NOVEMBER", "11" },{"december", "12" },
+            { "December", "12" },{"DECEMBER", "12" }, {"Jun", "01" }, {"JUN", "01" }, {"jun", "01" }, {"JAN", "01" }, {"jan", "01" }, {"Jan", "01" }, {"FEB", "02" },{"Feb", "02" },{"feb", "02" }, {"SEP", "09" }, {"Sep", "09" }, {"sep", "09" },
+            { "OCT", "10" }, {"Oct", "10" }, {"oct", "10" }, {"NOV", "11" }, {"Nov", "11" }, {"nov", "11" }, {"DEC", "12" }, {"Dec", "12" }, {"dec", "12" }, {"AUG", "08" }, {"Aug", "08" }, {"aug","08" } };
+        public HashSet<char> Fixwordlist = new HashSet<char>() { '.','!','?','\n', ',', '|','[',']','(',')','{',
+                        '}','&',':','<','>',';'};
+        public HashSet<string> percent = new HashSet<string>() { "percent", "PERCENT", "Percent", "percentage", "Percentage", "PERCENTAGE" };
+
+        HashSet<string> stopwords = new HashSet<string>();
         Stemmer stem;
+        private int words_length; // length of words string array.
         bool toStem;
         string path;
-        public static string DocName = "";
+        public string DocName = "";
         public double time = 0;
         StringBuilder sb = new StringBuilder();
 
@@ -142,7 +165,7 @@ namespace IR_engine
         public void Text2list(document document, int queue)
         {
             string tmp_txt = document.Doc;
-            string[] text = tmp_txt.Split(' ');
+            string[] text = tmp_txt.Split(' ', '\n');
             //pre_terms = text.ToList();
             DocName = document.DocID;
             parseText(text, queue);
@@ -159,8 +182,8 @@ namespace IR_engine
         }
         public void parseText(string[] words, int queue)
         {
-
-            for (int i = 0; i < words.Length; i++)
+            words_length = words.Length;
+            for (int i = 0; i < words_length; i++)
             {
                 term t;
                 string phrase = "";
@@ -272,6 +295,7 @@ namespace IR_engine
                 //t.AddToCount(DocName);
                 //Model.queueList[queue].Enqueue(t);
                 t = new term(phrase);
+                t.AddToPosting(DocName, 1);
                 Model.queueList[queue].AddOrUpdate(phrase, t, (key, value) => {
                     value.AddToPosting(DocName, 1);
                     if (!isUpperFirstLetter) value.IsUpperInCurpus = false;
@@ -291,29 +315,14 @@ namespace IR_engine
         //TODO: need to implement isDate
         private bool isDate(string[] words, int idx)
         {
-            if (IsNumber(words[idx])){
-                if (idx + 1 < words.Length && (words[idx + 1].Equals("january") || words[idx + 1].Equals("January") || words[idx + 1].Equals("JANUARY") || words[idx + 1].Equals("february") ||
-                       words[idx + 1].Equals("February") || words[idx + 1].Equals("FEBRUARY") || words[idx + 1].Equals("march") || words[idx + 1].Equals("March") ||
-                   words[idx + 1].Equals("MARCH") || words[idx + 1].Equals("april") || words[idx + 1].Equals("April") || words[idx + 1].Equals("APRIL") ||
-                   words[idx + 1].Equals("may") || words[idx + 1].Equals("May") || words[idx + 1].Equals("MAY") || words[idx + 1].Equals("june") ||
-                   words[idx + 1].Equals("June") || words[idx + 1].Equals("JUNE") || words[idx + 1].Equals("july") || words[idx + 1].Equals("July") ||
-                   words[idx + 1].Equals("JULY") || words[idx + 1].Equals("august") || words[idx + 1].Equals("August") || words[idx + 1].Equals("AUGUST") ||
-                   words[idx + 1].Equals("september") || words[idx + 1].Equals("September") || words[idx + 1].Equals("SEPTEMBER") || words[idx + 1].Equals("october") ||
-                   words[idx + 1].Equals("October") || words[idx + 1].Equals("OCTOBER") || words[idx + 1].Equals("november") || words[idx + 1].Equals("November") ||
-                   words[idx + 1].Equals("NOVEMBER") || words[idx + 1].Equals("december") || words[idx + 1].Equals("December") || words[idx + 1].Equals("DECEMBER")))
+            if (IsNumber(words[idx]))
+            {
+                if (idx + 1 < words_length && months.Contains(words[idx + 1]))
                     return true;
             }
             else
             {
-                if (((idx + 1 < words.Length) && (IsNumber(words[idx + 1]))) && ((words[idx].Equals("january") || words[idx].Equals("January") || words[idx].Equals("JANUARY") || words[idx].Equals("february") ||
-                        words[idx].Equals("February") || words[idx].Equals("FEBRUARY") || words[idx].Equals("march") || words[idx].Equals("March") ||
-                    words[idx].Equals("MARCH") || words[idx].Equals("april") || words[idx].Equals("April") || words[idx].Equals("APRIL") ||
-                    words[idx].Equals("may") || words[idx].Equals("May") || words[idx].Equals("MAY") || words[idx].Equals("june") ||
-                    words[idx].Equals("June") || words[idx].Equals("JUNE") || words[idx].Equals("july") || words[idx].Equals("July") ||
-                    words[idx].Equals("JULY") || words[idx].Equals("august") || words[idx].Equals("August") || words[idx].Equals("AUGUST") ||
-                    words[idx].Equals("september") || words[idx].Equals("September") || words[idx].Equals("SEPTEMBER") || words[idx].Equals("october") ||
-                    words[idx].Equals("October") || words[idx].Equals("OCTOBER") || words[idx].Equals("november") || words[idx].Equals("November") ||
-                    words[idx].Equals("NOVEMBER") || words[idx].Equals("december") || words[idx].Equals("December") || words[idx].Equals("DECEMBER"))))
+                if (idx + 1 < words_length && IsNumber(words[idx + 1]) && months.Contains(words[idx]))
                     return true;
             }
             return false;
@@ -323,21 +332,21 @@ namespace IR_engine
         /// </summary>
         /// <param name="date">the string that holds the month</param>
         /// <returns>true is contains, false otherwise</returns>
-        private bool EnumContains(string date)
-        {
-            date = date.ToLower();
-            foreach (months m in Enum.GetValues(typeof(months)))
-            {
-                string m2 = m.ToString();
-                string mon = m2.Substring(0, 3);
-                //checks all possible combinations
-                if (date.Equals(m2) || date.Equals(mon))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+        //private bool EnumContains(string date)
+        //{
+        //    date = date.ToLower();
+        //    foreach (months m in Enum.GetValues(typeof(months)))
+        //    {
+        //        string m2 = m.ToString();
+        //        string mon = m2.Substring(0, 3);
+        //        //checks all possible combinations
+        //        if (date.Equals(m2) || date.Equals(mon))
+        //        {
+        //            return true;
+        //        }
+        //    }
+        //    return false;
+        //}
         /// <summary>
         /// this method checks if a given word in the words list is a start of a percent format
         /// </summary>
@@ -347,9 +356,7 @@ namespace IR_engine
         private bool isPercentage(string[] words, int idx)
         {
             if (words[idx][words[idx].Length - 1] == '%') return true;
-            if (idx + 1 < words.Length && (words[idx + 1].Equals("percent") || words[idx + 1].Equals("Percent") ||
-                words[idx + 1].Equals("percent") || words[idx + 1].Equals("PERCENT") || words.Equals("percentage") || words.Equals("percentage")
-                || words.Equals("Percentage") || words.Equals("PERCENTAGE")))
+            if (idx + 1 < words_length && percent.Contains(words[idx + 1]))
                 return true;
             return false;
         }
@@ -363,15 +370,10 @@ namespace IR_engine
         private bool isPrice(string[] words, int idx)
         {
             if (words[idx][0] == '$') return true;
-            if (idx + 2 < words.Length)
-                if ((words[idx + 2].Equals("Dollars") || words[idx + 2].Equals("DOLLARS") || words[idx + 2].Equals("dollars")) &&
-                   (words[idx + 1].Equals("M") || words[idx + 1].Equals("m") || words[idx + 1].Equals("Million") || words[idx + 1].Equals("MILLION") ||
-                    words[idx + 1].Equals("million") || (words[idx + 1].Equals("BN")) || words[idx + 1].Equals("bn") || words[idx + 1].Equals("Billion") || words[idx + 1].Equals("BILLION") ||
-                    words[idx + 1].Equals("billion") || words[idx + 1].Equals("Trillion") || words[idx + 1].Equals("TRILLION") ||
-                    words[idx + 1].Equals("trillion")
-                    )) return true;
-            if (idx + 1 < words.Length)
-                if (words[idx + 1].Equals("Dollars") || words[idx + 1].Equals("DOLLARS") || words[idx + 1].Equals("dollars"))
+            if (idx + 2 < words_length)
+                if (dollars.Contains(words[idx + 2]) && (million.Contains(words[idx + 1]) || billion.Contains(words[idx + 1]) || trillion.Contains(words[idx + 1]))) return true;
+            if (idx + 1 < words_length)
+                if (dollars.Contains(words[idx + 1]))
                     return true;
             return false;
         }
@@ -450,27 +452,30 @@ namespace IR_engine
             {
                 input = input.Replace(c, string.Empty);
             }
-            if (idx + 1 == words.Length) { option = 0; }
-            else if (words[idx + 1] == "Thousand" || words[idx + 1] == "thousand") { option = 1; }
-            else if (words[idx + 1] == "Million" || words[idx + 1] == "million") { option = 2; }
-            else if (words[idx + 1] == "Billion" || words[idx + 1] == "Trillion" || words[idx + 1] == "billion" || words[idx + 1] == "trillion") { option = 3; }
+            if (idx + 1 == words_length) { option = 0; }
+            else if (thousends.Contains(words[idx + 1])) { option = 1; }
+            else if (million.Contains(words[idx + 1])) { option = 2; }
+            else if (billion.Contains(words[idx + 1])) { option = 3; }
+            else if (trillion.Contains(words[idx + 1])) { option = 4; }
             double dbl;
             if (double.TryParse(input, out dbl))
             {
                 if (option == 1) { dbl = dbl * 1000; }
                 if (option == 2) { dbl = dbl * 1000000; }
                 if (option == 3) { dbl = dbl * 1000000000; }
+                if (option == 4) { dbl = dbl * 1000000000000; }
                 if (dbl >= 1000 && dbl < 1000000) { dbl = dbl / 1000 + (dbl % 1000) * (1 / 1000); j = idx + 1; return (dbl.ToString() + "K"); }
                 else if (dbl >= 1000000 && dbl < 1000000000) { dbl = dbl / 1000000 + (dbl % 1000000) * (1 / 1000000); j = idx + 1; return (dbl.ToString() + "M"); }
                 else if (dbl >= 1000000000) { dbl = dbl / 1000000000 + (dbl % 1000000000) * (1 / 1000000000); j = idx + 1; return (dbl.ToString() + "B"); }
                 else { j = idx; return (dbl.ToString()); }
             }
-            int nt;
-            if (int.TryParse(input, out nt))
+            double nt;
+            if (double.TryParse(input, out nt))
             {
                 if (option == 1) { nt = nt * 1000; }
                 if (option == 2) { nt = nt * 1000000; }
                 if (option == 3) { nt = nt * 1000000000; }
+                if (option == 4) { nt = nt * 1000000000000; }
                 if (nt >= 1000 && nt < 1000000) { nt = nt / 1000 + (nt % 1000) * (1 / 1000); j = idx + 1; return (nt.ToString() + "K"); }
                 else if (nt >= 1000000 && nt < 1000000000) { nt = nt / 1000000 + (nt % 1000000) * (1 / 1000000); j = idx + 1; return (nt.ToString() + "M"); }
                 else if (nt >= 1000000000) { nt = nt / 1000000000 + (nt % 1000000000) * (1 / 1000000000); j = idx + 1; return (nt.ToString() + "B"); }
@@ -482,6 +487,7 @@ namespace IR_engine
                 if (option == 1) { lng = lng * 1000; }
                 if (option == 2) { lng = lng * 1000000; }
                 if (option == 3) { lng = lng * 1000000000; }
+                if (option == 4) { nt = nt * 1000000000000; }
                 if (lng >= 1000 && lng < 1000000) { lng = lng / 1000 + (lng % 1000) * (1 / 1000); j = idx + 1; return (lng.ToString() + "K"); }
                 else if (lng >= 1000000 && lng < 1000000000) { lng = lng / 1000000 + (lng % 1000000) * (1 / 1000000); j = idx + 1; return (lng.ToString() + "M"); }
                 else if (lng >= 1000000000) { lng = lng / 1000000000 + (lng % 1000000000) * (1 / 1000000000); j = idx + 1; return (lng.ToString() + "B"); }
@@ -493,6 +499,7 @@ namespace IR_engine
                 if (option == 1) { dec = dec * 1000; }
                 if (option == 2) { dec = dec * 1000000; }
                 if (option == 3) { dec = dec * 1000000000; }
+                if (option == 4) { nt = nt * 1000000000000; }
                 if (dec >= 1000 && dec < 1000000) { dec = dec / 1000 + (dec % 1000) * (1 / 1000); j = idx + 1; return (dec.ToString() + "K"); }
                 else if (lng >= 1000000 && lng < 1000000000) { dec = dec / 1000000 + (dec % 1000000) * (1 / 1000000); j = idx + 1; return (dec.ToString() + "M"); }
                 else if (dec >= 1000000000) { dec = dec / 1000000000 + (dec % 1000000000) * (1 / 1000000000); j = idx + 1; return (dec.ToString() + "B"); }
@@ -503,6 +510,7 @@ namespace IR_engine
                 if (option == 1) { j = idx + 1; return input + "K"; }
                 if (option == 2) { j = idx + 1; return input + "M"; }
                 if (option == 3) { j = idx + 1; return input + "B"; }
+                if (option == 4) { j = idx + 1; return FormatNumber(input) * 1000 + "B"; }
                 else { j = idx; return input; }
             }
 
@@ -532,20 +540,9 @@ namespace IR_engine
             }
             double value = FormatNumber(number);
             // int value = int.Parse(number);                                      //get the numeric value of the year/day
-            month = month.ToLower();                                            //easier to only check lower case strings
-            foreach (months m in Enum.GetValues(typeof(months)))                //iterate to find out which month it is
+            if(monthsToNumber.ContainsKey(month))
             {
-                string m2 = m.ToString();
-                string mon = m2.Substring(0, 3);
-                //checks all possible combinations
-                if (month.Equals(m2) || month.Equals(mon))
-                {
-                    if (((int)m + 1) < 10)                                         //adds the zero before the number
-                        month = "0" + ((int)m + 1) + "";
-                    else
-                        month = ((int)m + 1) + "";
-                    break;
-                }
+                month = monthsToNumber[month];
             }
             if (number.Length == 1) number = "0" + number;
             if (value > 999)
@@ -588,16 +585,16 @@ namespace IR_engine
                     if (amount > 1000000) { amount = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else
                     {
-                        if (idx + 1 == words.Length && words[idx][0] == '$')
+                        if (idx + 1 == words_length && words[idx][0] == '$')
                         {
                             j = idx;
                             val = words[idx].Remove(0, 1);
                             return val + " Dollars";
                         }
-                        string lvl = words[idx + 1].ToUpper();
-                        if (lvl == "M" || lvl == "MILLION") { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
-                        else if (lvl == "BILLION" || lvl == "BN") { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
-                        else if (lvl == "TRILLION") { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                        // string lvl = words[idx + 1].ToUpper();
+                        if (million.Contains(words[idx + 1])) { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                        else if (billion.Contains(words[idx + 1])) { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                        else if (trillion.Contains(words[idx + 1])) { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
                         else { val = amount.ToString("#,##0.##"); j = idx; }
                     }
                     val = val + " Dollars";
@@ -614,16 +611,16 @@ namespace IR_engine
                     if (amount > 1000000) { double amount2 = amount / 1000000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx; }
                     else
                     {
-                        if (idx + 1 == words.Length && words[idx][0] == '$')
+                        if (idx + 1 == words_length && words[idx][0] == '$')
                         {
                             j = idx;
                             val = words[idx].Remove(0, 1);
                             return val + " Dollars";
                         }
-                        string lvl = words[idx + 1].ToUpper();
-                        if (lvl == "M" || lvl == "MILLION") { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
-                        else if (lvl == "BILLION" || lvl == "BN") { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
-                        else if (lvl == "TRILLION") { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                        // string lvl = words[idx + 1].ToUpper();
+                        if (million.Contains(words[idx + 1])) { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                        else if (billion.Contains(words[idx + 1])) { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
+                        else if (trillion.Contains(words[idx + 1])) { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
                         else { val = amount.ToString("#,##0.##"); j = idx; }
                     }
                     val = val + " Dollars";
@@ -636,7 +633,7 @@ namespace IR_engine
                 /*
                  * the word looks like 45 4/5 dollars
                  */
-                if (idx + 1 == words.Length) { }
+                if (idx + 1 == words_length) { }
                 if (IsComNum(words[idx + 1]) && hasChar(words[idx + 1], '/'))
                 {
                     val = words[idx] + " " + words[idx + 1] + " Dollars";
@@ -648,24 +645,24 @@ namespace IR_engine
                  */
                 else
                 {
-                    string lvl = words[idx + 1].ToUpper();
-                    if (lvl == "M" || lvl == "MILLION")
+                    //string lvl = words[idx + 1].ToUpper();
+                    if (million.Contains(words[idx + 1]))
                     {
                         val = words[idx] + " M " + "Dollars";
-                        if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
+                        if (US.Contains(words[idx + 2]))
                         { j = idx + 3; }
                         j = idx + 2;
                         return val;
                     }
-                    else if (lvl == "BILLION" || lvl == "BN")
+                    else if (billion.Contains(words[idx + 1]))
                     {
-                        if (hasChar(words[idx],'.'))
+                        if (hasChar(words[idx], '.'))
                         {
 
                             double value = FormatNumber(words[idx]);
                             value = value * 1000;
                             val = value + " M " + "Dollars";
-                            if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
+                            if (US.Contains(words[idx + 2]))
                             { j = idx + 3; }
                             j = idx + 2;
                             return val;
@@ -676,21 +673,21 @@ namespace IR_engine
                             double value = FormatNumber(words[idx]);
                             value = value * 1000;
                             val = value + " M " + "Dollars";
-                            if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
+                            if (US.Contains(words[idx + 2]))
                             { j = idx + 3; }
                             j = idx + 2;
                             return val;
 
                         }
                     }
-                    else if (lvl == "TRILLION" || lvl == "BN")
+                    else if (trillion.Contains(words[idx + 1]))
                     {
-                        if (hasChar(words[idx],'.'))
+                        if (hasChar(words[idx], '.'))
                         {
                             double value = FormatNumber(words[idx]);
                             value = value * 1000 * 1000;
                             val = value + " M " + "Dollars";
-                            if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
+                            if (US.Contains(words[idx + 2]))
                             { j = idx + 3; }
                             j = idx + 2;
                             return val;
@@ -700,11 +697,10 @@ namespace IR_engine
                             double value = FormatNumber(words[idx]);
                             value = value * 1000 * 1000;
                             val = value + " M " + "Dollars";
-                            if (words[idx + 2] == "US" || words[idx + 2] == "U.S" || words[idx + 2] == "U.S.")
+                            if (US.Contains(words[idx + 2]))
                             { j = idx + 3; }
                             j = idx + 2;
                             return val;
-
                         }
                     }
                     else { val = words[idx] + " Dollars"; j = idx + 1; return val; }
@@ -723,10 +719,10 @@ namespace IR_engine
             if (splittedExpression.Length == 2 && IsNumber(splittedExpression[0]) && IsNumber(splittedExpression[1]))
             {                                                                                   //for example 6-7 (expression)
                 term right, left;
-                if (idx + 1 < words.Length && EnumContains(words[idx + 1]))
+                if (idx + 1 < words_length && months.Contains(words[idx + 1]))
                 {
-                    left = new term(splittedExpression[0] + " " + words[idx + 1].ToLower());       //term phrase = "6 may"
-                    right = new term(splittedExpression[1] + " " + words[idx + 1].ToLower());   //term phrase = "7 may"
+                    left = new term(splittedExpression[0] + " " + words[idx + 1]);       //term phrase = "6 may"
+                    right = new term(splittedExpression[1] + " " + words[idx + 1]);   //term phrase = "7 may"
                 }
                 else if (isPercentage(words, idx))
                 {
@@ -764,6 +760,7 @@ namespace IR_engine
         }
         void AddTerm(int queue, term t)
         {
+            t.AddToPosting(DocName, 1);
             Model.queueList[queue].AddOrUpdate(t.Phrase, t, (key, value) => {
                 value.AddToPosting(DocName, 1);
                 if (!(t.Phrase[0] >= 'A' && t.Phrase[0] <= 'Z')) value.IsUpperInCurpus = false;
@@ -774,20 +771,22 @@ namespace IR_engine
         {
             // TODO: remove this line after debug
             //Console.WriteLine("Pasring an expression at doc: " + DocName + " starting at: " + words[idx]);
-            if (words[idx].Equals("\"Weekly"))
-                j = idx;
             string exp = "";
             bool expEnd = false;                                                        //will check if the end word has been reached 
             List<string> newWords = new List<string>();
             int i = idx;
             int k = 0;
-            for (; i < words.Length && !expEnd; i++)
+            for (; i < words_length && !expEnd; i++)
             {
                 string word = words[idx];
                 if (word[word.Length - 1] == '\"') expEnd = true;
                 word = Fixword(word);
-                if (word[0] == '\"' || word[word.Length - 1] == '\"') word = word.Trim('\"');
+                if (word.Contains('\"')) { word = word.Trim('\"'); }
                 newWords.Add(word);
+                /*if(i==idx)
+                    newWords.Add(word.Remove(0,1));
+                if (expEnd)
+                    newWords.Add(word.Remove(word.Length - 1));*/
             }
             parseText(newWords.ToArray(), queue);                                       //will parse the new list in case for double rule
             j = i - 1;
@@ -797,43 +796,76 @@ namespace IR_engine
         string Fixword(string word)
         {
             word.Replace("\'", "");
+            word.Replace("--", "");
             bool done = false;
-            while (!done)
+            //while (!done)
+            //{
+            //  done = true;
+            if (word == "" || word == "\n" || word[0] == '<') { return null; }
+            if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
+            else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return null;
+            else
             {
-                done = true;
-                if (word == "" || word == "\n" || word[0] == '<') { return null; }
-                if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
-                else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return null;
-                else
-                {
+                word = word.TrimEnd('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
+                    '}', '&', ':', '<', '>', ';', '-');
+                word.TrimStart('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
+                    '}', '&', ':', '<', '>', ';');
 
-                    if (word[word.Length - 1] == '.' || word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' ||
-                        word[word.Length - 1] == ')' || word[word.Length - 1] == '}' || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':' ||
-                        word[word.Length - 1] == '>' || word[word.Length - 1] == '-' || word[word.Length - 1] == ']' || word[word.Length - 1] == ';' ||
-                        word[word.Length - 1] == '?' || (word[word.Length - 2] == '.' && word[word.Length - 1] > '9' && word[word.Length - 1] < '0') || (word.Length > 1 && word[word.Length - 2] == ','))
-                    {
-                        done = false;
-                        word = word.Remove(word.Length - 1);
-                    }
+                //trim//
+                /* if (word[word.Length - 1] == '.' ||word[word.Length-1]=='!'|| word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' || word[word.Length - 1] == '|'||
+                     word[word.Length - 1] == ')' || word[word.Length - 1] == '(' || word[word.Length - 1] == '[' || word[word.Length - 1] == '}' || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':' ||
+                     word[word.Length - 1] == '>' || word[word.Length - 1] == '-' || word[word.Length - 1] == ']' || word[word.Length - 1] == ';' ||
+                     word[word.Length - 1] == '?' || (word[word.Length - 2] == '.' && word[word.Length - 1] > '9' && word[word.Length - 1] < '0') ||
+                     (word.Length > 1 && word[word.Length - 2] == ',')|| ((word.Length > 1)&&(word[word.Length - 2] == '.' || word[word.Length - 2] == ',' || word[word.Length - 2] == ']'||
+                     word[word.Length - 2] == ')'|| word[word.Length - 2] == '}') && 
+                     word[word.Length - 1] > '9' && word[word.Length - 1] < '0')||word[word.Length-1]=='|')
+                 {
+                     done = false;
+                     word = word.Remove(word.Length - 1);
+                 }
+                 if (word[word.Length - 1] == '"')
+                     if ((word.Length>1)&&(word[word.Length - 2] == '.' || word[word.Length - 1] == '2' || word[word.Length - 2] == '[' || word[word.Length - 2] == '!' ||
+                         word[word.Length - 2] == ',' || word[word.Length - 2] == '\n' || word[word.Length - 2] == '|' ||
+                          word[word.Length - 2] == ')' || word[word.Length - 2] == '}' || word[word.Length - 2] == ' ' || word[word.Length - 2] == ':' ||
+                         word[word.Length - 2] == '>' || word[word.Length - 2] == '-' || word[word.Length -2] == ']' || word[word.Length - 2] == ';' ||
+                         word[word.Length - 2] == '?' ||
+                         (word.Length > 1 && word[word.Length - 2] == ',') || ((word.Length > 2)&&(word[word.Length - 2] == '.' || word[word.Length - 2] == ',' || word[word.Length - 2] == ']' ||
+                         word[word.Length - 3] == ')' || word[word.Length - 3] == '}') &&
+                         word[word.Length - 2] > '9' && word[word.Length - 2] < '0') || word[word.Length - 2] == '|'))
+                     {
+                         word = word.Remove(word.Length - 2, 1);
+                     }
 
-                    if (word == "" || word == "\n" || word[0] == '<') { return null; }
-                    else
-                    {
-                        //removes non-relative end characters from words
-                        if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':' ||
-                           word[0] == '<' || word[0] == '[' || word[0] == '?')
-                        {
-                            done = false;
-                            word = word.Remove(0, 1);
-                        }
-                    }
-                }
+
+                 if (word == "" || word == "\n" || word[0] == '<') { return null; }
+                 if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
+                 else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return null;
+                 else
+                 {
+                     //removes non-relative end characters from words
+                     if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' || word[0] == ')' || word[0] == '}' || word[0] == ' ' || word[0] == ':' ||
+                        word[0] == '<' || word[0] == '[' || word[0] == '!' || word[0] == '?' || ((word.Length > 1)&&(word[1] == '.'||word[1]==','||word[1]=='{'||word[1]=='['||word[1]=='(') && word[0] > '9' && word[0] < '0') ||
+                        (word.Length > 1 && word[1] == ',')|| word[0] == '|')
+                     {
+                         done = false;
+                         word = word.Remove(0, 1);
+                     }
+                     if(word[0]=='"')
+                         if ((word.Length>1)&&(word[1] == '.' || word[1] == ',' || word[1] == '\n' || word[1] == '(' || word[1] == '{' || word[1] == ' ' || word[1] == ':' ||
+                        word[1] == '<' || word[1] == '[' || word[1] == '!' || word[1] == '?' || ((word.Length>2)&&(word[2] == '.' || word[2] == ',' || word[2] == '{' || word[2] == '[' ||
+                        word[2] == '(') && word[1] > '9' && word[2] < '0') ||
+                        (word.Length > 2 && word[1] == ',') || word[1] == '|'))
+                         {
+                             done = false;
+                             word = word.Remove(1, 1);
+                         }
+                 }
+             }*/
             }
             if (word != "")
             {
                 return word;
             }
-
             return null;
         }
 
