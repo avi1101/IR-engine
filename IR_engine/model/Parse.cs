@@ -128,6 +128,11 @@ namespace IR_engine
         public HashSet<char> Fixwordlist = new HashSet<char>() { '.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';'};
         public HashSet<string> percent = new HashSet<string>() { "percent", "PERCENT", "Percent", "percentage", "Percentage", "PERCENTAGE" };
+        public HashSet<string> distance = new HashSet<string>() {"meter","METER","Meter","CM","KM","cm","km","centimeter", "Centimeter", "CENTIMETER", "inch","Inch","INCH",
+              "millimeter","Millimeter","mm","MM","MILLIMETER","Mile","mile","MILE","FEET","Feet","feet","yards","yard","Yard","YARD","Yards","YARDS","decimeter",
+                "Decimeter","DECIMETER","meters","METERS","Meters","centimeters", "Centimeters", "CENTIMETERS", "inches","Inches","INCHES",
+              "millimeters","Millimeters","mm","MM","MILLIMETERS","Miles","miles","MILES","FEETS","Feets","feets","decimeters",
+                "Decimeters","DECIMETERS",};
 
         HashSet<string> stopwords = new HashSet<string>();
         Stemmer stem;
@@ -166,7 +171,7 @@ namespace IR_engine
         public void Text2list(document document, int queue)
         {
             string tmp_txt = document.Doc;
-            string[] text = tmp_txt.Split(' ', '\n');
+            string[] text = tmp_txt.Split(' ', '\n','\t');
             //pre_terms = text.ToList();
             DocName = document.DocID;
             parseText(text, queue);
@@ -176,7 +181,7 @@ namespace IR_engine
             if (str.Length == 0) return false;
             for (int i = 0; i < str.Length; i++)
             {
-                if (str[i] > '9' || str[i] < '0')
+                if (str[i] > '9' || str[i] < '0' ||(i!=0&&i!=str.Length-1&&str[i]=='.'))
                     return false;
             }
             return true;
@@ -217,13 +222,16 @@ namespace IR_engine
                 }
                 else if (containsNumbers(word))
                 {
-                    /* 
-                     * the first word contains a number, which means it can apply one of the rules
-                     * here i'll check which rule to apply
-                     */
-
+                    if (Isdistance(words, i))
+                    {
+                        /* 
+                         * the first word contains a number, which means it can apply one of the rules
+                         * here i'll check which rule to apply
+                         */
+                        phrase = Setdistance(words, i, out j);
+                    }
                     // checking for price existance
-                    if (isPrice(words, i))
+                    else if (isPrice(words, i))
                     {
                         /*
                          * we found that word[i] is a price expression
@@ -366,8 +374,8 @@ namespace IR_engine
         /// <returns></returns>
         private bool isPercentage(string[] words, int idx)
         {
-            if (words[idx][words[idx].Length - 1] == '%') return true;
-            if (idx + 1 < words_length && percent.Contains(words[idx + 1]))
+            if (words[idx][words[idx].Length - 1] == '%' && IsNumber(words[idx].Remove(0,1))) return true;
+            if (IsNumber(words[idx]) && idx + 1 < words_length && percent.Contains(words[idx + 1]))
                 return true;
             return false;
         }
@@ -380,11 +388,18 @@ namespace IR_engine
         /// <returns></returns>
         private bool isPrice(string[] words, int idx)
         {
-            if (words[idx][0] == '$') return true;
+            if (words[idx][0] == '$' &&IsNumber(words[idx].Remove(0,1))) return true;
             if (idx + 2 < words_length)
-                if (dollars.Contains(words[idx + 2]) && (million.Contains(words[idx + 1]) || billion.Contains(words[idx + 1]) || trillion.Contains(words[idx + 1]))) return true;
+                if (IsNumber(words[idx])&&dollars.Contains(words[idx + 2]) && (million.Contains(words[idx + 1]) || billion.Contains(words[idx + 1]) || trillion.Contains(words[idx + 1]))) return true;
             if (idx + 1 < words_length)
-                if (dollars.Contains(words[idx + 1]))
+                if (IsNumber(words[idx]) && dollars.Contains(words[idx + 1]))
+                    return true;
+            return false;
+        }
+        private bool Isdistance(string[] words,int idx)
+        {
+            if (idx + 1 < words_length)
+                if (distance.Contains(words[idx + 1]))
                     return true;
             return false;
         }
@@ -568,6 +583,11 @@ namespace IR_engine
             return sol;
         }
         string SetLetterType(int idx, string[] words) { return null; }
+        string Setdistance(string[] words,int idx,out int j)
+        {
+            j = idx + 1;
+            return words[idx] + words[idx + 1];
+        }
         string Setprice(int idx, string[] words, out int j)
         {
             string val = "";
@@ -852,7 +872,7 @@ namespace IR_engine
         {
             word.Replace("\'", "");
             word.Replace("--", "");
-            bool done = false;
+            //bool done = false;
             //while (!done)
             //{
             //  done = true;
@@ -861,10 +881,9 @@ namespace IR_engine
             else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return "";
             else
             {
-                word = word.TrimEnd('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
-                    '}', '&', ':', '<', '>', ';', '-');
-                word.TrimStart('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
-                    '}', '&', ':', '<', '>', ';');
+                word = word.Trim('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
+                    '}', '&', ':', '<', '>','@','&','*','^','#' ,';',' ');
+                word=word.TrimStart('-');
 
                 //trim//
                 /* if (word[word.Length - 1] == '.' ||word[word.Length-1]=='!'|| word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' || word[word.Length - 1] == '|'||
