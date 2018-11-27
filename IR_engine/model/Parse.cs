@@ -125,8 +125,12 @@ namespace IR_engine
             { "SEPTEMBER", "09" },{"october", "10" },{"October", "10" },{"OCTOBER", "10" },{"november", "11" },{"November", "11" },{"NOVEMBER", "11" },{"december", "12" },
             { "December", "12" },{"DECEMBER", "12" }, {"Jun", "01" }, {"JUN", "01" }, {"jun", "01" }, {"JAN", "01" }, {"jan", "01" }, {"Jan", "01" }, {"FEB", "02" },{"Feb", "02" },{"feb", "02" }, {"SEP", "09" }, {"Sep", "09" }, {"sep", "09" },
             { "OCT", "10" }, {"Oct", "10" }, {"oct", "10" }, {"NOV", "11" }, {"Nov", "11" }, {"nov", "11" }, {"DEC", "12" }, {"Dec", "12" }, {"dec", "12" }, {"AUG", "08" }, {"Aug", "08" }, {"aug","08" } };
-        public HashSet<char> Fixwordlist = new HashSet<char>() { '.','!','?','\n', ',', '|','[',']','(',')','{',
-                        '}','&',':','<','>',';'};
+        public HashSet<char> Fixwordlist0 = new HashSet<char>() { '.','!','?','\n', ',', '|','[',']','(',')','{',
+                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
+        public HashSet<char> Fixwordlist = new HashSet<char>() { '-','!','?','\n', '|','[',']','(',')','{',
+                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
+        public HashSet<char> Fixwordlistlast = new HashSet<char>() {'-', '.','!','?','\n', ',', '|','[',']','(',')','{',
+                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
         public HashSet<string> percent = new HashSet<string>() { "percent", "PERCENT", "Percent", "percentage", "Percentage", "PERCENTAGE" };
         public HashSet<string> distance = new HashSet<string>() {"meter","METER","Meter","CM","KM","cm","km","centimeter", "Centimeter", "CENTIMETER", "inch","Inch","INCH",
               "millimeter","Millimeter","mm","MM","MILLIMETER","Mile","mile","MILE","FEET","Feet","feet","yards","yard","Yard","YARD","Yards","YARDS","decimeter",
@@ -894,10 +898,7 @@ namespace IR_engine
             else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return "";
             else
             {
-                word = word.Trim('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
-                    '}', '&', ':', '<', '>','@','&','*','^','#' ,';',' ');
-                word=word.TrimStart('-');
-
+                word = TrimtoRemove(word);
                 //trim//
                 /* if (word[word.Length - 1] == '.' ||word[word.Length-1]=='!'|| word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' || word[word.Length - 1] == '|'||
                      word[word.Length - 1] == ')' || word[word.Length - 1] == '(' || word[word.Length - 1] == '[' || word[word.Length - 1] == '}' || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':' ||
@@ -991,7 +992,36 @@ namespace IR_engine
             }
             return number;
         }
-
+        private string TrimtoRemove(string word)
+        {
+            StringBuilder sb = new StringBuilder();
+            for(int i = 0; i < word.Length; i++)
+            {
+                char c = word[i];
+                if (i == 0)
+                {
+                    if (!Fixwordlist0.Contains(c))
+                    {
+                        sb.Append(c);
+                    }
+                }
+                else if (i == word.Length - 1)
+                {
+                    if (!Fixwordlistlast.Contains(c))
+                    {
+                        sb.Append(c);
+                    }
+                }
+                else
+                {
+                    if (!Fixwordlist.Contains(c))
+                    {
+                        sb.Append(c);
+                    }
+                }
+            }
+            return sb.ToString();
+        }
         bool hasChar(string word, char del)
         {
             for (int i = 0; i < word.Length; i++)
@@ -1001,5 +1031,6 @@ namespace IR_engine
             }
             return false;
         }
+
     }
 }
