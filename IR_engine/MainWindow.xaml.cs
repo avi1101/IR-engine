@@ -26,16 +26,14 @@ namespace IR_engine
     public partial class MainWindow : Window
     {
         private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
-        string path;
-        string IndexPath;
+        string path = null;
+        string IndexPath = null;
         Model m;
         double time = 0;
         public MainWindow()
         {
             InitializeComponent();
             Console.WriteLine("START");
-            path = "";
-            IndexPath = "";
         }
 
         /// <summary>

@@ -65,8 +65,8 @@ namespace IR_engine
             //}
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-            int tasks = cores;                                  //get the number of logical proccesors 
-            //int tasks = 1;             //get the number of logical proccesors 
+            //int tasks = cores;                                  //get the number of logical proccesors 
+            int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
             int k = 0, chunk = 0, id = 0;

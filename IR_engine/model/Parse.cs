@@ -213,6 +213,7 @@ namespace IR_engine
                      * we need to save it as according to the expression rules
                      */
                     phrase = SetQuotationExp(i, words, out j, queue);
+                    words_length = words.Length;
                 }
                 else if (containsNumbers(word))
                 {
@@ -811,15 +812,22 @@ namespace IR_engine
             string exp = "";
             bool expEnd = false;                                                        //will check if the end word has been reached 
             List<string> newWords = new List<string>();
+            StringBuilder ex = new StringBuilder();
             int i = idx;
             int k = 0;
+            //words[idx] = words[idx].Remove();
             for (; i < words_length && !expEnd; i++)
             {
-                string word = words[idx];
-                if (word[word.Length - 1] == '\"') expEnd = true;
+                string word = words[i];
+                if (word[word.Length - 1] == '\"' || hasEndQu(word))
+                {
+                    word = word.Remove('\"');
+                    expEnd = true;
+                }
                 word = Fixword(word);
-                if (word.Contains('\"')) { word = word.Trim('\"'); }
                 newWords.Add(word);
+                ex.Append(word);
+                ex.Append(" ");
                 /*if(i==idx)
                     newWords.Add(word.Remove(0,1));
                 if (expEnd)
@@ -827,8 +835,18 @@ namespace IR_engine
             }
             parseText(newWords.ToArray(), queue);                                       //will parse the new list in case for double rule
             j = i - 1;
-            return exp;
+            return ex.ToString();
 
+        }
+        private bool hasEndQu(string word)
+        {
+            int len = word.Length;
+            for(int i = len-1; i >= 0; i--)
+            {
+                if (Char.IsLetterOrDigit(word[i])) return false;
+                if (word[i] == '"') return true;
+            }
+            return false;
         }
         string Fixword(string word)
         {
