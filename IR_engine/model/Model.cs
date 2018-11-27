@@ -16,7 +16,7 @@ namespace IR_engine
         static int i = 0;                                                           //use to index the queues in the list
         public static List<Dictionary<string, term>> queueList = new List<Dictionary<string, term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
-        public static int cores = Environment.ProcessorCount-4;
+        public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
         //end concurrent variables
 
@@ -65,8 +65,8 @@ namespace IR_engine
             //}
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-            //int tasks = cores;                                  //get the number of logical proccesors 
-            int tasks = 1;             //get the number of logical proccesors 
+            int tasks = cores;                                  //get the number of logical proccesors 
+            //int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
             int k = 0, chunk = 0, id = 0;

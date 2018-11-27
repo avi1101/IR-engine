@@ -224,6 +224,7 @@ namespace IR_engine
                     phrase = SetQuotationExp(i, words, out j, queue);
                     words_length = words.Length;
                     i = j;
+                    if (phrase.Equals("")) continue;
                 }
                 else if (containsNumbers(word))
                 {
@@ -843,6 +844,7 @@ namespace IR_engine
             for (; i < words_length && !expEnd; i++)
             {
                 string word = words[i];
+                if (word.Equals("")) continue;
                 if (word[word.Length - 1] == '\"' || hasEndQu(word))
                 {
                     word = TrimAll(word);
@@ -862,7 +864,7 @@ namespace IR_engine
             }
             parseText(newWords.ToArray(), queue);                                       //will parse the new list in case for double rule
             j = i - 1;
-            return ex.ToString();
+            return newWords.Count > 1? ex.ToString() : "";
 
         }
         private bool hasEndQu(string word)
@@ -877,11 +879,11 @@ namespace IR_engine
         }
         private string TrimAll(string word)
         {
-            for(int i = word.Length - 1; i >= 0; i--)
+            for(int i = word.Length - 1; i >= 0; i-=2)
             {
                 char c = word[i];
                 if (Char.IsLetterOrDigit(c)) break;
-                word = word.Replace(c,'\0');
+                word = word.Replace(c+"","");
             }
             return word;
         }
