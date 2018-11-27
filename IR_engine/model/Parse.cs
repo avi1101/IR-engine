@@ -171,7 +171,7 @@ namespace IR_engine
         public void Text2list(document document, int queue)
         {
             string tmp_txt = document.Doc;
-            string[] text = tmp_txt.Split(' ', '\n');
+            string[] text = tmp_txt.Split(' ', '\n','\t');
             //pre_terms = text.ToList();
             DocName = document.DocID;
             parseText(text, queue);
@@ -181,7 +181,7 @@ namespace IR_engine
             if (str.Length == 0) return false;
             for (int i = 0; i < str.Length; i++)
             {
-                if (str[i] > '9' || str[i] < '0')
+                if (str[i] > '9' || str[i] < '0' ||(i!=0&&i!=str.Length-1&&str[i]=='.'))
                     return false;
             }
             return true;
@@ -373,8 +373,8 @@ namespace IR_engine
         /// <returns></returns>
         private bool isPercentage(string[] words, int idx)
         {
-            if (words[idx][words[idx].Length - 1] == '%') return true;
-            if (idx + 1 < words_length && percent.Contains(words[idx + 1]))
+            if (words[idx][words[idx].Length - 1] == '%' && IsNumber(words[idx].Remove(0,1))) return true;
+            if (IsNumber(words[idx]) && idx + 1 < words_length && percent.Contains(words[idx + 1]))
                 return true;
             return false;
         }
@@ -387,11 +387,11 @@ namespace IR_engine
         /// <returns></returns>
         private bool isPrice(string[] words, int idx)
         {
-            if (words[idx][0] == '$') return true;
+            if (words[idx][0] == '$' &&IsNumber(words[idx].Remove(0,1))) return true;
             if (idx + 2 < words_length)
-                if (dollars.Contains(words[idx + 2]) && (million.Contains(words[idx + 1]) || billion.Contains(words[idx + 1]) || trillion.Contains(words[idx + 1]))) return true;
+                if (IsNumber(words[idx])&&dollars.Contains(words[idx + 2]) && (million.Contains(words[idx + 1]) || billion.Contains(words[idx + 1]) || trillion.Contains(words[idx + 1]))) return true;
             if (idx + 1 < words_length)
-                if (dollars.Contains(words[idx + 1]))
+                if (IsNumber(words[idx]) && dollars.Contains(words[idx + 1]))
                     return true;
             return false;
         }
@@ -837,8 +837,8 @@ namespace IR_engine
             {
                 string word = words[idx];
                 if (word[word.Length - 1] == '\"') expEnd = true;
-                word = Fixword(word);
                 if (word.Contains('\"')) { word = word.Trim('\"'); }
+                word = Fixword(word);
                 newWords.Add(word);
                 /*if(i==idx)
                     newWords.Add(word.Remove(0,1));
