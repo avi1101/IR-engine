@@ -275,35 +275,42 @@ namespace IR_engine
                     else
                         phrase = toStem ? stem.stemTerm(word) : word;
                 }
-                //t = new term(phrase);
+
+                t = new term(phrase);
                 //t.AddToPosting(DocName);
-                //if (terms.ContainsKey(phrase))
-                //{
-                //    /*
-                //     * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
-                //     * the dictionary is implemented as a hash table with chaining
-                //     * so it should give us the best resaults
-                //     */
-                //    t = terms[phrase]; //reference to the original term
-                //}
-                //else
-                //{
-                //    /*
-                //     * this is a new tern that needs to be created
-                //     */
-                //    t = new term(phrase);
-                //    terms.Add(t.Phrase, t);
-                //}
+                if (Model.queueList[queue].ContainsKey(phrase))
+                {
+                    /*
+                     * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
+                     * the dictionary is implemented as a hash table with chaining
+                     * so it should give us the best resaults
+                     */
+                    t = Model.queueList[queue][phrase]; //reference to the original term
+                    if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
+                    t.AddToPosting(DocName, 1);
+                }
+                else
+                {
+                    /*
+                     * this is a new tern that needs to be created
+                     */
+                    t = new term(phrase);
+                    if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
+                    t.AddToPosting(DocName, 1);
+                    Model.queueList[queue].Add(t.Phrase, t);
+                }
                 //t.AddToCount(DocName);
                 //Model.queueList[queue].Enqueue(t);
-                t = new term(phrase);
-                t.AddToPosting(DocName, 1);
-                Model.queueList[queue].AddOrUpdate(phrase, t, (key, value) => {
-                    value.AddToPosting(DocName, 1);
-                    if (!isUpperFirstLetter) value.IsUpperInCurpus = false;
-                    return value;
-                });
-                if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
+
+                //t = new term(phrase);
+                //t.AddToPosting(DocName, 1);
+                //Model.queueList[queue].AddOrUpdate(phrase, t, (key, value) => {
+                //    value.AddToPosting(DocName, 1);
+                //    if (!isUpperFirstLetter) value.IsUpperInCurpus = false;
+                //    return value;
+                //});
+                //if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
+
                 //Console.WriteLine(word);
             }
 
@@ -768,12 +775,34 @@ namespace IR_engine
         }
         void AddTerm(int queue, term t)
         {
-            t.AddToPosting(DocName, 1);
-            Model.queueList[queue].AddOrUpdate(t.Phrase, t, (key, value) => {
-                value.AddToPosting(DocName, 1);
-                if (!(t.Phrase[0] >= 'A' && t.Phrase[0] <= 'Z')) value.IsUpperInCurpus = false;
-                return value;
-            });
+            //t.AddToPosting(DocName, 1);
+            //Model.queueList[queue].AddOrUpdate(t.Phrase, t, (key, value) => {
+            //    value.AddToPosting(DocName, 1);
+            //    if (!(t.Phrase[0] >= 'A' && t.Phrase[0] <= 'Z')) value.IsUpperInCurpus = false;
+            //    return value;
+            //});
+            string s = t.Phrase;
+            if (Model.queueList[queue].ContainsKey(t.Phrase))
+            {
+                /*
+                 * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
+                 * the dictionary is implemented as a hash table with chaining
+                 * so it should give us the best resaults
+                 */
+                t = Model.queueList[queue][t.Phrase]; //reference to the original term
+                if (!(s[0] <= 'Z' && s[0] >= 'A')) t.IsUpperInCurpus = false;
+                t.AddToPosting(DocName, 1);
+            }
+            else
+            {
+                /*
+                 * this is a new tern that needs to be created
+                 */
+                t = new term(t.Phrase);
+                if (!!(s[0] <= 'Z' && s[0] >= 'A')) t.IsUpperInCurpus = false;
+                t.AddToPosting(DocName, 1);
+                Model.queueList[queue].Add(t.Phrase, t);
+            }
         }
         string SetQuotationExp(int idx, string[] words, out int j, int queue)
         {

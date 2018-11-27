@@ -14,9 +14,9 @@ namespace IR_engine
     {
         //concurrent variables
         static int i = 0;                                                           //use to index the queues in the list
-        public static List<ConcurrentDictionary<string, term>> queueList = new List<ConcurrentDictionary<string,term>>();        //list of Queues 
+        public static List<Dictionary<string, term>> queueList = new List<Dictionary<string, term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
-        public static int cores = Environment.ProcessorCount - 8;
+        public static int cores = Environment.ProcessorCount-4;
         public static int fileCount = 0;
         //end concurrent variables
 
@@ -25,12 +25,14 @@ namespace IR_engine
         string path;
         bool ToStem;
         public double elapsedMsdouble;
+        string IndexPath;
 
-        public Model(string path, bool Tostem)
+        public Model(string path, bool Tostem, string ipath)
         {
 
             readfo = new ReadFile(path, Tostem, cores);
             this.path = path;
+            this.IndexPath = ipath;
             this.ToStem = Tostem;
             parser = new Parse(path, ToStem);
         }
@@ -64,9 +66,9 @@ namespace IR_engine
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
             int tasks = cores;                                  //get the number of logical proccesors 
-            //int tasks = 4;             //get the number of logical proccesors 
+            //int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
-                queueList.Add(new ConcurrentDictionary<string, term>());
+                queueList.Add(new Dictionary<string, term>());
             int k = 0, chunk = 0, id = 0;
             t = new List<Task>();
             foreach (string file in files)
@@ -79,21 +81,24 @@ namespace IR_engine
                 i++;
                 k++;
                 if (k % tasks == 0)
-                    chunk++;
-                if (k % tasks == 0)
                 {
                     Console.WriteLine("awaiting {0} tasks to finish", tasks);
                     foreach (Task ts in t)
                         ts.Wait();
-                    manageResources();
-                    using (StreamWriter sw = new StreamWriter(path+ "\\Posting_and_indexes\\index" + chunk + ".txt"))
+                    if (k % (tasks * 5) == 0)
                     {
-                        foreach (KeyValuePair<term, term> entry in terms2)
+                        Console.WriteLine("Memory cleanup");
+                        manageResources();
+                        using (StreamWriter sw = new StreamWriter(path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
                         {
-                            sw.WriteLine(entry.Key.Phrase + "\t" + entry.Value.IsUpperInCurpus + '\t' + entry.Value.printPosting());
+                            foreach (KeyValuePair<term, term> entry in terms2)
+                            {
+                                sw.WriteLine(entry.Key.Phrase + "\t" + entry.Value.IsUpperInCurpus + '\t' + entry.Value.printPosting());
+                            }
                         }
+                        terms2.Clear();
+                        chunk++;
                     }
-                    terms2.Clear();
                     Console.WriteLine("{0} tasks done, total done: {1}", tasks, id);
                     t = new List<Task>();
                 }
@@ -113,6 +118,8 @@ namespace IR_engine
                 }
                 terms2.Clear();
                 Console.WriteLine("{0} tasks done, total done: {1}", tasks, id);
+                t = null;
+                chunk++;
             }
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
@@ -121,17 +128,14 @@ namespace IR_engine
 
         public void manageResources()
         {
-            Int32 len = 0;
             for (int i = 0; i < queueList.Count; i++)
             {
-                Int32 j;
                 term t = null;
-                len = queueList[i].Count;
                 foreach (KeyValuePair<string, term> entry in queueList[i])
                 {
                     t = entry.Value;
                     if (t == null) break;
-                    queueList[i].TryRemove(t.Phrase, out t);
+                    //queueList[i].TryRemove(t.Phrase, out t);
                     if (terms2.ContainsKey(t))
                     {
                         terms2[t].AddToPosting(t.posting);
@@ -176,5 +180,5 @@ namespace IR_engine
     }
 
 }
-    
+
 

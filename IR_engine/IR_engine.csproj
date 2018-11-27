@@ -63,11 +63,12 @@
     <Compile Include="DictionaryList.xaml.cs">
       <DependentUpon>DictionaryList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Model.cs" />
-    <Compile Include="Parse.cs" />
-    <Compile Include="ReadFile.cs" />
-    <Compile Include="Stemmer.cs" />
-    <Compile Include="term.cs" />
+    <Compile Include="model\Indexer.cs" />
+    <Compile Include="model\Model.cs" />
+    <Compile Include="model\Parse.cs" />
+    <Compile Include="model\ReadFile.cs" />
+    <Compile Include="model\Stemmer.cs" />
+    <Compile Include="model\term.cs" />
     <Page Include="DictionaryList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -80,7 +81,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="document.cs" />
+    <Compile Include="model\document.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

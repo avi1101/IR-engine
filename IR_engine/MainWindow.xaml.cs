@@ -26,14 +26,16 @@ namespace IR_engine
     public partial class MainWindow : Window
     {
         private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
-        string path=null;
+        string path;
+        string IndexPath;
         Model m;
         double time = 0;
         public MainWindow()
         {
             InitializeComponent();
             Console.WriteLine("START");
-
+            path = "";
+            IndexPath = "";
         }
 
         /// <summary>
@@ -79,7 +81,7 @@ namespace IR_engine
             }
             if (!path.Equals(""))
             {
-                m = new Model(path, stem.IsChecked.Value);
+                m = new Model(path, stem.IsChecked.Value, IndexPath);
                 m.index();
             }
             else
@@ -101,6 +103,17 @@ namespace IR_engine
             Dictionary<string, term> index = m.getDictionary();
             dictionary = new DictionaryList(index);
             dictionary.Show();
+        }
+
+        private void BrowseIndex_Click(object sender, RoutedEventArgs e)
+        {
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    path = dialog.SelectedPath;
+                }
+            }
         }
     }
 }
