@@ -219,6 +219,7 @@ namespace IR_engine
                      */
                     phrase = SetQuotationExp(i, words, out j, queue);
                     words_length = words.Length;
+                    i = j;
                 }
                 else if (containsNumbers(word))
                 {
@@ -835,16 +836,18 @@ namespace IR_engine
             StringBuilder ex = new StringBuilder();
             int i = idx;
             int k = 0;
-            //words[idx] = words[idx].Remove();
             for (; i < words_length && !expEnd; i++)
             {
                 string word = words[i];
                 if (word[word.Length - 1] == '\"' || hasEndQu(word))
                 {
-                    word = word.Remove('\"');
+                    word = TrimAll(word);
                     expEnd = true;
                 }
-                word = Fixword(word);
+                if(i == idx)
+                    word = word.Trim('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
+                    '}', '&', ':', '<', '>', '@', '&', '*', '^', '#', ';', ' ', '\"');
+                //word = Fixword(word);
                 newWords.Add(word);
                 ex.Append(word);
                 ex.Append(" ");
@@ -861,12 +864,22 @@ namespace IR_engine
         private bool hasEndQu(string word)
         {
             int len = word.Length;
-            for(int i = len-1; i >= 0; i--)
+            for (int i = len - 1; i >= 0; i--)
             {
                 if (Char.IsLetterOrDigit(word[i])) return false;
                 if (word[i] == '"') return true;
             }
             return false;
+        }
+        private string TrimAll(string word)
+        {
+            for(int i = word.Length - 1; i >= 0; i--)
+            {
+                char c = word[i];
+                if (Char.IsLetterOrDigit(c)) break;
+                word = word.Replace(c,'\0');
+            }
+            return word;
         }
         string Fixword(string word)
         {
