@@ -16,7 +16,7 @@ namespace IR_engine
         static int i = 0;                                                           //use to index the queues in the list
         public static List<Dictionary<string, term>> queueList = new List<Dictionary<string, term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
-        public static int cores = Environment.ProcessorCount;
+        public static int cores = Environment.ProcessorCount/2;
         public static int fileCount = 0;
         //end concurrent variables
 

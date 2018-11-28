@@ -879,11 +879,13 @@ namespace IR_engine
         }
         private string TrimAll(string word)
         {
-            for(int i = word.Length - 1; i >= 0; i-=2)
+            int len = word.Length;
+            for(int i = len - 1; i >= 0;)
             {
                 char c = word[i];
                 if (Char.IsLetterOrDigit(c)) break;
                 word = word.Replace(c+"","");
+                i = word.Length - 1;
             }
             return word;
         }
