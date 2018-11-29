@@ -127,7 +127,7 @@ namespace IR_engine
             { "OCT", "10" }, {"Oct", "10" }, {"oct", "10" }, {"NOV", "11" }, {"Nov", "11" }, {"nov", "11" }, {"DEC", "12" }, {"Dec", "12" }, {"dec", "12" }, {"AUG", "08" }, {"Aug", "08" }, {"aug","08" } };
         public HashSet<char> Fixwordlist0 = new HashSet<char>() { '.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
-        public HashSet<char> Fixwordlist = new HashSet<char>() { '-','!','?','\n', '|','[',']','(',')','{',
+        public HashSet<char> Fixwordlist = new HashSet<char>() { '!','?','\n', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
         public HashSet<char> Fixwordlistlast = new HashSet<char>() {'-', '.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
@@ -175,7 +175,7 @@ namespace IR_engine
         public void Text2list(document document, int queue)
         {
             string tmp_txt = document.Doc;
-            string[] text = tmp_txt.Split(' ', '\n','\t');
+            string[] text = tmp_txt.Split(' ', '\n','\t','\r');
             for(int i = 0; i < text.Length; i++)
                 text[i] = Fixword(text[i]);
             //pre_terms = text.ToList();
