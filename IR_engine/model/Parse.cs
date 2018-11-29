@@ -127,7 +127,7 @@ namespace IR_engine
             { "OCT", "10" }, {"Oct", "10" }, {"oct", "10" }, {"NOV", "11" }, {"Nov", "11" }, {"nov", "11" }, {"DEC", "12" }, {"Dec", "12" }, {"dec", "12" }, {"AUG", "08" }, {"Aug", "08" }, {"aug","08" } };
         public HashSet<char> Fixwordlist0 = new HashSet<char>() { '.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
-        public HashSet<char> Fixwordlist = new HashSet<char>() { '-','!','?','\n', '|','[',']','(',')','{',
+        public HashSet<char> Fixwordlist = new HashSet<char>() { '!','?','\n', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
         public HashSet<char> Fixwordlistlast = new HashSet<char>() {'-', '.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
@@ -175,7 +175,7 @@ namespace IR_engine
         public void Text2list(document document, int queue)
         {
             string tmp_txt = document.Doc;
-            string[] text = tmp_txt.Split(' ', '\n','\t');
+            string[] text = tmp_txt.Split(' ', '\n','\t','\r');
             for(int i = 0; i < text.Length; i++)
                 text[i] = Fixword(text[i]);
             //pre_terms = text.ToList();
@@ -771,7 +771,7 @@ namespace IR_engine
                 }
                 AddTerm(queue, left);
                 AddTerm(queue, right);
-                j = part;
+                j = part+idx;
                 return word;
             }
             for (part = 0; part < splittedExpression.Length; part++)                    //when we meet an expression we need to format it is an expression
@@ -783,7 +783,7 @@ namespace IR_engine
                 term t = new term(exp);
                 AddTerm(queue, t);                                      //adding a new term or updating an existing term
             }
-            j = part;                                                                   //returns the index
+            j = part+idx;                                                                   //returns the index
             return word;                                                                //returns the whole expression
         }
         void AddTerm(int queue, term t)
