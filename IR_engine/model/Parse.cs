@@ -176,6 +176,8 @@ namespace IR_engine
         {
             string tmp_txt = document.Doc;
             string[] text = tmp_txt.Split(' ', '\n','\t');
+            for(int i = 0; i < text.Length; i++)
+                text[i] = Fixword(text[i]);
             //pre_terms = text.ToList();
             DocName = document.DocID;
             parseText(text, queue);
@@ -185,7 +187,8 @@ namespace IR_engine
             if (str.Length == 0) return false;
             for (int i = 0; i < str.Length; i++)
             {
-                if (str[i] > '9' || str[i] < '0' ||(i!=0&&i!=str.Length-1&&str[i]=='.'))
+                if((i!=0&&i!=str.Length-1&&str[i]=='.')) continue;
+                if (str[i] > '9' || str[i] < '0')
                     return false;
             }
             return true;
@@ -200,7 +203,7 @@ namespace IR_engine
                 int j = i;                                                                              //duplicate the current index to manipulate it without losing the index
                 if (words[i] == null || words[i].Equals("")) { continue; }
                 string word = words[j];
-                word = Fixword(word);
+                //word = Fixword(word);
                 //if (word == null /*|| stopwords.Contains(word.ToLower())*/) continue;
                 int len = word.Length;
                 if (len > 0 && word[len - 1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
@@ -259,7 +262,7 @@ namespace IR_engine
                         /*
                          * the number is in date format
                          */
-                        phrase = ToDate(words[i], words[i + 1]);
+                        phrase = ToDate(word, words[i + 1]);
                         j++;
                     }
                     else
@@ -282,7 +285,7 @@ namespace IR_engine
                      */
                     if (isDate(words, i))
                     {
-                        phrase = ToDate(words[i], words[i + 1]);
+                        phrase = ToDate(word, words[i + 1]);
                         if (phrase.Equals(""))
                             phrase = toStem ? stem.stemTerm(word) : word;
                         j++;
@@ -325,7 +328,7 @@ namespace IR_engine
                 //    return value;
                 //});
                 //if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
-
+                i = j;
                 //Console.WriteLine(word);
             }
 
@@ -353,26 +356,6 @@ namespace IR_engine
             return false;
         }
         /// <summary>
-        /// checks if the enum contains a month equal to the given date is any possible occurance
-        /// </summary>
-        /// <param name="date">the string that holds the month</param>
-        /// <returns>true is contains, false otherwise</returns>
-        //private bool EnumContains(string date)
-        //{
-        //    date = date.ToLower();
-        //    foreach (months m in Enum.GetValues(typeof(months)))
-        //    {
-        //        string m2 = m.ToString();
-        //        string mon = m2.Substring(0, 3);
-        //        //checks all possible combinations
-        //        if (date.Equals(m2) || date.Equals(mon))
-        //        {
-        //            return true;
-        //        }
-        //    }
-        //    return false;
-        //}
-        /// <summary>
         /// this method checks if a given word in the words list is a start of a percent format
         /// </summary>
         /// <param name="words">the list of words in working on</param>
@@ -381,6 +364,9 @@ namespace IR_engine
         private bool isPercentage(string[] words, int idx)
         {
             if (words[idx][words[idx].Length - 1] == '%' && IsNumber(words[idx].Remove(0,1))) return true;
+            //bool a = IsNumber(words[idx]);
+            //bool b = idx + 1 < words_length;
+            //bool c = percent.Contains(words[idx + 1]);
             if (IsNumber(words[idx]) && idx + 1 < words_length && percent.Contains(words[idx + 1]))
                 return true;
             return false;
@@ -592,7 +578,7 @@ namespace IR_engine
         string Setdistance(string[] words,int idx,out int j)
         {
             j = idx + 1;
-            return words[idx] + words[idx + 1];
+            return words[idx] + " " + words[idx + 1];
         }
         string Setprice(int idx, string[] words, out int j)
         {

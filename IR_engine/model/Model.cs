@@ -16,7 +16,7 @@ namespace IR_engine
         static int i = 0;                                                           //use to index the queues in the list
         public static List<Dictionary<string, term>> queueList = new List<Dictionary<string, term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
-        public static int cores = Environment.ProcessorCount/2;
+        public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
         //end concurrent variables
 
@@ -149,33 +149,14 @@ namespace IR_engine
             }
         }
 
-        //public void manageResources()
-        //{
-        //    Int32 len = 0;
-        //    for (int i = 0; i < queueList.Count; i++)
-        //    {
-        //        Int32 j;
-        //        term t = null;
-        //        len = queueList[i].Count;
-        //        for (j = 0; j < len; j++)
-        //        {
-        //            queueList[i].TryRemove(out t);
-        //            if (t == null) break;
-        //            if (terms2.ContainsKey(t))
-        //            {
-        //                terms2[t].idf += 1;
-        //            }
-        //            else
-        //            {
-        //                terms2.Add(t, t);
-        //            }
-        //        }
-        //    }
-        //}
-
         public Dictionary<string, term> getDictionary()
         {
             return Parse.terms;
+        }
+
+        public bool hasIndex()
+        {
+            return Directory.Exists(path + "\\Posting_and_indexes");
         }
     }
 
