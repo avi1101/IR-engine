@@ -750,12 +750,16 @@ namespace IR_engine
                 if (idx + 1 < words_length && months.Contains(words[idx + 1]))
                 {
                     left = new term(splittedExpression[0] + " " + words[idx + 1]);       //term phrase = "6 may"
-                    right = new term(splittedExpression[1] + " " + words[idx + 1]);   //term phrase = "7 may"
+                    right = new term(splittedExpression[1] + " " + words[idx + 1]);      //term phrase = "7 may"
+                    left.IsUpperInCurpus = false;
+                    right.IsUpperInCurpus = false;
                 }
                 else if (isPercentage(words, idx))
                 {
                     left = new term(splittedExpression[0] + "%");                               //term phrase = "6%"
                     right = new term(splittedExpression[1] + "%");                              //term phrase = "7%"
+                    left.IsUpperInCurpus = false;
+                    right.IsUpperInCurpus = false;
                 }
                 else if (isPrice(words, idx))
                 {
@@ -763,11 +767,15 @@ namespace IR_engine
                     left = new term(Setprice(idx, words, out part));                            //term phrase = "6 million dollars"
                     words[idx] = splittedExpression[1];
                     right = new term(Setprice(idx, words, out part));                           //term phrase = "7 million dollars"
+                    left.IsUpperInCurpus = false;
+                    right.IsUpperInCurpus = false;
                 }
                 else
                 {
                     left = new term(Fixword(splittedExpression[0]));                                     //normal range
                     right = new term(Fixword(splittedExpression[1]));
+                    left.IsUpperInCurpus =  left.Phrase[0] >= 'A' && left.Phrase[0] <= 'Z' ? true : false;
+                    right.IsUpperInCurpus =  right.Phrase[0] >= 'A' && right.Phrase[0] <= 'Z' ? true : false;
                 }
                 AddTerm(queue, left);
                 AddTerm(queue, right);
@@ -783,7 +791,7 @@ namespace IR_engine
                 term t = new term(exp);
                 AddTerm(queue, t);                                      //adding a new term or updating an existing term
             }
-            j = part+idx;                                                                   //returns the index
+            j = 1+idx;                                                                   //returns the index
             return word;                                                                //returns the whole expression
         }
         void AddTerm(int queue, term t)
@@ -812,7 +820,7 @@ namespace IR_engine
                  * this is a new tern that needs to be created
                  */
                 t = new term(t.Phrase);
-                if (!!(s[0] <= 'Z' && s[0] >= 'A')) t.IsUpperInCurpus = false;
+                if (!(s[0] <= 'Z' && s[0] >= 'A')) t.IsUpperInCurpus = false;
                 t.AddToPosting(DocName, 1);
                 Model.queueList[queue].Add(t.Phrase, t);
             }
