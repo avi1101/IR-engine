@@ -771,7 +771,7 @@ namespace IR_engine
                 }
                 AddTerm(queue, left);
                 AddTerm(queue, right);
-                j = part;
+                j = part+idx;
                 return word;
             }
             for (part = 0; part < splittedExpression.Length; part++)                    //when we meet an expression we need to format it is an expression
@@ -783,7 +783,7 @@ namespace IR_engine
                 term t = new term(exp);
                 AddTerm(queue, t);                                      //adding a new term or updating an existing term
             }
-            j = part;                                                                   //returns the index
+            j = part+idx;                                                                   //returns the index
             return word;                                                                //returns the whole expression
         }
         void AddTerm(int queue, term t)
