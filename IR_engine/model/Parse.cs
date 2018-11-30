@@ -209,7 +209,7 @@ namespace IR_engine
                 //if (word == null /*|| stopwords.Contains(word.ToLower())*/) continue;
                 int len = word.Length;
                 if (len > 0 && word[len - 1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
-                if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
+                if (word == "" || word == "\n" ||word=="-" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
                 bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
                                                                                                         //checking for rule
                 if (hasChar(word, '-') && word[0] != '-')
@@ -421,7 +421,7 @@ namespace IR_engine
             //return false;
             int len = s.Length;
             for (int i = 0; i < len; i++)
-                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-') return false;
+                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-' && s[i]!=',') return false;
             return true;
         }
         /// <summary>
