@@ -121,5 +121,10 @@ namespace IR_engine
             }
             return res.ToString();
         }
+
+        public int getTFinDoc(string docname)
+        {
+            return posting[docname];
+        }
     }
 }

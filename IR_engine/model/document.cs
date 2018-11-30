@@ -15,8 +15,8 @@ namespace IR_engine
         private string docID;
         private string docDate;
         private string docHead;
-        int maxTF;
-        int uniqueTerms;
+        public double maxTF;
+        public double uniqueTerms;
         private string docCity;
 
         /// <summary>
@@ -24,13 +24,13 @@ namespace IR_engine
         /// </summary>
         public document()
         {
-            this.doc = null;
-            this.docID = null;
-            this.docDate = null;
-            this.docHead = null;
+            this.doc = "";
+            this.docID = "";
+            this.docDate = "";
+            this.docHead = "";
             maxTF = 0;
             uniqueTerms = 0;
-            this.docCity = null;
+            this.docCity = "";
         }
         /// <summary>
         /// this is another constructor that takes all the fields
@@ -46,6 +46,8 @@ namespace IR_engine
             this.docDate = docDate;
             this.docHead = docHead;
             this.docCity = docCity;
+            maxTF = 0;
+            uniqueTerms = 0;
         }
 
         public string Doc
@@ -72,6 +74,11 @@ namespace IR_engine
         {
             get { return docCity; }
             set { docCity = value; }
+        }
+
+        public override string ToString()
+        {
+            return docID +"\t"+ docDate +"\t"+ maxTF+"\t"+uniqueTerms+"\t"+docCity;
         }
     }
 }

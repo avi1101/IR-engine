@@ -63,6 +63,7 @@
     <Compile Include="DictionaryList.xaml.cs">
       <DependentUpon>DictionaryList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="model\DocumentInfo.cs" />
     <Compile Include="model\Indexer.cs" />
     <Compile Include="model\Model.cs" />
     <Compile Include="model\Parse.cs" />
