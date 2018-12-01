@@ -123,7 +123,7 @@ namespace IR_engine
             { "FEBRUARY", "02" },{"march", "03" }, {"March", "03" },{"MARCH", "03" },{"april", "04" },{"April", "04" },{"APRIL", "04" },{"may", "05"},{"May", "05"},{"MAY", "05"},{"june","06" },{"June","06" },
             { "JUNE","06" },{"july", "07"},{"July", "07"},{"JULY", "07"},{"august", "08" },{"August", "08" },{"AUGUST", "08" },{"september", "09" },{"September", "09" },
             { "SEPTEMBER", "09" },{"october", "10" },{"October", "10" },{"OCTOBER", "10" },{"november", "11" },{"November", "11" },{"NOVEMBER", "11" },{"december", "12" },
-            { "December", "12" },{"DECEMBER", "12" }, {"Jun", "01" }, {"JUN", "01" }, {"jun", "01" }, {"JAN", "01" }, {"jan", "01" }, {"Jan", "01" }, {"FEB", "02" },{"Feb", "02" },{"feb", "02" }, {"SEP", "09" }, {"Sep", "09" }, {"sep", "09" },
+            { "December", "12" },{"DECEMBER", "12" }, {"Jan", "01" }, {"JAN", "01" }, {"jan", "01" }, {"JAN", "01" }, {"jan", "01" }, {"Jan", "01" }, {"FEB", "02" },{"Feb", "02" },{"feb", "02" }, {"SEP", "09" }, {"Sep", "09" }, {"sep", "09" },
             { "OCT", "10" }, {"Oct", "10" }, {"oct", "10" }, {"NOV", "11" }, {"Nov", "11" }, {"nov", "11" }, {"DEC", "12" }, {"Dec", "12" }, {"dec", "12" }, {"AUG", "08" }, {"Aug", "08" }, {"aug","08" } };
         public HashSet<char> Fixwordlist0 = new HashSet<char>() { '+','\'','.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
@@ -195,7 +195,7 @@ namespace IR_engine
         }
         public void parseText(string[] words, int queue)
         {
-            words_length = words.Length;
+            words_length = words.Length;                                                                                                    
             for (int i = 0; i < words_length; i++)
             {
                 term t;
