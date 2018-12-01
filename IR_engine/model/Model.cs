@@ -16,6 +16,7 @@ namespace IR_engine
         static int i = 0;                                                           //use to index the queues in the list
         public static List<Dictionary<string, term>> queueList = new List<Dictionary<string, term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
+        public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
         public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
         //end concurrent variables
@@ -144,9 +145,18 @@ namespace IR_engine
                     {
                         terms2.Add(t, t);
                     }
+
                 }
                 queueList[i].Clear();
             }
+            using (StreamWriter sw = new StreamWriter(path + "\\Posting_and_indexes\\documents.txt", true))
+            {
+                foreach (KeyValuePair<string, document> entry in docs)
+                {
+                    sw.WriteLine(entry.Value.ToString());
+                }
+            }
+            docs.Clear();
         }
 
         public Dictionary<string, term> getDictionary()

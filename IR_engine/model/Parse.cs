@@ -141,6 +141,7 @@ namespace IR_engine
         HashSet<string> stopwords = new HashSet<string>();
         Stemmer stem;
         private int words_length; // length of words string array.
+        private Dictionary<string, double> termsInDoc = new Dictionary<string, double>();
         bool toStem;
         string path;
         public string DocName = "";
@@ -174,6 +175,7 @@ namespace IR_engine
         /// <param name="document"> the document edited</param>
         public void Text2list(document document, int queue)
         {
+            termsInDoc = new Dictionary<string, double>();
             string tmp_txt = document.Doc;
             string[] text = tmp_txt.Split(' ', '\n','\t','\r');
             for(int i = 0; i < text.Length; i++)
@@ -317,6 +319,14 @@ namespace IR_engine
                     t.AddToPosting(DocName, 1);
                     Model.queueList[queue].Add(t.Phrase, t);
                 }
+                if(termsInDoc.ContainsKey(phrase))
+                {
+                    termsInDoc[phrase] += 1;
+                }
+                else
+                {
+                    termsInDoc.Add(phrase, 0);
+                }
                 //t.AddToCount(DocName);
                 //Model.queueList[queue].Enqueue(t);
 
@@ -337,6 +347,15 @@ namespace IR_engine
              */
             //foreach (KeyValuePair<string, term> tn in terms)
             //    tn.Value.addDocumentToPostingList();
+            double max = 0;
+            double tf = 0;
+            foreach (KeyValuePair<string, double> entry in termsInDoc)
+            {
+                tf = entry.Value;
+                max = tf > max ? tf : max;
+            }
+            Model.docs[DocName].maxTF = max;
+            Model.docs[DocName].uniqueTerms = termsInDoc.Count;
         }
 
         //TODO: need to implement isDate
@@ -749,8 +768,8 @@ namespace IR_engine
                 term right, left;
                 if (idx + 1 < words_length && months.Contains(words[idx + 1]))
                 {
-                    left = new term(splittedExpression[0] + " " + words[idx + 1]);       //term phrase = "6 may"
-                    right = new term(splittedExpression[1] + " " + words[idx + 1]);      //term phrase = "7 may"
+                    left = new term(ToDate(splittedExpression[0],words[idx + 1]));       //term phrase = "6 may" = ToDate will return "06-05"
+                    right = new term(ToDate(splittedExpression[1],words[idx + 1]));      //term phrase = "7 may" = ToDate will return "07-05"
                     left.IsUpperInCurpus = false;
                     right.IsUpperInCurpus = false;
                 }

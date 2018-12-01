@@ -70,7 +70,7 @@ namespace IR_engine
         /// 
         /// </summary>
         /// <param name="file"> the string that constains all the data in the file</param>
-        public List<document> readfile(string file2, int queue)
+        public void readfile(string file2, int queue)
         {
 
             var watch2 = System.Diagnostics.Stopwatch.StartNew();
@@ -110,13 +110,11 @@ namespace IR_engine
                     }
                     string city = "";
                     if (st5 != -1 && end5 != -1) { city = ( /*doc.Substring(st5 + 9, (end5 - st5) - 4).Trim();*/sb.ToString(st5 + 9, (end5 - st5) - 9)); }
-                    document d = new document(data, docNo, date, head, city);
-                    docslist.Add(d);
-                    counter++;
+                    document d = new document(data, docNo, date, head, city.Split(' ')[0]);
+                    Model.docs.TryAdd(docNo, d);
                     parser[queue].Text2list(d, queue);
                 }
             }
-            return docslist;
         }
         public int returnSize()
         {
