@@ -17,7 +17,7 @@ namespace IR_engine
         public static List<Dictionary<string, term>> queueList = new List<Dictionary<string, term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
         public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
-        public static int cores = Environment.ProcessorCount;
+        public static int cores = Environment.ProcessorCount/2;
         public static int fileCount = 0;
         //end concurrent variables
 
@@ -161,7 +161,7 @@ namespace IR_engine
 
         public Dictionary<string, term> getDictionary()
         {
-            return Parse.terms;
+            return null;
         }
 
         public bool hasIndex()

@@ -27,7 +27,7 @@ namespace IR_engine
         int currectCount;
         //end currect variables
 
-        public ConcurrentDictionary<string, int> posting; //string = doc name, int = occurances
+        public ConcurrentDictionary<string, short> posting; //string = doc name, int = occurances
 
         List<string> postingList; //this will be used in the format: <docname>_<number> of occurances of the term>
 
@@ -39,7 +39,7 @@ namespace IR_engine
             numOfDocs = globalOccurances = 0;
             phrase = "";
             currectDoc = "";
-            posting = new ConcurrentDictionary<string, int>();
+            posting = new ConcurrentDictionary<string, short>();
         }
 
         public term(string phrase)
@@ -49,7 +49,7 @@ namespace IR_engine
             postingList = new List<string>();
             numOfDocs = globalOccurances = 0;
             currectDoc = "";
-            posting = new ConcurrentDictionary<string, int>();
+            posting = new ConcurrentDictionary<string, short>();
         }
 
         public string Phrase
@@ -95,7 +95,7 @@ namespace IR_engine
             postingList.Add(filename + "_" + occurances);
         }
 
-        public void AddToPosting(string doc, int tf)
+        public void AddToPosting(string doc, short tf)
         {
             posting.AddOrUpdate(doc, tf, (key, value) => {
                 value += tf;
@@ -103,9 +103,9 @@ namespace IR_engine
             });
         }
 
-        public void AddToPosting(ConcurrentDictionary<string, int> dictionary)
+        public void AddToPosting(ConcurrentDictionary<string, short> dictionary)
         {
-            foreach(KeyValuePair<string, int> entry in dictionary)
+            foreach(KeyValuePair<string, short> entry in dictionary)
             {
                 AddToPosting(entry.Key, entry.Value);
             }
@@ -115,14 +115,14 @@ namespace IR_engine
         public string printPosting()
         {
             StringBuilder res = new StringBuilder();
-            foreach(KeyValuePair<string, int> entry in posting)
+            foreach(KeyValuePair<string, short> entry in posting)
             {
                 res.Append(entry.Key + "[" + entry.Value + "],");
             }
             return res.ToString();
         }
 
-        public int getTFinDoc(string docname)
+        public short getTFinDoc(string docname)
         {
             return posting[docname];
         }

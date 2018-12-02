@@ -23,7 +23,6 @@ namespace IR_engine
         int index = 0;
         int allfilesSize = 0;
         string path;
-        static int counter = 0;
         Parse[] parser;
 
         public ReadFile(string path, bool ToStem, int cores)
@@ -110,7 +109,12 @@ namespace IR_engine
                     }
                     string city = "";
                     if (st5 != -1 && end5 != -1) { city = ( /*doc.Substring(st5 + 9, (end5 - st5) - 4).Trim();*/sb.ToString(st5 + 9, (end5 - st5) - 9)); }
-                    document d = new document(data, docNo, date, head, city.Split(' ')[0]);
+                    string[] fullname = city.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    document d = null;
+                    if (fullname.Length < 1)
+                        d = new document(data, docNo, date, head, "");
+                    else
+                        d = new document(data, docNo, date, head, fullname[0]);
                     Model.docs.TryAdd(docNo, d);
                     parser[queue].Text2list(d, queue);
                 }

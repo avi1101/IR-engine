@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  *                              _                             _           _          _                                                                    
  *                             | |                           | |         | |        | |                                                                   
  *     __      __   ___      __| |   ___      _ __     ___   | |_      __| |   ___  | |__    _   _    __ _                                                
@@ -109,7 +108,7 @@ namespace IR_engine
         static public HashSet<string> dollars = new HashSet<string>() { "Dollars", "DOLLARS", "dollars" };
         static public HashSet<string> million = new HashSet<string>() { "M", "m", "Million", "MILLION", "million" };
         static public HashSet<string> thousends = new HashSet<string>() { "Thousand", "thousand", "THOUSAND" };
-        static public HashSet<string> allAmounts = new HashSet<string>() {"M", "m", "Million", "MILLION", "million","Thousand", "thousand", "THOUSAND", "trillion", "Trillion", "TRILLION", "BN", "bn", "Billion", "billion", "BILLION" };
+        static public HashSet<string> allAmounts = new HashSet<string>() { "M", "m", "Million", "MILLION", "million", "Thousand", "thousand", "THOUSAND", "trillion", "Trillion", "TRILLION", "BN", "bn", "Billion", "billion", "BILLION" };
         static public HashSet<string> US = new HashSet<string>() { "US", "U.S" };
         static public HashSet<string> billion = new HashSet<string>() { "BN", "bn", "Billion", "billion", "BILLION" };
         static public HashSet<string> trillion = new HashSet<string>() { "trillion", "Trillion", "TRILLION" };
@@ -123,7 +122,7 @@ namespace IR_engine
             { "FEBRUARY", "02" },{"march", "03" }, {"March", "03" },{"MARCH", "03" },{"april", "04" },{"April", "04" },{"APRIL", "04" },{"may", "05"},{"May", "05"},{"MAY", "05"},{"june","06" },{"June","06" },
             { "JUNE","06" },{"july", "07"},{"July", "07"},{"JULY", "07"},{"august", "08" },{"August", "08" },{"AUGUST", "08" },{"september", "09" },{"September", "09" },
             { "SEPTEMBER", "09" },{"october", "10" },{"October", "10" },{"OCTOBER", "10" },{"november", "11" },{"November", "11" },{"NOVEMBER", "11" },{"december", "12" },
-            { "December", "12" },{"DECEMBER", "12" }, {"Jan", "01" }, {"JAN", "01" }, {"jan", "01" }, {"JAN", "01" }, {"jan", "01" }, {"Jan", "01" }, {"FEB", "02" },{"Feb", "02" },{"feb", "02" }, {"SEP", "09" }, {"Sep", "09" }, {"sep", "09" },
+            { "December", "12" },{"DECEMBER", "12" }, {"Jun", "06" }, {"JUN", "06" }, {"jun", "06" }, {"JAN", "01" }, {"jan", "01" }, {"Jan", "01" }, {"FEB", "02" },{"Feb", "02" },{"feb", "02" }, {"SEP", "09" }, {"Sep", "09" }, {"sep", "09" },
             { "OCT", "10" }, {"Oct", "10" }, {"oct", "10" }, {"NOV", "11" }, {"Nov", "11" }, {"nov", "11" }, {"DEC", "12" }, {"Dec", "12" }, {"dec", "12" }, {"AUG", "08" }, {"Aug", "08" }, {"aug","08" } };
         public HashSet<char> Fixwordlist0 = new HashSet<char>() { '+','\'','.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' '};
@@ -177,8 +176,8 @@ namespace IR_engine
         {
             termsInDoc = new Dictionary<string, double>();
             string tmp_txt = document.Doc;
-            string[] text = tmp_txt.Split(' ', '\n','\t','\r');
-            for(int i = 0; i < text.Length; i++)
+            string[] text = tmp_txt.Split(' ', '\n', '\t', '\r');
+            for (int i = 0; i < text.Length; i++)
                 text[i] = Fixword(text[i]);
             //pre_terms = text.ToList();
             DocName = document.DocID;
@@ -189,7 +188,7 @@ namespace IR_engine
             if (str.Length == 0) return false;
             for (int i = 0; i < str.Length; i++)
             {
-                if((i!=0&&i!=str.Length-1&&str[i]=='.')) continue;
+                if ((i != 0 && i != str.Length - 1 && str[i] == '.')) continue;
                 if (str[i] > '9' || str[i] < '0')
                     return false;
             }
@@ -197,7 +196,7 @@ namespace IR_engine
         }
         public void parseText(string[] words, int queue)
         {
-            words_length = words.Length;                                                                                                    
+            words_length = words.Length;
             for (int i = 0; i < words_length; i++)
             {
                 term t;
@@ -209,7 +208,7 @@ namespace IR_engine
                 //if (word == null /*|| stopwords.Contains(word.ToLower())*/) continue;
                 int len = word.Length;
                 if (len > 0 && word[len - 1] == '\n') word = word.TrimEnd('\n');          //remove \n from the end of a word
-                if (word == "" || word == "\n" ||word=="-" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
+                if (word == "" || word == "\n" || word[0] == '<' || stopwords.Contains(word)) continue; //stip white characters, tags and stop words
                 bool isUpperFirstLetter = word[0] >= 'A' && word[0] <= 'Z' ? true : false;              //checks if the word has a first capital letter
                                                                                                         //checking for rule
                 if (hasChar(word, '-') && word[0] != '-')
@@ -319,7 +318,7 @@ namespace IR_engine
                     t.AddToPosting(DocName, 1);
                     Model.queueList[queue].Add(t.Phrase, t);
                 }
-                if(termsInDoc.ContainsKey(phrase))
+                if (termsInDoc.ContainsKey(phrase))
                 {
                     termsInDoc[phrase] += 1;
                 }
@@ -356,6 +355,7 @@ namespace IR_engine
             }
             Model.docs[DocName].maxTF = max;
             Model.docs[DocName].uniqueTerms = termsInDoc.Count;
+            termsInDoc.Clear();
         }
 
         //TODO: need to implement isDate
@@ -382,7 +382,7 @@ namespace IR_engine
         /// <returns></returns>
         private bool isPercentage(string[] words, int idx)
         {
-            if (words[idx][words[idx].Length - 1] == '%' && IsNumber(words[idx].Remove(0,1))) return true;
+            if (words[idx][words[idx].Length - 1] == '%' && IsNumber(words[idx].Remove(0, 1))) return true;
             //bool a = IsNumber(words[idx]);
             //bool b = idx + 1 < words_length;
             //bool c = percent.Contains(words[idx + 1]);
@@ -399,15 +399,15 @@ namespace IR_engine
         /// <returns></returns>
         private bool isPrice(string[] words, int idx)
         {
-            if (words[idx][0] == '$' &&IsNumber(words[idx].Remove(0,1))) return true;
+            if (words[idx][0] == '$' && IsNumber(words[idx].Remove(0, 1))) return true;
             if (idx + 2 < words_length)
-                if (IsNumber(words[idx])&&dollars.Contains(words[idx + 2]) && (million.Contains(words[idx + 1]) || billion.Contains(words[idx + 1]) || trillion.Contains(words[idx + 1]))) return true;
+                if (IsNumber(words[idx]) && dollars.Contains(words[idx + 2]) && (million.Contains(words[idx + 1]) || billion.Contains(words[idx + 1]) || trillion.Contains(words[idx + 1]))) return true;
             if (idx + 1 < words_length)
                 if (IsNumber(words[idx]) && dollars.Contains(words[idx + 1]))
                     return true;
             return false;
         }
-        private bool Isdistance(string[] words,int idx)
+        private bool Isdistance(string[] words, int idx)
         {
             if (idx + 1 < words_length)
                 if (distance.Contains(words[idx + 1]))
@@ -421,7 +421,7 @@ namespace IR_engine
             //return false;
             int len = s.Length;
             for (int i = 0; i < len; i++)
-                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-' && s[i]!=',') return false;
+                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-') return false;
             return true;
         }
         /// <summary>
@@ -582,7 +582,7 @@ namespace IR_engine
             }
             double value = FormatNumber(number);
             // int value = int.Parse(number);                                      //get the numeric value of the year/day
-            if(monthsToNumber.ContainsKey(month))
+            if (monthsToNumber.ContainsKey(month))
             {
                 month = monthsToNumber[month];
             }
@@ -594,7 +594,7 @@ namespace IR_engine
             return sol;
         }
         string SetLetterType(int idx, string[] words) { return null; }
-        string Setdistance(string[] words,int idx,out int j)
+        string Setdistance(string[] words, int idx, out int j)
         {
             j = idx + 1;
             return words[idx] + " " + words[idx + 1];
@@ -768,8 +768,8 @@ namespace IR_engine
                 term right, left;
                 if (idx + 1 < words_length && months.Contains(words[idx + 1]))
                 {
-                    left = new term(ToDate(splittedExpression[0],words[idx + 1]));       //term phrase = "6 may" = ToDate will return "06-05"
-                    right = new term(ToDate(splittedExpression[1],words[idx + 1]));      //term phrase = "7 may" = ToDate will return "07-05"
+                    left = new term(ToDate(splittedExpression[0], words[idx + 1]));       //term phrase = "6 may" = ToDate will return "06-05"
+                    right = new term(ToDate(splittedExpression[1], words[idx + 1]));      //term phrase = "7 may" = ToDate will return "07-05"
                     left.IsUpperInCurpus = false;
                     right.IsUpperInCurpus = false;
                 }
@@ -793,12 +793,12 @@ namespace IR_engine
                 {
                     left = new term(Fixword(splittedExpression[0]));                                     //normal range
                     right = new term(Fixword(splittedExpression[1]));
-                    left.IsUpperInCurpus =  left.Phrase[0] >= 'A' && left.Phrase[0] <= 'Z' ? true : false;
-                    right.IsUpperInCurpus =  right.Phrase[0] >= 'A' && right.Phrase[0] <= 'Z' ? true : false;
+                    left.IsUpperInCurpus = left.Phrase[0] >= 'A' && left.Phrase[0] <= 'Z' ? true : false;
+                    right.IsUpperInCurpus = right.Phrase[0] >= 'A' && right.Phrase[0] <= 'Z' ? true : false;
                 }
                 AddTerm(queue, left);
                 AddTerm(queue, right);
-                j = part+idx;
+                j = part + idx;
                 return word;
             }
             for (part = 0; part < splittedExpression.Length; part++)                    //when we meet an expression we need to format it is an expression
@@ -810,7 +810,7 @@ namespace IR_engine
                 term t = new term(exp);
                 AddTerm(queue, t);                                      //adding a new term or updating an existing term
             }
-            j = 1+idx;                                                                   //returns the index
+            j = 1 + idx;                                                                   //returns the index
             return word;                                                                //returns the whole expression
         }
         void AddTerm(int queue, term t)
@@ -863,7 +863,7 @@ namespace IR_engine
                     word = TrimAll(word);
                     expEnd = true;
                 }
-                if(i == idx)
+                if (i == idx)
                     word = word.Trim('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
                     '}', '&', ':', '<', '>', '@', '&', '*', '^', '#', ';', ' ', '\"');
                 //word = Fixword(word);
@@ -877,7 +877,7 @@ namespace IR_engine
             }
             parseText(newWords.ToArray(), queue);                                       //will parse the new list in case for double rule
             j = i - 1;
-            return newWords.Count > 1? ex.ToString() : "";
+            return newWords.Count > 1 ? ex.ToString() : "";
 
         }
         private bool hasEndQu(string word)
@@ -893,11 +893,11 @@ namespace IR_engine
         private string TrimAll(string word)
         {
             int len = word.Length;
-            for(int i = len - 1; i >= 0;)
+            for (int i = len - 1; i >= 0;)
             {
                 char c = word[i];
                 if (Char.IsLetterOrDigit(c)) break;
-                word = word.Replace(c+"","");
+                word = word.Replace(c + "", "");
                 i = word.Length - 1;
             }
             return word;
@@ -940,8 +940,6 @@ namespace IR_engine
                      {
                          word = word.Remove(word.Length - 2, 1);
                      }
-
-
                  if (word == "" || word == "\n" || word[0] == '<') { return null; }
                  if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
                  else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return null;
@@ -1012,7 +1010,7 @@ namespace IR_engine
         private string TrimtoRemove(string word)
         {
             StringBuilder sb = new StringBuilder();
-            for(int i = 0; i < word.Length; i++)
+            for (int i = 0; i < word.Length; i++)
             {
                 char c = word[i];
                 if (i == 0)

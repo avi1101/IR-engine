@@ -36,6 +36,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="NSoup, Version=0.8.0.0, Culture=neutral, PublicKeyToken=6d44e53f0a65e802, processorArchitecture=MSIL">
       <HintPath>..\packages\NSoup.0.8.0\lib\net40\NSoup.dll</HintPath>
     </Reference>
@@ -63,8 +66,8 @@
     <Compile Include="DictionaryList.xaml.cs">
       <DependentUpon>DictionaryList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="model\DocumentInfo.cs" />
     <Compile Include="model\Indexer.cs" />
+    <Compile Include="model\Location.cs" />
     <Compile Include="model\Model.cs" />
     <Compile Include="model\Parse.cs" />
     <Compile Include="model\ReadFile.cs" />

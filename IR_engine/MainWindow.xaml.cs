@@ -25,7 +25,7 @@ namespace IR_engine
     /// </summary>
     public partial class MainWindow : Window
     {
-        private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
+        //private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
         string path = null;
         string IndexPath = null;
         Model m;
