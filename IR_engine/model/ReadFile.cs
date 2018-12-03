@@ -6,6 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IR_engine;
+using System.Net.Http;
+using System.Web;
+using System.Collections.Concurrent;
+using Newtonsoft.Json;
+using System.Net;
+using Newtonsoft.Json.Linq;
+
 
 namespace IR_engine
 {
@@ -16,14 +23,18 @@ namespace IR_engine
     public class ReadFile
     {
         public List<string> allfiles = null;
-
         public static long timepertDoc = 0;
         public static long readFiles_time = 0;
         bool ToStem;
         int index = 0;
+        HttpClient http = new HttpClient();
         int allfilesSize = 0;
         string path;
         Parse[] parser;
+        StringBuilder stb = new StringBuilder();
+        public HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')'};
+        public ConcurrentDictionary<string,byte> cityIn =new ConcurrentDictionary<string,byte>();
+        //public ConcurrentDictionary<string, Location> locFound = new ConcurrentDictionary<string, Location>();
 
         public ReadFile(string path, bool ToStem, int cores)
         {
@@ -114,37 +125,147 @@ namespace IR_engine
                     if (fullname.Length < 1)
                         d = new document(data, docNo, date, head, "");
                     else
+                    {
                         d = new document(data, docNo, date, head, fullname[0]);
+                        if (!cityIn.ContainsKey(rmvStr(fullname[0])))
+                        {
+                            cityIn.TryAdd(rmvStr(fullname[0]),0);
+                            addLocation(rmvStr(fullname[0]));
+                        }
+                    }
                     Model.docs.TryAdd(docNo, d);
                     parser[queue].Text2list(d, queue);
                 }
             }
         }
-        public int returnSize()
+        public void addLocation(string city)
+        {
+            string city2= city;
+          // Console.WriteLine(city);
+            if (hasChar(city, '/'))
+            {
+                city2 = city.Substring(0, city.IndexOf('/'));
+            }
+            string country = null; string pop = null; string cap = null; string curr = null;
+            string Firsturl = "https://restcountries.eu/rest/v2/capital/" + city2 + "?fields=name;capital;population;currencies";
+            HttpResponseMessage response1 = http.GetAsync(new Uri(Firsturl)).Result;
+            string responseBody1 = response1.Content.ReadAsStringAsync().Result;
+            if (responseBody1.Equals("{\"status\":404,\"message\":\"Not Found\"}"))
+            {
+                var webreq = WebRequest.Create("http://getcitydetails.geobytes.com/GetCityDetails?fqcn=" + city2);
+                if (webreq != null)
+                {
+                    using (var s = webreq.GetResponse().GetResponseStream())
+                    {
+                        using (var sr = new StreamReader(s))
+                        {
+                            var Nson = sr.ReadToEnd();
+                            JObject obj = JObject.Parse(Nson);
+                            curr = (string)obj.SelectToken("geobytescurrency");
+                            country = (string)obj.SelectToken("geobytescountry");
+                            pop = (string)obj.SelectToken("geobytespopulation");
+                            cap = (string)obj.SelectToken("geobytescapital");
+                        }
+                    }
+                }
+                if (curr=="" && country =="" && pop =="" && cap=="")
+                { return; }
+                    //public Location(string city, string Country, string populationTemp,string currency,string Capital)
+                    Location l = new Location(city, country, pop, curr, cap);
+                    Model.locations.TryAdd(city, l);
+                
+            }
+            else
+            {
+                string[] arr1 = responseBody1.Remove(responseBody1.Length - 1).Split(']');
+                string datas = rmvStr(arr1[1]);
+                string[] data1 = datas.Split(','); //splited(datas,',');
+               // string country = null; string pop = null; string cap = null;
+
+                for (int i =0; i < data1.Length; i++)
+                {
+                    string str = data1[i];
+                    if (str.Contains("name"))
+                    {
+                        country = str.Substring(str.IndexOf(':') + 1);
+                    }
+                    else if (str.Contains("population"))
+                    {
+                        pop = str.Substring(str.IndexOf(':') + 1);
+                    }
+                    else if (str.Contains("capital"))
+                    {
+                        cap = str.Substring(str.IndexOf(':') + 1);
+                                }
+                    }
+                    datas = rmvStr(arr1[0]);
+                  data1 = datas.Split(','); //splited(datas,',');
+             //   string curr = null;
+                    for (int i = 0; i < data1.Length; i++)
+                    {
+                    if (data1[i].Contains("name"))
+                        {
+                            curr = data1[i].Substring(data1[i].IndexOf(':') + 1);
+                            break;
+                        }
+                    }
+                    Location l = new Location(city, country, pop, curr, cap);
+                    Model.locations.TryAdd(city, l);
+                }
+            }
+            public int returnSize()
         {
             return allfilesSize;
         }
-    }
-}
-/*
-public static string RemoveStringReader(string input)
-{
-    var s = new StringBuilder(input.Length); // (input.Length);
-    using (var reader = new StringReader(input))
-    {
-        int i = 0;
-        char c;
-        for (; i < input.Length; i++)
+        public string rmvStr(string input)
         {
-            c = (char)reader.Read();
-            if (!char.IsWhiteSpace(c))
+            StringBuilder stb = new StringBuilder();
+            for(int i = 0; i < input.Length; i++)
             {
-                s.Append(c);
+                char c = input[i];
+                if (!fixHash.Contains(c))
+                {
+                    stb.Append(c);
+                }
             }
+            return stb.ToString();
+        }
+        public List<string>splited(string input,char del)
+        {
+            List<string> output= new List<string>();
+            StringBuilder str = new StringBuilder();
+            for(int i = 0; i < input.Length; i++)
+            {
+                if (input[i] == del)
+                {
+
+                    if (str.Length != 0)
+                    {
+                        output.Add(str.ToString());
+                        str.Clear();
+                    }
+                }
+                else
+                {
+                    str.Append(input[i]);
+                }
+                
+            }
+            if (str.Length != 0)
+            {
+                output.Add(str.ToString());
+                str.Clear();
+            }
+            return output;
+        }
+        bool hasChar(string word, char del)
+        {
+            for (int i = 0; i < word.Length; i++)
+            {
+                if (word[i] == del || word[word.Length - i - 1] == del)
+                    return true;
+            }
+            return false;
         }
     }
-    return s.ToString();
 }
-}
-}
-*/

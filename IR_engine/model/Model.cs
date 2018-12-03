@@ -17,8 +17,9 @@ namespace IR_engine
         public static List<Dictionary<string, term>> queueList = new List<Dictionary<string, term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
         public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
-        public static int cores = Environment.ProcessorCount/2;
+        public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
+        public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
         //end concurrent variables
 
         Parse parser;
@@ -45,29 +46,11 @@ namespace IR_engine
             var watch = System.Diagnostics.Stopwatch.StartNew();
             int filesNum = readfo.returnSize();
             bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
-            //if (hasIndex == true)
-            //{
-            //    /**
-            //     * add a pop up window to ask whether to re-index the docs in the folder
-            //    **/
-            //}
-            //else
-            //{
-            //    File.CreateText(path + "\\index_elad_avi.txt");
-            //}
-            //for (int i = 0; i < readfo.returnSize(); i++)
-            //{
-            //    List<document> f = readfo.getDocs();
-            //    if (f == null) continue;
-            //    for(int j = 0; j < f.Count; j++)
-            //    {
-            //        parser.Text2list(f[j]);
-            //    }
-            //}
+
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
             int tasks = cores;                                  //get the number of logical proccesors 
-            //int tasks = 1;             //get the number of logical proccesors 
+           // int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
             int k = 0, chunk = 0, id = 0;
@@ -84,8 +67,8 @@ namespace IR_engine
                 if (k % tasks == 0)
                 {
                     Console.WriteLine("awaiting {0} tasks to finish", tasks);
-                    foreach (Task ts in t)
-                        ts.Wait();
+                    foreach (Task ts in t) 
+                           ts.Wait();
                     if (k % (tasks * 5) == 0)
                     {
                         Console.WriteLine("Memory cleanup");
