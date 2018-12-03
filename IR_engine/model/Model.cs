@@ -22,7 +22,6 @@ namespace IR_engine
         public ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
         //end concurrent variables
-
         Parse parser;
         ReadFile readfo;
         string path;
@@ -57,6 +56,15 @@ namespace IR_engine
             int k = 0, chunk = 0, id = 0;
             t = new List<Task>();
             createCityDic(files);
+            var list = locations.Keys.ToList();
+            list.Sort();
+            using (StreamWriter ct = new StreamWriter(path + "\\city_dictionary.txt"))
+            {
+                foreach(var key in list)
+                {
+                    ct.WriteLine(key + "\t" + locations[key].Country + "\t" + locations[key].Currency + "\t" + locations[key].Population);
+                }
+            }
 
             foreach (string file in files)
             {

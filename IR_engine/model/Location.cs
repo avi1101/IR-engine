@@ -38,11 +38,10 @@ namespace IR_engine
             this.city = city;
             string popstr = populationTemp;
             double pop = double.Parse(populationTemp);
-            if (pop >= 1000000)
-            {
-                pop = pop / 1000000;
-               popstr=pop+"M";
-            }
+            if(pop>=1000 && pop< 1000000) { pop = pop / 1000; popstr = pop + "K"; }
+            else if (pop >= 1000000 && pop< 1000000000){pop = pop / 1000000; popstr=pop+"M";}
+            else if (pop>= 1000000000) { pop = pop / 1000000000; popstr = pop + "B"; }
+            else { popstr = pop + ""; }
             this.Country = Country;
             this.population = popstr;
             this.currency = currency;
