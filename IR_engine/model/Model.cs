@@ -19,6 +19,7 @@ namespace IR_engine
         public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
         public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
+        public ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
         //end concurrent variables
 
@@ -50,15 +51,18 @@ namespace IR_engine
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
             int tasks = cores;                                  //get the number of logical proccesors 
-           // int tasks = 1;             //get the number of logical proccesors 
+                                                                // int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
             int k = 0, chunk = 0, id = 0;
             t = new List<Task>();
+            createCityDic(files);
+
             foreach (string file in files)
             {
                 int tsk = i % tasks;
-                t.Add(Task.Factory.StartNew(() => {
+                t.Add(Task.Factory.StartNew(() =>
+                {
                     readfo.readfile(file, tsk);
                 }));
                 id++;
@@ -67,8 +71,8 @@ namespace IR_engine
                 if (k % tasks == 0)
                 {
                     Console.WriteLine("awaiting {0} tasks to finish", tasks);
-                    foreach (Task ts in t) 
-                           ts.Wait();
+                    foreach (Task ts in t)
+                        ts.Wait();
                     if (k % (tasks * 5) == 0)
                     {
                         Console.WriteLine("Memory cleanup");
@@ -151,8 +155,64 @@ namespace IR_engine
         {
             return Directory.Exists(path + "\\Posting_and_indexes");
         }
-    }
 
+        public void createCityDic( List<string> files)
+        {
+            List<Task> lst = new List<Task>();
+            
+            foreach (string fileRaw in files)
+            {
+                {
+                    int tsk = i % cores;
+                    lst.Add(Task.Factory.StartNew(() =>
+                    {
+                        int idx = 0;
+                        string DAfile = File.ReadAllText(fileRaw);
+                        int end = 0, st = 0;
+                        while (true)
+                        {
+                            st = DAfile.IndexOf("<F P=104>", idx);
+                            if (st != -1)
+                            {
+                                end = DAfile.IndexOf("</F>", st, 100);
+                            }
+                            else { break; }
+                            string city = "";
+                            if (st != -1 && end != -1) { city = (DAfile.Substring(st + 9, (end - st) - 9)); idx = end; }
+                            else { break; }
+                            string[] fullname = city.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            if (fullname.Length < 1) continue;
+                            string F = ReadFile.rmvStr(fullname[0]).ToLower();
+                            if (!hasNum(F))
+                            {
+                                if (!cityIn.ContainsKey(F))
+                                {
+                                    cityIn.TryAdd(F, 0);
+                                    ReadFile.addLocation(F);
+                                }
+                            }
+                        }
+                    }));
+                    i++;
+                    if (tsk == 0)
+                    {
+                        foreach (Task ts in lst)
+                            ts.Wait();
+                        lst.Clear();
+                    }
+                }
+            }
+        }
+        static bool hasNum(string word)
+        {
+            for (int i = 0; i < word.Length; i++)
+            {
+                if (Char.IsDigit(word[i]) || Char.IsDigit(word[word.Length - i - 1]))
+                    return true;
+            }
+            return false;
+        }
+    }
 }
 
 

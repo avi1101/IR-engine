@@ -27,13 +27,12 @@ namespace IR_engine
         public static long readFiles_time = 0;
         bool ToStem;
         int index = 0;
-        HttpClient http = new HttpClient();
+        static HttpClient http = new HttpClient();
         int allfilesSize = 0;
         string path;
         Parse[] parser;
         StringBuilder stb = new StringBuilder();
-        public HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')'};
-        public ConcurrentDictionary<string,byte> cityIn =new ConcurrentDictionary<string,byte>();
+        public static HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')',' '};
         public ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
         //public ConcurrentDictionary<string, Location> locFound = new ConcurrentDictionary<string, Location>();
 
@@ -136,18 +135,13 @@ namespace IR_engine
                     else
                     {
                         d = new document(data, docNo, date, head, fullname[0]);
-                        if (!cityIn.ContainsKey(rmvStr(fullname[0])))
-                        {
-                            cityIn.TryAdd(rmvStr(fullname[0]),0);
-                            addLocation(rmvStr(fullname[0]));
-                        }
                     }
                     Model.docs.TryAdd(docNo, d);
                     parser[queue].Text2list(d, queue);
                 }
             }
         }
-        public void addLocation(string city)
+        public static void addLocation(string city)
         {
             string city2= city;
           // Console.WriteLine(city);
@@ -208,8 +202,7 @@ namespace IR_engine
                                 }
                     }
                     datas = rmvStr(arr1[0]);
-                  data1 = datas.Split(','); //splited(datas,',');
-             //   string curr = null;
+                  data1 = datas.Split(','); 
                     for (int i = 0; i < data1.Length; i++)
                     {
                     if (data1[i].Contains("name"))
@@ -226,7 +219,7 @@ namespace IR_engine
         {
             return allfilesSize;
         }
-        public string rmvStr(string input)
+        public static string rmvStr(string input)
         {
             StringBuilder stb = new StringBuilder();
             for(int i = 0; i < input.Length; i++)
@@ -267,7 +260,7 @@ namespace IR_engine
             }
             return output;
         }
-        bool hasChar(string word, char del)
+        static bool hasChar(string word, char del)
         {
             for (int i = 0; i < word.Length; i++)
             {
@@ -276,5 +269,6 @@ namespace IR_engine
             }
             return false;
         }
+
     }
 }

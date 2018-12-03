@@ -41,7 +41,7 @@ namespace IR_engine
             if (pop >= 1000000)
             {
                 pop = pop / 1000000;
-               popstr=String.Format("{0:0.00}", pop)+"M";
+               popstr=pop+"M";
             }
             this.Country = Country;
             this.population = popstr;
