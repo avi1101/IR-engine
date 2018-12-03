@@ -34,6 +34,7 @@ namespace IR_engine
         StringBuilder stb = new StringBuilder();
         public HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')'};
         public ConcurrentDictionary<string,byte> cityIn =new ConcurrentDictionary<string,byte>();
+        public ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
         //public ConcurrentDictionary<string, Location> locFound = new ConcurrentDictionary<string, Location>();
 
         public ReadFile(string path, bool ToStem, int cores)
@@ -91,7 +92,7 @@ namespace IR_engine
             foreach (string doc in docs)
             {
                 StringBuilder sb = new StringBuilder(doc);
-                int st1 = 0, st2 = 0, st3 = 0, st4 = 0, st5 = 0, end1 = 0, end2 = 0, end3 = 0, end4 = 0, end5 = 0;
+                int st1 = 0, st2 = 0, st3 = 0, st4 = 0, st5 = 0, end1 = 0, end2 = 0, end3 = 0, end4 = 0, end5 = 0,st6 = 0,end6 = 0;
                 if (doc.Equals("")) continue;
                 string docNo = "";
                 string date = "";
@@ -120,6 +121,14 @@ namespace IR_engine
                     }
                     string city = "";
                     if (st5 != -1 && end5 != -1) { city = ( /*doc.Substring(st5 + 9, (end5 - st5) - 4).Trim();*/sb.ToString(st5 + 9, (end5 - st5) - 9)); }
+                    st6 = doc.IndexOf("<F P=105>");
+                    if(st6 != -1)
+                    {
+                        end6 = doc.IndexOf("</F>", st6, 100);
+                    }
+                    string language = "";
+                    if(st6!=-1 && end6 != -1) { language = sb.ToString(st6 + 9, (end6 - st6) - 9); }
+                    Langs.TryAdd(language, 0);
                     string[] fullname = city.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                     document d = null;
                     if (fullname.Length < 1)
