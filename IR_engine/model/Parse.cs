@@ -322,7 +322,7 @@ namespace IR_engine
                         type = term.Type.word;
                     }
                 }
-                if (phrase.Length < 1) continue;
+                if (phrase.Length < 1 || stopwords.Contains(phrase)) continue;
                 t = new term(phrase);
                 t.Type1 = type;
                 //t.AddToPosting(DocName);
@@ -825,10 +825,12 @@ namespace IR_engine
                     left.Type1 = term.Type.range;
                     right.Type1 = term.Type.range;
                 }
-                AddTerm(queue, left);
-                AddTerm(queue, right);
+                if(!stopwords.Contains(left.Phrase))
+                    AddTerm(queue, left);
+                if(!stopwords.Contains(right.Phrase))
+                    AddTerm(queue, right);
                 j = part + idx;
-                return word;                                                                //returns the whole expression
+                return Fixword(word.Replace("\"",""));                                                                //returns the whole expression
             }
             List<string> newWords = new List<string>();
             for (part = 0; part < splittedExpression.Length; part++)                    //when we meet an expression we need to format it is an expression

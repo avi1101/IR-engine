@@ -8,49 +8,34 @@ using System.Collections.Concurrent;
 namespace IR_engine
 {
      public class term
-    {
-        public static int postingFileLine = 0; //global variable to assign pointers
+     {
         public enum Type { number, date, expression, Quotation, distance, percentage, price, range, word };
 
-        int pointer;   // pointer to the line in the posting list file
-        string postingFile;// pointer to the posting list file
         string phrase; // the phrase itself
-        int numOfDocs; // the number of docs this term is in
-        public int idf = 0;
+        int idf; // the number of docs this term is in
+        public int icf = 0;
         Type type;
 
         //used for global information, global occurances of the term in the curpus and if upper
-        int globalOccurances;
         bool isUpperInCurpus;
         //end global variables
 
-        //used to count occurances in the currect file being parsed
-        string currectDoc;
-        int currectCount;
-        //end currect variables
-
         public ConcurrentDictionary<string, short> posting; //string = doc name, int = occurances
 
-        List<string> postingList; //this will be used in the format: <docname>_<number> of occurances of the term>
 
         public term()
         {
-            postingFile = "";
             IsUpperInCurpus = true;
-            postingList = new List<string>();
-            numOfDocs = globalOccurances = 0;
             phrase = "";
-            currectDoc = "";
             posting = new ConcurrentDictionary<string, short>();
+            idf = icf = 0;
         }
 
         public term(string phrase)
         {
             Phrase = phrase;
             IsUpperInCurpus = true;
-            postingList = new List<string>();
-            numOfDocs = globalOccurances = 0;
-            currectDoc = "";
+            idf = icf = 0;
             posting = new ConcurrentDictionary<string, short>();
         }
 
@@ -59,16 +44,13 @@ namespace IR_engine
             set { phrase = value; }
             get { return phrase; }
         }
-        public int NumofDocs
+        public int Icf
         {
-            set { numOfDocs = value; }
-            get { return numOfDocs;}
+            set { Icf = value; }
+            get { return Icf; }
         }
 
-        public int GlobalOccurances { get => globalOccurances; set => globalOccurances = value; }
         public bool IsUpperInCurpus { get => isUpperInCurpus; set => isUpperInCurpus = value; }
-        public int Pointer { get => pointer; set => pointer = value; }
-        public string PostingFile { get => postingFile; set => postingFile = value; }
         public Type Type1 { get => type; set => type = value; }
 
         /// <summary>
@@ -83,18 +65,9 @@ namespace IR_engine
                    phrase == term.Phrase;
         }
 
-        public void shown()
-        {
-            numOfDocs++;
-        }
-
-        public void addDocumentToPostingList(string filename, int occurances)
-        {
-            postingList.Add(filename + "_" + occurances);
-        }
-
         public void AddToPosting(string doc, short tf)
         {
+            this.icf += tf;
             posting.AddOrUpdate(doc, tf, (key, value) => {
                 value += tf;
                 return value;

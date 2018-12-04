@@ -31,7 +31,6 @@ namespace IR_engine
         int allfilesSize = 0;
         string path;
         Parse[] parser;
-        static StringBuilder stb = new StringBuilder();
         public static HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')',' '};
         public ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
         //public ConcurrentDictionary<string, Location> locFound = new ConcurrentDictionary<string, Location>();
@@ -221,7 +220,7 @@ namespace IR_engine
         }
         public static string rmvStr(string input)
         {
-            stb.Clear();
+            StringBuilder stb = new StringBuilder();
             for(int i = 0; i < input.Length; i++)
             {
                 char c = input[i];
