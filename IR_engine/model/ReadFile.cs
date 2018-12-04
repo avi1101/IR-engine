@@ -31,7 +31,7 @@ namespace IR_engine
         int allfilesSize = 0;
         string path;
         Parse[] parser;
-        StringBuilder stb = new StringBuilder();
+        static StringBuilder stb = new StringBuilder();
         public static HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')',' '};
         public ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
         //public ConcurrentDictionary<string, Location> locFound = new ConcurrentDictionary<string, Location>();
@@ -90,7 +90,7 @@ namespace IR_engine
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string doc in docs)
             {
-                StringBuilder sb = new StringBuilder(doc);
+                //StringBuilder sb = new StringBuilder(doc);
                 int st1 = 0, st2 = 0, st3 = 0, st4 = 0, st5 = 0, end1 = 0, end2 = 0, end3 = 0, end4 = 0, end5 = 0,st6 = 0,end6 = 0;
                 if (doc.Equals("")) continue;
                 string docNo = "";
@@ -102,31 +102,31 @@ namespace IR_engine
                     st1 = doc.IndexOf("<DOCNO>");
                     if (st1 != -1)
                         end1 = doc.IndexOf("</DOCNO>", st1);
-                    if (st1 != -1 && end1 != -1) { docNo = /*RemoveStringReader*/(/*doc.Substring(st1 + 7, (end1 - st1) - 8));*/sb.ToString(st1 + 7, (end1 - st1) - 8)); }
+                    if (st1 != -1 && end1 != -1) { docNo = /*RemoveStringReader*/(/*doc.Substring(st1 + 7, (end1 - st1) - 8));*/doc.Substring(st1 + 7, (end1 - st1) - 8)); }
                     st2 = doc.IndexOf("<DATE1>");
                     if (st2 != -1)
                         end2 = doc.IndexOf("</DATE1>", st2, 50);
-                    if (st2 != -1 && end2 != -1) { date =/* RemoveStringReader*/(/*doc.Substring(st2 + 7, (end2 - st2) - 8));*/sb.ToString(st2 + 7, (end2 - st2) - 8)); }
+                    if (st2 != -1 && end2 != -1) { date =/* RemoveStringReader*/(/*doc.Substring(st2 + 7, (end2 - st2) - 8));*/doc.Substring(st2 + 7, (end2 - st2) - 8)); }
                     st3 = doc.IndexOf("<TI>");
                     if (st3 != -1) end3 = doc.IndexOf("</TI>", st3, 100);
-                    if (st3 != -1 && end3 != -1) { head =/* RemoveStringReader*/(/*doc.Substring(st3 + 4, (end3 - st3) - 4));*/sb.ToString(st3 + 4, (end3 - st3) - 4)); }
+                    if (st3 != -1 && end3 != -1) { head =/* RemoveStringReader*/(/*doc.Substring(st3 + 4, (end3 - st3) - 4));*/doc.Substring(st3 + 4, (end3 - st3) - 4)); }
                     st4 = doc.IndexOf("<TEXT>");
                     if (st4 != -1) end4 = doc.IndexOf("</TEXT>", st4);
-                    if (st4 != -1 && end4 != -1) { data = /*RemoveStringReader*/(/*doc.Substring(st4 + 6, (end4 - st4) - 7));*/sb.ToString(st4 + 6, (end4 - st4) - 7)); }
+                    if (st4 != -1 && end4 != -1) { data = /*RemoveStringReader*/(/*doc.Substring(st4 + 6, (end4 - st4) - 7));*/doc.Substring(st4 + 6, (end4 - st4) - 7)); }
                     st5 = doc.IndexOf("<F P=104>");
                     if (st5 != -1)
                     {
                         end5 = doc.IndexOf("</F>", st5, 100);
                     }
                     string city = "";
-                    if (st5 != -1 && end5 != -1) { city = ( /*doc.Substring(st5 + 9, (end5 - st5) - 4).Trim();*/sb.ToString(st5 + 9, (end5 - st5) - 9)); }
+                    if (st5 != -1 && end5 != -1) { city = ( /*doc.Substring(st5 + 9, (end5 - st5) - 4).Trim();*/doc.Substring(st5 + 9, (end5 - st5) - 9)); }
                     st6 = doc.IndexOf("<F P=105>");
                     if(st6 != -1)
                     {
                         end6 = doc.IndexOf("</F>", st6, 100);
                     }
                     string language = "";
-                    if(st6!=-1 && end6 != -1) { language = sb.ToString(st6 + 9, (end6 - st6) - 9); }
+                    if(st6!=-1 && end6 != -1) { language = doc.Substring(st6 + 9, (end6 - st6) - 9); }
                     Langs.TryAdd(language, 0);
                     string[] fullname = city.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                     document d = null;
@@ -145,7 +145,7 @@ namespace IR_engine
         {
             string city2= city;
           // Console.WriteLine(city);
-            if (hasChar(city, '/'))
+            if (Parse.hasChar(city, '/'))
             {
                 city2 = city.Substring(0, city.IndexOf('/'));
             }
@@ -221,7 +221,7 @@ namespace IR_engine
         }
         public static string rmvStr(string input)
         {
-            StringBuilder stb = new StringBuilder();
+            stb.Clear();
             for(int i = 0; i < input.Length; i++)
             {
                 char c = input[i];
@@ -230,45 +230,46 @@ namespace IR_engine
                     stb.Append(c);
                 }
             }
+            //string x = stb.ToString();
             return stb.ToString();
         }
-        public List<string>splited(string input,char del)
-        {
-            List<string> output= new List<string>();
-            StringBuilder str = new StringBuilder();
-            for(int i = 0; i < input.Length; i++)
-            {
-                if (input[i] == del)
-                {
+        //public List<string>splited(string input,char del)
+        //{
+        //    List<string> output= new List<string>();
+        //    StringBuilder str = new StringBuilder();
+        //    for(int i = 0; i < input.Length; i++)
+        //    {
+        //        if (input[i] == del)
+        //        {
 
-                    if (str.Length != 0)
-                    {
-                        output.Add(str.ToString());
-                        str.Clear();
-                    }
-                }
-                else
-                {
-                    str.Append(input[i]);
-                }
+        //            if (str.Length != 0)
+        //            {
+        //                output.Add(str.ToString());
+        //                str.Clear();
+        //            }
+        //        }
+        //        else
+        //        {
+        //            str.Append(input[i]);
+        //        }
                 
-            }
-            if (str.Length != 0)
-            {
-                output.Add(str.ToString());
-                str.Clear();
-            }
-            return output;
-        }
-        static bool hasChar(string word, char del)
-        {
-            for (int i = 0; i < word.Length; i++)
-            {
-                if (word[i] == del || word[word.Length - i - 1] == del)
-                    return true;
-            }
-            return false;
-        }
+        //    }
+        //    if (str.Length != 0)
+        //    {
+        //        output.Add(str.ToString());
+        //        str.Clear();
+        //    }
+        //    return output;
+        //}
+        //static bool hasChar(string word, char del)
+        //{
+        //    for (int i = 0; i < word.Length; i++)
+        //    {
+        //        if (word[i] == del || word[word.Length - i - 1] == del)
+        //            return true;
+        //    }
+        //    return false;
+        //}
 
     }
 }

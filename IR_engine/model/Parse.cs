@@ -104,7 +104,7 @@ namespace IR_engine
         //private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
 
         List<string> pre_terms;
-        static public Dictionary<string, term> terms = new Dictionary<string, term>();
+         public Dictionary<string, term> terms = new Dictionary<string, term>();
         static public HashSet<string> dollars = new HashSet<string>() { "Dollars", "DOLLARS", "dollars" };
         static public HashSet<string> million = new HashSet<string>() { "M", "m", "Million", "MILLION", "million" };
         static public HashSet<string> thousends = new HashSet<string>() { "Thousand", "thousand", "THOUSAND" };
@@ -428,16 +428,7 @@ namespace IR_engine
         /// checks if the word is all made of upper case letter
         /// </summary>
         /// <param name="input"> the word tested</param>
-        /// <returns></returns>
-        bool IsAllUpper(string input)
-        {
-            for (int i = 0; i < input.Length; i++)
-            {
-                if (!Char.IsUpper(input[i]))
-                    return false;
-            }
-            return true;
-        }
+        /// <returns></returns> 
         /// <summary>
         /// checks of the term is a numeric one
         /// </summary>
@@ -453,7 +444,7 @@ namespace IR_engine
                 if ((!(ch >= '0' && ch <= '9') && ch != ',' && ch != '.' && ch != '\\' && ch != '/') || words[idx] == "")
                     return false;
             }
-            if (words[index] == "$" || words[index] == "%" || percent.Contains(words[index]) || words[index] == "Dollars") { return false; }
+            if (words[index] == "$" || words[index] == "%" || percent.Contains(words[index]) || words[index] == "Dollars"||distance.Contains(words[index]))  { return false; }
             if (allAmounts.Contains(words[index]))
             {
                 if (words[index2] == "$" || words[index2] == "%" || percent.Contains(words[index]) || words[index2] == "Dollars") { return false; }
@@ -904,66 +895,15 @@ namespace IR_engine
         }
         string Fixword(string word)
         {
-            word.Replace("\'", "");
-            word.Replace("--", "");
-            //bool done = false;
-            //while (!done)
-            //{
-            //  done = true;
+            word=word.Replace("\'", "");
+            word=word.Replace("--", "");
+
             if (word == "" || word == "\n" || word[0] == '<') { return ""; }
             if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
             else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return "";
             else
             {
                 word = TrimtoRemove(word);
-                //trim//
-                /* if (word[word.Length - 1] == '.' ||word[word.Length-1]=='!'|| word[word.Length - 1] == ',' || word[word.Length - 1] == '\n' || word[word.Length - 1] == '|'||
-                     word[word.Length - 1] == ')' || word[word.Length - 1] == '(' || word[word.Length - 1] == '[' || word[word.Length - 1] == '}' || word[word.Length - 1] == ' ' || word[word.Length - 1] == ':' ||
-                     word[word.Length - 1] == '>' || word[word.Length - 1] == '-' || word[word.Length - 1] == ']' || word[word.Length - 1] == ';' ||
-                     word[word.Length - 1] == '?' || (word[word.Length - 2] == '.' && word[word.Length - 1] > '9' && word[word.Length - 1] < '0') ||
-                     (word.Length > 1 && word[word.Length - 2] == ',')|| ((word.Length > 1)&&(word[word.Length - 2] == '.' || word[word.Length - 2] == ',' || word[word.Length - 2] == ']'||
-                     word[word.Length - 2] == ')'|| word[word.Length - 2] == '}') && 
-                     word[word.Length - 1] > '9' && word[word.Length - 1] < '0')||word[word.Length-1]=='|')
-                 {
-                     done = false;
-                     word = word.Remove(word.Length - 1);
-                 }
-                 if (word[word.Length - 1] == '"')
-                     if ((word.Length>1)&&(word[word.Length - 2] == '.' || word[word.Length - 1] == '2' || word[word.Length - 2] == '[' || word[word.Length - 2] == '!' ||
-                         word[word.Length - 2] == ',' || word[word.Length - 2] == '\n' || word[word.Length - 2] == '|' ||
-                          word[word.Length - 2] == ')' || word[word.Length - 2] == '}' || word[word.Length - 2] == ' ' || word[word.Length - 2] == ':' ||
-                         word[word.Length - 2] == '>' || word[word.Length - 2] == '-' || word[word.Length -2] == ']' || word[word.Length - 2] == ';' ||
-                         word[word.Length - 2] == '?' ||
-                         (word.Length > 1 && word[word.Length - 2] == ',') || ((word.Length > 2)&&(word[word.Length - 2] == '.' || word[word.Length - 2] == ',' || word[word.Length - 2] == ']' ||
-                         word[word.Length - 3] == ')' || word[word.Length - 3] == '}') &&
-                         word[word.Length - 2] > '9' && word[word.Length - 2] < '0') || word[word.Length - 2] == '|'))
-                     {
-                         word = word.Remove(word.Length - 2, 1);
-                     }
-                 if (word == "" || word == "\n" || word[0] == '<') { return null; }
-                 if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
-                 else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return null;
-                 else
-                 {
-                     //removes non-relative end characters from words
-                     if (word[0] == '.' || word[0] == ',' || word[0] == '\n' || word[0] == '(' || word[0] == '{' || word[0] == ')' || word[0] == '}' || word[0] == ' ' || word[0] == ':' ||
-                        word[0] == '<' || word[0] == '[' || word[0] == '!' || word[0] == '?' || ((word.Length > 1)&&(word[1] == '.'||word[1]==','||word[1]=='{'||word[1]=='['||word[1]=='(') && word[0] > '9' && word[0] < '0') ||
-                        (word.Length > 1 && word[1] == ',')|| word[0] == '|')
-                     {
-                         done = false;
-                         word = word.Remove(0, 1);
-                     }
-                     if(word[0]=='"')
-                         if ((word.Length>1)&&(word[1] == '.' || word[1] == ',' || word[1] == '\n' || word[1] == '(' || word[1] == '{' || word[1] == ' ' || word[1] == ':' ||
-                        word[1] == '<' || word[1] == '[' || word[1] == '!' || word[1] == '?' || ((word.Length>2)&&(word[2] == '.' || word[2] == ',' || word[2] == '{' || word[2] == '[' ||
-                        word[2] == '(') && word[1] > '9' && word[2] < '0') ||
-                        (word.Length > 2 && word[1] == ',') || word[1] == '|'))
-                         {
-                             done = false;
-                             word = word.Remove(1, 1);
-                         }
-                 }
-             }*/
             }
             if (word != "")
             {
@@ -1037,7 +977,7 @@ namespace IR_engine
             }
             return sb.ToString();
         }
-        bool hasChar(string word, char del)
+        public static bool hasChar(string word, char del)
         {
             for (int i = 0; i < word.Length; i++)
             {

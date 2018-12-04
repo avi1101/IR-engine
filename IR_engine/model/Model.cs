@@ -19,7 +19,7 @@ namespace IR_engine
         public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
         public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
-        public ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
+        public static ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
         //end concurrent variables
         Parse parser;
@@ -164,14 +164,14 @@ namespace IR_engine
             return Directory.Exists(path + "\\Posting_and_indexes");
         }
 
-        public void createCityDic( List<string> files)
+        public static void createCityDic( List<string> files)
         {
             List<Task> lst = new List<Task>();
-            
+            int tasks = cores;
             foreach (string fileRaw in files)
             {
                 {
-                    int tsk = i % cores;
+                    int tsk = i % tasks;
                     lst.Add(Task.Factory.StartNew(() =>
                     {
                         int idx = 0;
