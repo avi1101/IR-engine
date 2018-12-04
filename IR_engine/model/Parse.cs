@@ -624,7 +624,6 @@ namespace IR_engine
                 sol = month + "-" + value;
             return sol;
         }
-        string SetLetterType(int idx, string[] words) { return null; }
         string Setdistance(string[] words, int idx, out int j)
         {
             j = idx + 1;
