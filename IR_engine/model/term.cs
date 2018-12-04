@@ -10,12 +10,14 @@ namespace IR_engine
      public class term
     {
         public static int postingFileLine = 0; //global variable to assign pointers
+        public enum Type { number, date, expression, Quotation, distance, percentage, price, range, word };
 
         int pointer;   // pointer to the line in the posting list file
         string postingFile;// pointer to the posting list file
         string phrase; // the phrase itself
         int numOfDocs; // the number of docs this term is in
         public int idf = 0;
+        Type type;
 
         //used for global information, global occurances of the term in the curpus and if upper
         int globalOccurances;
@@ -67,6 +69,7 @@ namespace IR_engine
         public bool IsUpperInCurpus { get => isUpperInCurpus; set => isUpperInCurpus = value; }
         public int Pointer { get => pointer; set => pointer = value; }
         public string PostingFile { get => postingFile; set => postingFile = value; }
+        public Type Type1 { get => type; set => type = value; }
 
         /// <summary>
         /// this method check equality between this object and a given object
@@ -78,11 +81,6 @@ namespace IR_engine
             var term = obj as term;
             return term != null &&
                    phrase == term.Phrase;
-        }
-
-        public override int GetHashCode()
-        {
-            return 2090604936 + EqualityComparer<string>.Default.GetHashCode(phrase);
         }
 
         public void shown()
@@ -103,6 +101,11 @@ namespace IR_engine
             });
         }
 
+        public override string ToString()
+        {
+            return Phrase + '\t' + isUpperInCurpus + '\t' + type + '\t' + printPosting();
+        }
+
         public void AddToPosting(ConcurrentDictionary<string, short> dictionary)
         {
             foreach(KeyValuePair<string, short> entry in dictionary)
@@ -117,7 +120,7 @@ namespace IR_engine
             StringBuilder res = new StringBuilder();
             foreach(KeyValuePair<string, short> entry in posting)
             {
-                res.Append(entry.Key + "[" + entry.Value + "],");
+                res.Append(entry.Key + "_" + entry.Value + ",");
             }
             return res.ToString();
         }
@@ -125,6 +128,14 @@ namespace IR_engine
         public short getTFinDoc(string docname)
         {
             return posting[docname];
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -842790187;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(phrase);
+            hashCode = hashCode * -1521134295 + type.GetHashCode();
+            return hashCode;
         }
     }
 }

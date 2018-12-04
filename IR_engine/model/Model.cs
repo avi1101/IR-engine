@@ -22,6 +22,7 @@ namespace IR_engine
         //end concurrent variables
 
         Parse parser;
+        Indexer indexer;
         ReadFile readfo;
         string path;
         bool ToStem;
@@ -35,7 +36,8 @@ namespace IR_engine
             this.path = path;
             this.IndexPath = ipath;
             this.ToStem = Tostem;
-            parser = new Parse(path, ToStem);
+            //parser = new Parse(path, ToStem);
+            indexer = new Indexer(ipath, path+ "\\Posting_and_indexes");
         }
 
 
@@ -45,25 +47,6 @@ namespace IR_engine
             var watch = System.Diagnostics.Stopwatch.StartNew();
             int filesNum = readfo.returnSize();
             bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
-            //if (hasIndex == true)
-            //{
-            //    /**
-            //     * add a pop up window to ask whether to re-index the docs in the folder
-            //    **/
-            //}
-            //else
-            //{
-            //    File.CreateText(path + "\\index_elad_avi.txt");
-            //}
-            //for (int i = 0; i < readfo.returnSize(); i++)
-            //{
-            //    List<document> f = readfo.getDocs();
-            //    if (f == null) continue;
-            //    for(int j = 0; j < f.Count; j++)
-            //    {
-            //        parser.Text2list(f[j]);
-            //    }
-            //}
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
             int tasks = cores;                                  //get the number of logical proccesors 
@@ -94,7 +77,7 @@ namespace IR_engine
                         {
                             foreach (KeyValuePair<term, term> entry in terms2)
                             {
-                                sw.WriteLine(entry.Key.Phrase + "\t" + entry.Value.IsUpperInCurpus + '\t' + entry.Value.printPosting());
+                                sw.WriteLine(entry.Key.ToString());
                             }
                         }
                         terms2.Clear();
@@ -114,7 +97,7 @@ namespace IR_engine
                 {
                     foreach (KeyValuePair<term, term> entry in terms2)
                     {
-                        sw.WriteLine(entry.Key.Phrase + "\t" + entry.Value.IsUpperInCurpus + '\t' + entry.Value.printPosting());
+                        sw.WriteLine(entry.Key.ToString());
                     }
                 }
                 terms2.Clear();
