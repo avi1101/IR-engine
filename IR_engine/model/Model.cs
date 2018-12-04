@@ -17,10 +17,11 @@ namespace IR_engine
         public static List<Dictionary<string, term>> queueList = new List<Dictionary<string, term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
         public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
-        public static int cores = Environment.ProcessorCount/2;
+        public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
+        public static ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
+        public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
         //end concurrent variables
-
         Parse parser;
         Indexer indexer;
         ReadFile readfo;
@@ -47,18 +48,31 @@ namespace IR_engine
             var watch = System.Diagnostics.Stopwatch.StartNew();
             int filesNum = readfo.returnSize();
             bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
+
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
             int tasks = cores;                                  //get the number of logical proccesors 
-            //int tasks = 1;             //get the number of logical proccesors 
+                                                                // int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
             int k = 0, chunk = 0, id = 0;
             t = new List<Task>();
+            createCityDic(files);
+            var list = locations.Keys.ToList();
+            list.Sort();
+            using (StreamWriter ct = new StreamWriter(path + "\\city_dictionary.txt"))
+            {
+                foreach(var key in list)
+                {
+                    ct.WriteLine(key + "\t" + locations[key].Country + "\t" + locations[key].Currency + "\t" + locations[key].Population);
+                }
+            }
+
             foreach (string file in files)
             {
                 int tsk = i % tasks;
-                t.Add(Task.Factory.StartNew(() => {
+                t.Add(Task.Factory.StartNew(() =>
+                {
                     readfo.readfile(file, tsk);
                 }));
                 id++;
@@ -151,8 +165,64 @@ namespace IR_engine
         {
             return Directory.Exists(path + "\\Posting_and_indexes");
         }
-    }
 
+        public static void createCityDic( List<string> files)
+        {
+            List<Task> lst = new List<Task>();
+            int tasks = cores;
+            foreach (string fileRaw in files)
+            {
+                {
+                    int tsk = i % tasks;
+                    lst.Add(Task.Factory.StartNew(() =>
+                    {
+                        int idx = 0;
+                        string DAfile = File.ReadAllText(fileRaw);
+                        int end = 0, st = 0;
+                        while (true)
+                        {
+                            st = DAfile.IndexOf("<F P=104>", idx);
+                            if (st != -1)
+                            {
+                                end = DAfile.IndexOf("</F>", st, 100);
+                            }
+                            else { break; }
+                            string city = "";
+                            if (st != -1 && end != -1) { city = (DAfile.Substring(st + 9, (end - st) - 9)); idx = end; }
+                            else { break; }
+                            string[] fullname = city.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            if (fullname.Length < 1) continue;
+                            string F = ReadFile.rmvStr(fullname[0]).ToLower();
+                            if (!hasNum(F))
+                            {
+                                if (!cityIn.ContainsKey(F))
+                                {
+                                    cityIn.TryAdd(F, 0);
+                                    ReadFile.addLocation(F);
+                                }
+                            }
+                        }
+                    }));
+                    i++;
+                    if (tsk == 0)
+                    {
+                        foreach (Task ts in lst)
+                            ts.Wait();
+                        lst.Clear();
+                    }
+                }
+            }
+        }
+        static bool hasNum(string word)
+        {
+            for (int i = 0; i < word.Length; i++)
+            {
+                if (Char.IsDigit(word[i]) || Char.IsDigit(word[word.Length - i - 1]))
+                    return true;
+            }
+            return false;
+        }
+    }
 }
 
 
