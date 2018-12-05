@@ -32,7 +32,7 @@ namespace IR_engine
         string path;
         Parse[] parser;
         public static HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')',' '};
-        public ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
+        public static ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
         //public ConcurrentDictionary<string, Location> locFound = new ConcurrentDictionary<string, Location>();
 
         public ReadFile(string path, bool ToStem, int cores)
@@ -114,7 +114,7 @@ namespace IR_engine
                     if (st4 != -1 && end4 != -1) { data = /*RemoveStringReader*/(/*doc.Substring(st4 + 6, (end4 - st4) - 7));*/doc.Substring(st4 + 6, (end4 - st4) - 7)); }
                     st5 = doc.IndexOf("<F P=104>");
                     if (st5 != -1)
-                    {
+                    { 
                         end5 = doc.IndexOf("</F>", st5, 100);
                     }
                     string city = "";
