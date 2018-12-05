@@ -125,11 +125,11 @@ namespace IR_engine
             { "December", "12" },{"DECEMBER", "12" }, {"Jun", "06" }, {"JUN", "06" }, {"jun", "06" }, {"JAN", "01" }, {"jan", "01" }, {"Jan", "01" }, {"FEB", "02" },{"Feb", "02" },{"feb", "02" }, {"SEP", "09" }, {"Sep", "09" }, {"sep", "09" },
             { "OCT", "10" }, {"Oct", "10" }, {"oct", "10" }, {"NOV", "11" }, {"Nov", "11" }, {"nov", "11" }, {"DEC", "12" }, {"Dec", "12" }, {"dec", "12" }, {"AUG", "08" }, {"Aug", "08" }, {"aug","08" } };
         public HashSet<char> Fixwordlist0 = new HashSet<char>() { '=','+','\'','.','!','?','\n', ',', '|','[',']','(',')','{',
-                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
+                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`', '\"'};
         public HashSet<char> Fixwordlist = new HashSet<char>() { '=','+','\'','!','?','\n', '|','[',']','(',')','{',
-                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
+                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`', '\"'};
         public HashSet<char> Fixwordlistlast = new HashSet<char>() {'=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
-                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
+                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`', '\"'};
         public HashSet<char> unwanted = new HashSet<char>() {'=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`', '\"'};
         public HashSet<string> percent = new HashSet<string>() { "percent", "PERCENT", "Percent", "percentage", "Percentage", "PERCENTAGE" };
@@ -228,18 +228,18 @@ namespace IR_engine
                     if (phrase.Equals("")) continue;
                     //type = term.Type.expression;
                 }
-                else if (word[0] == '\"')
-                {
-                    /*
-                     * our own rule, in case of an expression that start and end with ""
-                     * we need to save it as according to the expression rules
-                     */
-                    phrase = SetQuotationExp(i, words, out j, queue);
-                    words_length = words.Length;
-                    i = j;
-                    if (phrase.Equals("")) continue;
-                    type = term.Type.Quotation;
-                }
+                //else if (word[0] == '\"')
+                //{
+                //    /*
+                //     * our own rule, in case of an expression that start and end with ""
+                //     * we need to save it as according to the expression rules
+                //     */
+                //    phrase = SetQuotationExp(i, words, out j, queue);
+                //    words_length = words.Length;
+                //    i = j;
+                //    if (phrase.Equals("")) continue;
+                //    type = term.Type.Quotation;
+                //}
                 else if (containsNumbers(word))
                 {
                     if (Isdistance(words, i))
@@ -287,10 +287,6 @@ namespace IR_engine
                          * is a normal number that has to be formatted by the numbers rule
                          * we'll call the rule method here
                          */
-                        if (word.Contains("$"))
-                        {
-                            int trtr = 0;
-                        }
                         phrase = NumberSet(word, i, words, out j);
                         if (phrase.Equals("")) { continue; }
                         type = term.Type.number;
@@ -307,8 +303,6 @@ namespace IR_engine
                     if (isDate(words, i))
                     {
                         phrase = ToDate(word, words[i + 1]);
-                        if (phrase.Equals(""))
-                            phrase = toStem ? stem.stemTerm(word) : word;
                         j++;
                         type = term.Type.date;
                     }
@@ -326,6 +320,7 @@ namespace IR_engine
                                 || (phrase[ch] <= 'Z' && phrase[ch] >= 'A')) stringbuilder.Append(phrase[ch]);
                         if (!c)
                             phrase = stringbuilder.ToString();
+                        phrase = phrase.ToLower();
                         if (Model.locations.ContainsKey(phrase))
                         {
 
@@ -347,14 +342,14 @@ namespace IR_engine
 
                 t = new term(phrase);
                 t.Type1 = type;
-                if (Model.queueList[queue].ContainsKey(phrase+type))
+                if (Model.queueList[queue].ContainsKey(phrase+type.ToString()))
                 {
                     /*
                      * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
                      * the dictionary is implemented as a hash table with chaining
                      * so it should give us the best resaults
                      */
-                    t = Model.queueList[queue][phrase+type]; //reference to the original term
+                    t = Model.queueList[queue][phrase+ type.ToString()]; //reference to the original term
                     if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
                     t.AddToPosting(DocName, 1);
                 }
@@ -367,15 +362,15 @@ namespace IR_engine
                     t.Type1 = type;
                     if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
                     t.AddToPosting(DocName, 1);
-                    Model.queueList[queue].Add(t.Phrase+type, t);
+                    Model.queueList[queue].Add(t.Phrase+ type.ToString(), t);
                 }
-                if (termsInDoc.ContainsKey(phrase+type))
+                if (termsInDoc.ContainsKey(phrase+ type.ToString()))
                 {
                     termsInDoc[phrase+type] += 1;
                 }
                 else
                 {
-                    termsInDoc.Add(phrase+type, 0);
+                    termsInDoc.Add(phrase+ type.ToString(), 0);
                 }
 
                 i = j;
@@ -462,8 +457,14 @@ namespace IR_engine
             //    if (s[i] <= '9' && s[i] >= '0') return true;
             //return false;
             int len = s.Length;
+            int dollars = 0;
             for (int i = 0; i < len; i++)
-                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-' && s[i] != ',') return false;
+            {
+                if (s[i] == '$') dollars++;
+                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-' && s[i] != ',')
+                    return false;
+            }
+            if (dollars == len) return false;
             return true;
         }
         /// <summary>
@@ -892,6 +893,7 @@ namespace IR_engine
             //    return value;
             //});
             string s = t.Phrase;
+            if (s.Equals("-")) return;
             term.Type type = t.Type1;
             if (Model.queueList[queue].ContainsKey(s+ type.ToString()))
             {

@@ -89,6 +89,8 @@ namespace IR_engine
             else { if (!File.Exists(IndexPath1 + "\\DisableStem")) { Directory.CreateDirectory(IndexPath1 + "\\DisableStem"); } outPath = IndexPath1 + "\\DisableStem"; }
             indexer = new Indexer(outPath, path + "\\Posting_and_indexes");
 
+            if (!Directory.Exists(path + "\\Posting_and_indexes\\cityIndex")) { Directory.CreateDirectory(path + "\\Posting_and_indexes\\cityIndex"); }
+
             var watch = System.Diagnostics.Stopwatch.StartNew();
             isWorking = true;
             // step one, the parsing
@@ -179,8 +181,8 @@ namespace IR_engine
                 t = null;
                 chunk++;
             }
-            indexList = indexer.CreateIndex();
-            Directory.Delete(Path + "\\Posting_and_indexes");
+            //indexList = indexer.CreateIndex();
+            //Directory.Delete(Path + "\\Posting_and_indexes");
 
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
@@ -242,7 +244,11 @@ namespace IR_engine
         {
             return indexList;
         }
-
+        public Dictionary<string, indexTerm> load_index(string indexPath)
+        {
+            indexList = Indexer.Load_Index(indexPath);
+            return indexList;
+        }
         public static void createCityDic( List<string> files)
         {
             List<Task> lst = new List<Task>();
