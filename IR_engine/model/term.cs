@@ -9,7 +9,7 @@ namespace IR_engine
 {
      public class term
      {
-        public enum Type { number, date, expression, Quotation, distance, percentage, price, word, range };
+        public enum Type { number, date, expression, Quotation, distance, percentage, price, word, range,time };
 
         string phrase; // the phrase itself
         int idf = 0; // the number of docs this term is in

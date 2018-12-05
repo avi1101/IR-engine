@@ -22,18 +22,6 @@ namespace IR_engine
         public DictionaryList(Dictionary<string, indexTerm> list)
         {
             InitializeComponent();
-            //dictionary.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-
-            //stack.HorizontalAlignment = HorizontalAlignment.Left;
-            //stack.VerticalAlignment = VerticalAlignment.Top;
-
-            //StringBuilder sb = new StringBuilder();
-            //foreach(KeyValuePair<string, indexTerm> entery in list) {
-            //    TextBox t = new TextBox();
-            //    t.FontSize = 14;
-            //    t.Text = entery.Value.ToString();
-            //    stack.Children.Add(t);  
-            //}
             StringBuilder sb = new StringBuilder();
             foreach(KeyValuePair<string, indexTerm> entery in list)
             {
