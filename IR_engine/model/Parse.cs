@@ -325,6 +325,7 @@ namespace IR_engine
                 if (phrase.Length < 1 || stopwords.Contains(phrase)) continue;
                 t = new term(phrase);
                 t.Type1 = type;
+               // Console.WriteLine("The term " + phrase.ToString() + " is a " + type.ToString());
                 //t.AddToPosting(DocName);
                 if (Model.queueList[queue].ContainsKey(phrase+type))
                 {
@@ -888,6 +889,7 @@ namespace IR_engine
         }
         string SetQuotationExp(int idx, string[] words, out int j, int queue)
         {
+
             // TODO: remove this line after debug
             //Console.WriteLine("Pasring an expression at doc: " + DocName + " starting at: " + words[idx]);
             string exp = "";
@@ -912,15 +914,20 @@ namespace IR_engine
                 newWords.Add(word);
                 ex.Append(word);
                 ex.Append(" ");
+               // Console.WriteLine("Term seperated: "+word);
+
                 /*if(i==idx)
                     newWords.Add(word.Remove(0,1));
                 if (expEnd)
                     newWords.Add(word.Remove(word.Length - 1));*/
             }
+          //  Console.WriteLine("Sending the seperated terms to parse");
+
             parseText(newWords.ToArray(), queue);                                       //will parse the new list in case for double rule
             j = i - 1;
             ex.Replace("\"", "");
             ex.Replace(",", "");
+          //  Console.WriteLine("Term: " + ex.ToString());
             return newWords.Count > 1 ? ex.ToString() : "";
 
         }

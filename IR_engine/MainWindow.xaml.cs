@@ -48,6 +48,7 @@ namespace IR_engine
             Run.Foreground = new SolidColorBrush(Colors.Red);
             Run.FontSize = 38;
         }
+
         /// <summary>
         /// mouse leave event for the RUN button
         /// </summary>
@@ -59,6 +60,20 @@ namespace IR_engine
             Run.Height = 100;
             Run.Foreground = new SolidColorBrush(Colors.Black);
             Run.FontSize = 36;
+        }
+        private void load_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Load_Index.Width = 82;
+            Load_Index.Height = 82;
+            Load_Index.Foreground = new SolidColorBrush(Colors.Black);
+            Load_Index.FontSize = 12;
+        }
+        private void load_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Load_Index.Width = 85;
+            Load_Index.Height = 85;
+            Load_Index.Foreground = new SolidColorBrush(Colors.Red);
+            Load_Index.FontSize = 15;
         }
 
         private void Browse_Click(object sender, RoutedEventArgs e)
@@ -77,18 +92,36 @@ namespace IR_engine
             {
                 path = pathText.Text;
             }
+            if (IndexPath == null)
+            {
+                IndexPath = IndexPathText.Text;
+            }
             if (!path.Equals(""))
             {
-                m = new Model(path, stem.IsChecked.Value, IndexPath);
-                m.index();
+                if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; }
+                else
+                {
+                    m = new Model(path, stem.IsChecked.Value, IndexPath);
+                    m.index();
+                    var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
+                    string a = null;
+                    foreach (string x in arrayOfAllKeys)
+                    {
+                        a = Model.cleanAll(x);
+                        if (!a.Equals("") && !a.Equals(" "))
+                            Language.Items.Add(a);
+                    }
+                    watch2.Stop();
+                    time = time + watch2.ElapsedMilliseconds;
+                    time = (time / 1000.0) / 60.0;
+                    Console.WriteLine("total run time = " + time);
+                    test.Content = time;
+                }
             }
             else
                 test.Content = "path not provided.";
-            watch2.Stop();
-            time = time + watch2.ElapsedMilliseconds;
-            time = (time / 1000.0) / 60.0;
-            Console.WriteLine("total run time = " + time);
-            test.Content = time;
+
+            
         }
 
         private void showDic_Click(object sender, RoutedEventArgs e)
@@ -109,8 +142,21 @@ namespace IR_engine
             {
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    path = dialog.SelectedPath;
+                    IndexPath = dialog.SelectedPath;
                 }
+            }
+        }
+
+        private void Load_Index_Click(object sender, RoutedEventArgs e)
+        {
+            string ipt=null;
+            if (stem.IsChecked.Value) {ipt = IndexPath + "\\EnableStem";}
+            else {ipt = IndexPath + "\\DisableStem";}
+            if (!Directory.Exists(ipt) || !File.Exists(ipt+"index.txt"))
+                test.Content = "No Index in path";
+            else
+            {
+               //TODO: STUFF
             }
         }
     }

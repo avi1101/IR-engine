@@ -37,21 +37,22 @@ namespace IR_engine
             this.path = path;
             this.IndexPath = ipath;
             this.ToStem = Tostem;
+            string outPath = null;
             //parser = new Parse(path, ToStem);
-            indexer = new Indexer(ipath, path+ "\\Posting_and_indexes");
+            if (ToStem) { if (!File.Exists(IndexPath + "\\EnableStem")) { Directory.CreateDirectory(IndexPath + "\\EnableStem"); }outPath = IndexPath + "\\EnableStem"; }
+            else {if (!File.Exists(IndexPath + "\\DisableStem")) { Directory.CreateDirectory(IndexPath + "\\DisableStem"); }outPath = IndexPath + "\\DisableStem";}
+            indexer = new Indexer(outPath, path+ "\\Posting_and_indexes");
         }
-
-
         public void index()
         {
             // step one, the parsing
             var watch = System.Diagnostics.Stopwatch.StartNew();
             int filesNum = readfo.returnSize();
-            bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
+            // bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
 
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-            int tasks = cores;                                  //get the number of logical proccesors 
+            int tasks = cores;                                  //get the number of logical proccesors S
                                                                 // int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
@@ -161,10 +162,10 @@ namespace IR_engine
             return null;
         }
 
-        public bool hasIndex()
-        {
-            return Directory.Exists(path + "\\Posting_and_indexes");
-        }
+        //public bool hasIndex()
+        //{
+        //    return Directory.Exists(path + "\\Posting_and_indexes");
+        //}
 
         public static void createCityDic( List<string> files)
         {
@@ -221,6 +222,22 @@ namespace IR_engine
                     return true;
             }
             return false;
+        }
+        public static string cleanAll(string word)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < word.Length; i++)
+            {
+               
+                char c = word[i];
+                if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+                    sb.Append(c);
+                if(c==' ' && sb.Length > 0)
+                {
+                    return sb.ToString(); ;
+                }
+            }
+            return sb.ToString();
         }
     }
 }

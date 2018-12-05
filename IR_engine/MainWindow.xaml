@@ -60,6 +60,43 @@
             </Button.Effect>
         </Button>
         <TextBox x:Name="IndexPathText" HorizontalAlignment="Center" Height="23" Margin="-40,-10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="199"/>
+        <ComboBox x:Name="Language"  HorizontalAlignment="Left" Margin="544,290,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label Content="Languages" HorizontalAlignment="Left" Height="32" Margin="566,267,0,0" VerticalAlignment="Top" Width="119"/>
+        <Button Width="82" x:Name="Load_Index" HorizontalAlignment="Center" Content="Load Index" VerticalAlignment="Center"
+            Height="84" Margin="566,326,245.6,60.4" Foreground="#FF0A0C0F" FontFamily="Stencil" FontSize="12
+                " AutomationProperties.HelpText="click here to load Index" MouseEnter="load_MouseEnter" MouseLeave="load_MouseLeave" Click="Load_Index_Click">
+            <Button.Effect>
+                <DropShadowEffect/>
+            </Button.Effect>
+            <Button.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Grid>
+                        <Ellipse Stroke="Black"
+                            StrokeThickness="2">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <RadialGradientBrush.Transform>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleY="0.65" />
+                                        </TransformGroup>
+                                    </RadialGradientBrush.Transform>
+                                    <GradientStop Offset="0"
+                                        Color="White" />
+                                    <GradientStop Offset="1"
+                                        Color="Gray" />
+                                    <GradientStop Offset="1"
+                                        Color="DimGray" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <ContentPresenter HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                    </Grid>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+
+
 
     </Grid>
 </Window>
