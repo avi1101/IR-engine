@@ -18,6 +18,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace IR_engine
 {
@@ -122,14 +123,13 @@ namespace IR_engine
                 if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; IndexPath = ""; path = ""; }
                 else
                 {
-                    test.Content = "Working, please wait...";
-                    Thread.Sleep(100);
                     //m = new Model(path, stem.IsChecked.Value, IndexPath);
                     m.IndexPath1 = IndexPath;
                     m.Path = path;
                     m.toStem = stem.IsChecked.Value;
-                    m.index();
+                    new Thread(m.index).Start();
                     System.Windows.Forms.MessageBox.Show("Engine started, wait for popup");
+                    //Time();
                     var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
                     string a = null;
                     foreach (string x in arrayOfAllKeys)
@@ -138,11 +138,6 @@ namespace IR_engine
                         if (!a.Equals("") && !a.Equals(" "))
                             Language.Items.Add(a);
                     }
-                    //watch2.Stop();
-                    //time = time + watch2.ElapsedMilliseconds;
-                    //time = (time / 1000.0) / 60.0;
-                    //Console.WriteLine("total run time = " + time);
-                    //test.Content = time;
                 }
             }
             else
@@ -153,6 +148,23 @@ namespace IR_engine
 
             
         }
+
+        //private void Time()
+        //{
+        //    TimeSpan ts = new TimeSpan();
+        //    Stopwatch watch = new Stopwatch();
+
+        //    while (Model.isWorking)
+        //    {
+        //        ts = watch.Elapsed;
+        //        test.Content = String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
+        //        Form.Lab.Invoke((MethodInvoker)delegate {
+        //            // Running on the UI thread
+        //            form.Label.Text = newText;
+        //        });
+        //        Thread.Sleep(1000);
+        //    }
+        //}
 
         private void showDic_Click(object sender, RoutedEventArgs e)
         {

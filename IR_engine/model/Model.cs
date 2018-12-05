@@ -34,7 +34,7 @@ namespace IR_engine
         bool ToStem;
         string IndexPath;
         string outPath;
-        Dictionary<string, indexTerm> indexList;
+        public Dictionary<string, indexTerm> indexList;
 
         public bool toStem { get => ToStem; set => ToStem = value; }
         public string Path { get { return path; }
@@ -84,6 +84,7 @@ namespace IR_engine
                 MessageBox.Show("Invalid path");
                 return;
             }
+            isWorking = true;
             readfo = new ReadFile(path, toStem, cores);
             if (toStem) { if (!File.Exists(IndexPath1 + "\\EnableStem")) { Directory.CreateDirectory(IndexPath1 + "\\EnableStem"); } outPath = IndexPath1 + "\\EnableStem"; }
             else { if (!File.Exists(IndexPath1 + "\\DisableStem")) { Directory.CreateDirectory(IndexPath1 + "\\DisableStem"); } outPath = IndexPath1 + "\\DisableStem"; }
@@ -98,8 +99,8 @@ namespace IR_engine
             // bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-           // int tasks = cores;                                  //get the number of logical proccesors 
-            int tasks = 1;             //get the number of logical proccesors 
+            int tasks = cores;                                  //get the number of logical proccesors 
+            //int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)
             {                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
@@ -181,8 +182,8 @@ namespace IR_engine
                 t = null;
                 chunk++;
             }
-            //indexList = indexer.CreateIndex();
-            //Directory.Delete(Path + "\\Posting_and_indexes");
+            indexList = indexer.CreateIndex();
+            Directory.Delete(Path + "\\Posting_and_indexes");
 
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
@@ -295,11 +296,6 @@ namespace IR_engine
                     }
                 }
             }
-        }
-        public Dictionary<string, indexTerm> load_index(string path)
-        {
-            indexList= Indexer.Load_Index(path);
-            return indexList;
         }
         static bool hasNum(string word)
         {
