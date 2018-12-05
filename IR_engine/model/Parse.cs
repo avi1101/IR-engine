@@ -124,13 +124,13 @@ namespace IR_engine
             { "SEPTEMBER", "09" },{"october", "10" },{"October", "10" },{"OCTOBER", "10" },{"november", "11" },{"November", "11" },{"NOVEMBER", "11" },{"december", "12" },
             { "December", "12" },{"DECEMBER", "12" }, {"Jun", "06" }, {"JUN", "06" }, {"jun", "06" }, {"JAN", "01" }, {"jan", "01" }, {"Jan", "01" }, {"FEB", "02" },{"Feb", "02" },{"feb", "02" }, {"SEP", "09" }, {"Sep", "09" }, {"sep", "09" },
             { "OCT", "10" }, {"Oct", "10" }, {"oct", "10" }, {"NOV", "11" }, {"Nov", "11" }, {"nov", "11" }, {"DEC", "12" }, {"Dec", "12" }, {"dec", "12" }, {"AUG", "08" }, {"Aug", "08" }, {"aug","08" } };
-        public HashSet<char> Fixwordlist0 = new HashSet<char>() { '=','+','\'','.','!','?','\n', ',', '|','[',']','(',')','{',
-                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`', '\"'};
-        public HashSet<char> Fixwordlist = new HashSet<char>() { '=','+','\'','!','?','\n', '|','[',']','(',')','{',
-                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`', '\"'};
-        public HashSet<char> Fixwordlistlast = new HashSet<char>() {'=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
-                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`', '\"'};
-        public HashSet<char> unwanted = new HashSet<char>() {'=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
+        public HashSet<char> Fixwordlist0 = new HashSet<char>() { '\\','\"','=','+','\'','.','!','?','\n', ',', '|','[',']','(',')','{',
+                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
+        public HashSet<char> Fixwordlist = new HashSet<char>() { '\"','=','+','\'','!','?','\n', '|','[',']','(',')','{',
+                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
+        public HashSet<char> Fixwordlistlast = new HashSet<char>() {'\"','=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
+                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
+        public HashSet<char> unwanted = new HashSet<char>() {'\\','\"','=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`', '\"'};
         public HashSet<string> percent = new HashSet<string>() { "percent", "PERCENT", "Percent", "percentage", "Percentage", "PERCENTAGE" };
         public HashSet<string> distance = new HashSet<string>() {"meter","METER","Meter","CM","KM","cm","km","centimeter", "Centimeter", "CENTIMETER", "inch","Inch","INCH",
@@ -138,7 +138,10 @@ namespace IR_engine
                 "Decimeter","DECIMETER","meters","METERS","Meters","centimeters", "Centimeters", "CENTIMETERS", "inches","Inches","INCHES",
               "millimeters","Millimeters","mm","MM","MILLIMETERS","Miles","miles","MILES","FEETS","Feets","feets","decimeters",
                 "Decimeters","DECIMETERS",};
-
+        public HashSet<string> times = new HashSet<string>() {"second", "Second", "SECOND","sec","Sec","SEC", "millisecond", "Millisecond", "MILLISECOND",
+        "minute","minutes","Minute","Minutes","MINUTE","MINUTES","hour","hours","Hour","Hours","HOUR","HOURS","day","Day","days","Days","DAY","DAYS",
+        "month","Month","MONTH","monthes","Months","MONTHS","year","Year","YEAR","years","Years","YEARS","semeter","SEMETSER","Semetser",
+        "semeters","SEMETSERS","Semetsers","week","weeks","Week","Weeks","WEEK","WEEKS","Millennium","millennium","MILLENNIUM","Millenniums","millenniums","MILLENNIUMS"};
         public HashSet<string> stopwords = new HashSet<string>();
         Stemmer stem;
         private int words_length; // length of words string array.
@@ -251,6 +254,11 @@ namespace IR_engine
                         phrase = Setdistance(words, i, out j);
                         type = term.Type.distance;
                     }
+                    else if (Istime(words, i))
+                    {
+                        phrase = setTime(words, i, out j);
+                        type = term.Type.time;
+                    }
                     // checking for price existance
                     else if (isPrice(words, i))
                     {
@@ -287,6 +295,7 @@ namespace IR_engine
                          * is a normal number that has to be formatted by the numbers rule
                          * we'll call the rule method here
                          */
+
                         phrase = NumberSet(word, i, words, out j);
                         if (phrase.Equals("")) { continue; }
                         type = term.Type.number;
@@ -426,7 +435,34 @@ namespace IR_engine
                 return true;
             return false;
         }
-
+        private bool Istime(string[] words,int idx)
+        {
+            if (!IsNumber(words[idx])) return false;
+            if (idx + 1 < words_length)
+                if (times.Contains(words[idx + 1]))
+                    return true;
+            if (idx + 2 < words_length)
+                if (allAmounts.Contains(words[idx + 1]) && times.Contains(words[idx + 2])) return true;
+            return false;
+        }
+        public string setTime(string[]words,int idx,out int j)
+        {
+            string output = null;
+            if (idx + 1 < words_length)
+            {
+                if (times.Contains(words[idx + 1]))
+                {
+                    output = words[idx]+" "+ words[idx + 1];
+                    j = idx + 1;
+                    return output;
+                }
+            }
+                j = idx + 2;
+                output = words[idx] +" "+ words[idx + 1] +" "+ words[idx + 2];
+            
+            return output;
+            
+        }
         /// <summary>
         /// this method checks if a given word in the words list is a start of a price format
         /// </summary>
@@ -988,6 +1024,8 @@ namespace IR_engine
         {
             word=word.Replace("\'", "");
             word=word.Replace("--", "");
+            word = word.Replace("..", "");
+
 
             if (word == "" || word == "\n" || word[0] == '<') { return ""; }
             if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;

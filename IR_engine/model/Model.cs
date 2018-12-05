@@ -98,8 +98,8 @@ namespace IR_engine
             // bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-            int tasks = cores;                                  //get the number of logical proccesors 
-            //int tasks = 1;             //get the number of logical proccesors 
+           // int tasks = cores;                                  //get the number of logical proccesors 
+            int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)
             {                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
@@ -295,6 +295,11 @@ namespace IR_engine
                     }
                 }
             }
+        }
+        public Dictionary<string, indexTerm> load_index(string path)
+        {
+            indexList= Indexer.Load_Index(path);
+            return indexList;
         }
         static bool hasNum(string word)
         {

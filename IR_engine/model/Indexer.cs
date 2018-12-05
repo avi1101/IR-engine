@@ -82,7 +82,7 @@ namespace IR_engine
                 Console.WriteLine(i + " files sorted");
             }
         }
-
+        
         /// <summary>
         /// this method efficiently merge the newly created sorted files into posting files and
         /// creates the index in the desired index path
