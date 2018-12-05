@@ -127,7 +127,7 @@ namespace IR_engine
                     m.IndexPath1 = IndexPath;
                     m.Path = path;
                     m.toStem = stem.IsChecked.Value;
-                    new Thread(m.index).Start();
+                    m.index();
                     System.Windows.Forms.MessageBox.Show("Engine started, wait for popup");
                     //Time();
                     var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
@@ -185,8 +185,8 @@ namespace IR_engine
             //    dictionary = new DictionaryList(null);
             Dictionary<string, indexTerm> index = m.getDictionary();
             test.Content = index.Count;
-            //dictionary = new DictionaryList(index);
-            //dictionary.Show();
+            dictionary = new DictionaryList(index);
+            dictionary.Show();
         }
 
         private void BrowseIndex_Click(object sender, RoutedEventArgs e)
