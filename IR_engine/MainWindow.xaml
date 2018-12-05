@@ -95,6 +95,7 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
+        <Button x:Name="reset" Content="reset" HorizontalAlignment="Left" Height="59" Margin="727,174,0,0" VerticalAlignment="Top" Width="60" Click="reset_Click"/>
 
 
 

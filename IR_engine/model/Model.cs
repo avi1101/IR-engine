@@ -31,6 +31,7 @@ namespace IR_engine
         bool ToStem;
         public double elapsedMsdouble;
         string IndexPath;
+        string outPath;
 
         public Model(string path, bool Tostem, string ipath)
         {
@@ -39,7 +40,7 @@ namespace IR_engine
             this.path = path;
             this.IndexPath = ipath;
             this.ToStem = Tostem;
-            string outPath = null;
+            outPath = "";
             //parser = new Parse(path, ToStem);
             if (ToStem) { if (!File.Exists(IndexPath + "\\EnableStem")) { Directory.CreateDirectory(IndexPath + "\\EnableStem"); }outPath = IndexPath + "\\EnableStem"; }
             else {if (!File.Exists(IndexPath + "\\DisableStem")) { Directory.CreateDirectory(IndexPath + "\\DisableStem"); }outPath = IndexPath + "\\DisableStem";}
@@ -67,7 +68,7 @@ namespace IR_engine
             for(int i=0;i< locsList.Count; i++) { }
             var list = locations.Keys.ToList();
             list.Sort();
-            using (StreamWriter ct = new StreamWriter(path + "\\city_dictionary.txt"))
+            using (StreamWriter ct = new StreamWriter(outPath + "\\city_dictionary.txt"))
             {
                 foreach(var key in list)
                 {
@@ -272,6 +273,26 @@ namespace IR_engine
                 }
             }
             return sb.ToString();
+        }
+        public void Memorydump()
+        {
+            queueList.Clear();
+            locsList.Clear();
+            megaLocList.Clear();
+            foreach(term t in terms2.Values)
+            {
+                t.posting.Clear();
+            }
+            terms2.Clear();
+            docs.Clear();
+            cityIn.Clear();
+            foreach(Location l in locations.Values)
+            {
+                l.LocationsInDocs.Clear();
+            }
+            locations.Clear();
+            parser.stopwords.Clear();
+            readfo.allfiles.Clear();
         }
     }
 }

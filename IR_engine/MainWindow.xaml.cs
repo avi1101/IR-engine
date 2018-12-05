@@ -26,8 +26,8 @@ namespace IR_engine
     public partial class MainWindow : Window
     {
         //private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
-        string path = null;
-        string IndexPath = null;
+        string path = "";
+        string IndexPath = "";
         Model m;
         double time = 0;
         public MainWindow()
@@ -88,17 +88,17 @@ namespace IR_engine
         {
             var watch2 = System.Diagnostics.Stopwatch.StartNew();
             test.Content = "";
-            if (path == null)
+            if (path == "")
             {
                 path = pathText.Text;
             }
-            if (IndexPath == null)
+            if (IndexPath == "")
             {
                 IndexPath = IndexPathText.Text;
             }
             if (!path.Equals(""))
             {
-                if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; IndexPath = null; path = null; }
+                if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; IndexPath = ""; path = ""; }
                 else
                 {
                     m = new Model(path, stem.IsChecked.Value, IndexPath);
@@ -121,7 +121,7 @@ namespace IR_engine
             else
             {
                 test.Content = "path not provided.";
-                IndexPath = null; path = null;
+                IndexPath = ""; path = "";
             }
 
             
@@ -155,12 +155,29 @@ namespace IR_engine
             string ipt=null;
             if (stem.IsChecked.Value) {ipt = IndexPath + "\\EnableStem";}
             else {ipt = IndexPath + "\\DisableStem";}
-            if (!Directory.Exists(ipt) || !File.Exists(ipt+"index.txt"))
+            if (!Directory.Exists(ipt) || !File.Exists(ipt+"\\index.txt"))
                 test.Content = "No Index in path";
             else
             {
                //TODO: STUFF
             }
+        }
+
+        private void reset_Click(object sender, RoutedEventArgs e)
+        {
+            if(Directory.Exists(IndexPath + "\\DisableStem"))
+            {
+                Directory.Delete(IndexPath + "\\DisableStem", true);
+            }
+            if (Directory.Exists(IndexPath + "\\EnableStem"))
+            {
+                Directory.Delete(IndexPath + "\\EnableStem", true);
+            }
+            if(Directory.Exists(path + "\\Posting_and_indexes"))
+            {
+                Directory.Delete(path + "\\Posting_and_indexes", true);
+            }
+            m.Memorydump();
         }
     }
 }
