@@ -17,7 +17,7 @@ namespace IR_engine
         public static List<Dictionary<string, term>> queueList = new List<Dictionary<string, term>>();        //list of Queues 
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
         public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
-        public static int cores = Environment.ProcessorCount;
+        public static int cores = Environment.ProcessorCount/2;
         public static int fileCount = 0;
         public static ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
@@ -45,14 +45,13 @@ namespace IR_engine
         public void index()
         {
             // step one, the parsing
-            var watch = System.Diagnostics.Stopwatch.StartNew();
             int filesNum = readfo.returnSize();
             bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
 
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
             int tasks = cores;                                  //get the number of logical proccesors 
-                                                                // int tasks = 1;             //get the number of logical proccesors 
+            //int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
             int k = 0, chunk = 0, id = 0;
@@ -80,7 +79,6 @@ namespace IR_engine
                 k++;
                 if (k % tasks == 0)
                 {
-                    Console.WriteLine("awaiting {0} tasks to finish", tasks);
                     foreach (Task ts in t)
                         ts.Wait();
                     if (k % (tasks * 5) == 0)
@@ -97,13 +95,11 @@ namespace IR_engine
                         terms2.Clear();
                         chunk++;
                     }
-                    Console.WriteLine("{0} tasks done, total done: {1}", tasks, id);
                     t = new List<Task>();
                 }
             }
 
             {
-                Console.WriteLine("awaiting {0} tasks to finish", tasks);
                 foreach (Task ts in t)
                     ts.Wait();
                 manageResources();
@@ -119,9 +115,7 @@ namespace IR_engine
                 t = null;
                 chunk++;
             }
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            Console.WriteLine("Time: " + elapsedMs);
+
         }
 
         public void manageResources()

@@ -9,10 +9,10 @@ namespace IR_engine
 {
      public class term
      {
-        public enum Type { number, date, expression, Quotation, distance, percentage, price, range, word };
+        public enum Type { number, date, expression, Quotation, distance, percentage, price, word, range };
 
         string phrase; // the phrase itself
-        int idf; // the number of docs this term is in
+        int idf = 0; // the number of docs this term is in
         public int icf = 0;
         Type type;
 
@@ -76,7 +76,8 @@ namespace IR_engine
 
         public override string ToString()
         {
-            return Phrase + '\t' + isUpperInCurpus + '\t' + type + '\t' + printPosting();
+            idf = posting.Count;
+            return Phrase + '\t' + isUpperInCurpus + '\t' + type + '\t' + icf + '\t' + idf + '\t' + printPosting();
         }
 
         public void AddToPosting(ConcurrentDictionary<string, short> dictionary)

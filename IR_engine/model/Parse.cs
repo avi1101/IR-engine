@@ -130,6 +130,8 @@ namespace IR_engine
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
         public HashSet<char> Fixwordlistlast = new HashSet<char>() {'=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
+        public HashSet<char> unwanted = new HashSet<char>() {'=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
+                        '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`', '\"'};
         public HashSet<string> percent = new HashSet<string>() { "percent", "PERCENT", "Percent", "percentage", "Percentage", "PERCENTAGE" };
         public HashSet<string> distance = new HashSet<string>() {"meter","METER","Meter","CM","KM","cm","km","centimeter", "Centimeter", "CENTIMETER", "inch","Inch","INCH",
               "millimeter","Millimeter","mm","MM","MILLIMETER","Mile","mile","MILE","FEET","Feet","feet","yards","yard","Yard","YARD","Yards","YARDS","decimeter",
@@ -220,11 +222,11 @@ namespace IR_engine
                      * in this case, we found a range\expression, we'll deal with this here by splitting it and save the terms
                      */
                     if (word.Length <= 1) continue;
-                    phrase = SetExp(i, words, out j, queue);
+                    phrase = SetExp(i, words, out j, queue, out type);
                     words_length = words.Length;
                     i = j;
                     if (phrase.Equals("")) continue;
-                    type = term.Type.expression;
+                    //type = term.Type.expression;
                 }
                 else if (word[0] == '\"')
                 {
@@ -776,7 +778,7 @@ namespace IR_engine
 
             }
         }
-        string SetExp(int idx, string[] words, out int j, int queue)
+        string SetExp(int idx, string[] words, out int j, int queue, out term.Type type)
         {
             string word = words[idx];
             string[] splittedExpression = word.Split('-');
@@ -786,6 +788,9 @@ namespace IR_engine
             //if its a range then we need to seperate it to both ends and format it with correct rule
             if (splittedExpression.Length == 2 && IsNumber(splittedExpression[0]) && IsNumber(splittedExpression[1]))
             {                                                                                   //for example 6-7 (expression)
+                if (splittedExpression[0].Length < 1 || splittedExpression[1].Length < 1) { j = idx + part; type = term.Type.number; return ""; };
+                if(unwanted.Contains(splittedExpression[0][0]) || unwanted.Contains(splittedExpression[1][0])) { j = idx + part; type = term.Type.number; return ""; };
+
                 term right, left;
                 if (idx + 1 < words_length && months.Contains(words[idx + 1]))
                 {
@@ -795,6 +800,7 @@ namespace IR_engine
                     right.IsUpperInCurpus = false;
                     left.Type1 = term.Type.date;
                     left.Type1 = term.Type.date;
+                    type = term.Type.expression;
                 }
                 else if (isPercentage(words, idx))
                 {
@@ -804,6 +810,7 @@ namespace IR_engine
                     right.IsUpperInCurpus = false;
                     left.Type1 = term.Type.percentage;
                     right.Type1 = term.Type.percentage;
+                    type = term.Type.expression;
                 }
                 else if (isPrice(words, idx))
                 {
@@ -815,15 +822,19 @@ namespace IR_engine
                     right.IsUpperInCurpus = false;
                     left.Type1 = term.Type.price;
                     right.Type1 = term.Type.price;
+                    type = term.Type.expression;
                 }
                 else
                 {
                     left = new term(Fixword(splittedExpression[0]));                                     //normal range
                     right = new term(Fixword(splittedExpression[1]));
+                    right.Phrase = right.Phrase.Replace(",", "").Replace("\"", "").Replace(",", "");
+                    left.Phrase = left.Phrase.Replace(",", "").Replace("\"", "").Replace(",", "");
                     left.IsUpperInCurpus = left.Phrase[0] >= 'A' && left.Phrase[0] <= 'Z' ? true : false;
                     right.IsUpperInCurpus = right.Phrase[0] >= 'A' && right.Phrase[0] <= 'Z' ? true : false;
-                    left.Type1 = term.Type.range;
-                    right.Type1 = term.Type.range;
+                    left.Type1 = term.Type.number;
+                    right.Type1 = term.Type.number;
+                    type = term.Type.range;
                 }
                 if(!stopwords.Contains(left.Phrase))
                     AddTerm(queue, left);
@@ -832,6 +843,7 @@ namespace IR_engine
                 j = part + idx;
                 return Fixword(word.Replace("\"",""));                                                                //returns the whole expression
             }
+            StringBuilder sb = new StringBuilder();
             List<string> newWords = new List<string>();
             for (part = 0; part < splittedExpression.Length; part++)                    //when we meet an expression we need to format it is an expression
             {
@@ -845,6 +857,9 @@ namespace IR_engine
                             || (exp[ch] <= 'Z' && exp[ch] >= 'A')) stringbuilder.Append(exp[ch]);
                     exp = stringbuilder.ToString();
                 }
+                sb.Append(exp);
+                if (part + 1 < splittedExpression.Length)
+                    sb.Append("-");
                 if (toStem)                                                             //stem if needed
                     exp = stem.stemTerm(exp);
                 //term t = new term(exp);
@@ -853,7 +868,9 @@ namespace IR_engine
             }
             parseText(newWords.ToArray(), queue);
             j = 1 + idx;                                                                   //returns the index
-            return word;
+            type = term.Type.expression;
+            if (sb.ToString().Length < 3) return "";
+            return sb.ToString();
         }
         void AddTerm(int queue, term t)
         {
@@ -864,14 +881,15 @@ namespace IR_engine
             //    return value;
             //});
             string s = t.Phrase;
-            if (Model.queueList[queue].ContainsKey(t.Phrase))
+            term.Type type = t.Type1;
+            if (Model.queueList[queue].ContainsKey(s+ type.ToString()))
             {
                 /*
                  * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
                  * the dictionary is implemented as a hash table with chaining
                  * so it should give us the best resaults
                  */
-                t = Model.queueList[queue][t.Phrase]; //reference to the original term
+                t = Model.queueList[queue][s + t.Type1]; //reference to the original term
                 if (!(s[0] <= 'Z' && s[0] >= 'A')) t.IsUpperInCurpus = false;
                 t.AddToPosting(DocName, 1);
             }
@@ -880,10 +898,11 @@ namespace IR_engine
                 /*
                  * this is a new tern that needs to be created
                  */
-                t = new term(t.Phrase);
+                t = new term(s);
+                t.Type1 = type;
                 if (!(s[0] <= 'Z' && s[0] >= 'A')) t.IsUpperInCurpus = false;
                 t.AddToPosting(DocName, 1);
-                Model.queueList[queue].Add(t.Phrase, t);
+                Model.queueList[queue].Add(s +type.ToString(), t);
             }
         }
         string SetQuotationExp(int idx, string[] words, out int j, int queue)
@@ -964,7 +983,6 @@ namespace IR_engine
             }
             return "";
         }
-
         /// <summary>
         /// this method gets a string that represents a number and format it into double representation 
         /// of the same string

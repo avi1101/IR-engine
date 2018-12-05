@@ -26,12 +26,32 @@ namespace IR_engine
         /// </summary>
         /// <param name="path"> the path to the unproccessed index files the Parser creates</param>
         /// <returns> a dictionary of terms </returns>
-        public Dictionary<string, string> CreateIndex(string path)
+        public Dictionary<string, List<string>> CreateIndex()
         {
-            
-            return null;
+            SortPostings();
+            Dictionary<string, List<string>> index = new Dictionary<string, List<string>>();
+            List<string> termsList = new List<string>();
+            termsList = File.ReadAllText(ipath + "\\index.txt").Split('\n').ToList();
+            for(int i = 0; i < termsList.Count; i++)
+            {
+                string[] entry = termsList[i].Split('\t');
+                if(index.ContainsKey(entry[0]))
+                {
+                    index[entry[0]].Add(entry[1]);
+                }
+                else
+                {
+                    index.Add(entry[0], new List<string>());
+                    index[entry[0]].Add(entry[1]);
+                }
+            }
+            return index;
         }
 
+        /// <summary>
+        /// this method initiates the indexing process, manages the sorting algorithm and tasks
+        /// and the merge
+        /// </summary>
         private void SortPostings()
         {
             string[] files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
@@ -45,11 +65,20 @@ namespace IR_engine
                 tsk.Wait();
             for (int i = 0; i < files.Length; i++)
                 File.Delete(files[i]);
+            if (!Directory.Exists(ipath))
+                Directory.CreateDirectory(ipath);
+            merge(files.Length, files);
         }
 
+        /// <summary>
+        /// this method sorts the temporal files by an ascending lexicographic order of the phrases
+        /// </summary>
+        /// <param name="offset">the serial number of the task</param>
+        /// <param name="files">the files array</param>
+        /// <param name="pathToPosting">the path to the temportal files</param>
         private void sort(int offset, string[] files, string pathToPosting)
         {
-            for (int i = offset; i < files.Length; i += (offset+1))
+            for (int i = offset; i < files.Length; i += (Model.cores))
             {
                 List<string> fileContent = File.ReadAllText(files[i]).Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).ToList<string>();
                 fileContent = fileContent.OrderBy(s => s.Split(new string[] { "\t" }, StringSplitOptions.None)[0]).ToList();
@@ -62,47 +91,139 @@ namespace IR_engine
             }
         }
 
+        /// <summary>
+        /// this method efficiently merge the newly created sorted files into posting files and
+        /// creates the index in the desired index path
+        /// </summary>
+        /// <param name="fileCount">number of files</param>
+        /// <param name="files">files array</param>
         private void merge(int fileCount, string[] files)
         {
             bool MoreToRead = false;
             string[] firstLines = new string[fileCount];
+            string[] sortedFirstLines;
             StreamReader[] sr = new StreamReader[fileCount];
-            for(int i = 0; i < fileCount; i++)
+            Dictionary<string, StreamWriter> writers = new Dictionary<string, StreamWriter>();
+            for (int i = 0; i < fileCount; i++)
             {
-                sr[i] = new StreamReader(path + "\\index"+i+"sorted.txt");
+                sr[i] = new StreamReader(path + "\\index" + i + "sorted.txt");
             }
+            for (char c = 'A'; c <= 'Z'; c++)
+            {
+                writers.Add(c + "", new StreamWriter(ipath + "\\" + c + ".txt"));
+            }
+            foreach (term.Type t in Enum.GetValues(typeof(term.Type)))
+            {
+                if (t == term.Type.word) continue;
+                writers.Add(t.ToString(), new StreamWriter(ipath + "\\" + t.ToString() + ".txt"));
+            }
+            writers.Add("other", new StreamWriter(ipath + "\\other.txt"));
+            writers.Add("index", new StreamWriter(ipath + "\\index.txt"));
             for (int i = 0; i < fileCount; i++)
             {
                 firstLines[i] = sr[i].ReadLine();
+                if (firstLines[i] == null)
+                    firstLines[i] = "\0";
+                if (firstLines[i] == "")
+                    i--;
                 if (firstLines[i] != null)
                     MoreToRead = true;
             }
             int lastIndex = 0;
+            StringBuilder minLine = new StringBuilder();
+            StringBuilder minPhrase = new StringBuilder();
             while (lastIndex < firstLines.Length)
             {
-                MoreToRead = false;
-                string min = "";
-                if(firstLines[lastIndex] == null)
+                minPhrase.Clear();
+                minLine.Clear();
+                int i = lastIndex;
+                sortedFirstLines = firstLines.OrderBy(s => s.Split(new string[] { "\t" }, StringSplitOptions.None)[0]).ToArray();
+                for (i = 0; i < sortedFirstLines.Length; i++)
                 {
-                    int i = lastIndex;
-                    for (; i < firstLines.Length && firstLines[i] != null; i++);
-                    lastIndex = i;
+                    if (sortedFirstLines[i].Equals("\0")) continue;
+                    else break;
                 }
-                min = GetPhrase(firstLines[lastIndex]);
-                string phrase;
-                for (int i = lastIndex; i < fileCount; i++)
+                if (i >= sortedFirstLines.Length) break;
+                minPhrase.Append(GetPhrase(sortedFirstLines[i]));
+                bool Cap = true;
+                term.Type type = GetType(sortedFirstLines[i]);
+                double icf = 0;
+                double idf = 0;
+                for (i = 0; i < sortedFirstLines.Length; i++)
                 {
-                    if (firstLines[i] == null) continue;
-                    phrase = GetPhrase(firstLines[i]);
-                    if (string.Compare(min, phrase, true) > 0)
-                        min = phrase;
+                    if (string.Compare(minPhrase.ToString(), GetPhrase(sortedFirstLines[i]), true) == 0)
+                    {
+                        if (type != GetType(sortedFirstLines[i])) continue;
+                        string[] splitted = sortedFirstLines[i].Split('\t');
+                        Cap &= splitted[1].Equals("True") ? true : false;
+                        minLine.Append(splitted[5]);
+                        icf += double.Parse(splitted[3]);
+                        idf += double.Parse(splitted[4]);
+                    }
+                    else break;
                 }
+                minLine.Append("\t");
+                minLine.Append(icf);
+                minLine.Append("\t");
+                minLine.Append(idf);
+                string termPhrase = "";
+                if (Cap) termPhrase = minPhrase.ToString().ToUpper();
+                else termPhrase = minPhrase.ToString().ToLower();
+                if (type == term.Type.word)
+                {
+                    if (char.IsLetter(minPhrase[0]))
+                    {
+                        writers[Char.ToUpper(minPhrase[0]).ToString()].WriteLine(termPhrase + "\t" + minLine.ToString());
+                    }
+                    else
+                    {
+                        writers["other"].WriteLine(termPhrase + "\t" + minLine.ToString());
+                    }
+                }
+                else
+                {
+                    writers[type.ToString()].WriteLine(termPhrase + "\t" + minLine.ToString());
+                }
+                for (i = 0; i < fileCount; i++)
+                {
+                    if (string.Compare(minPhrase.ToString(), GetPhrase(firstLines[i]), true) == 0)
+                    {
+                        if (type != GetType(firstLines[i])) continue;
+                        if (firstLines[i].Equals("\0")) continue;
+                        firstLines[i] = sr[i].ReadLine();
+                        if (firstLines[i] == null)
+                            firstLines[i] = "\0";
+                        while (firstLines[i] == "")
+                        {
+                            firstLines[i] = sr[i].ReadLine();
+                            if (firstLines[i] == null)
+                                firstLines[i] = "\0";
+                        }
+                    }
+                }
+                writers["index"].WriteLine(termPhrase + "\t" + type);
+            }
+            for (int i = 0; i < fileCount; i++)
+            {
+                sr[i].Close();
+                File.Delete(path + "\\index" + i + "sorted.txt");
+            }
+            foreach (KeyValuePair<string, StreamWriter> entry in writers)
+            {
+                entry.Value.Close();
             }
         }
 
         private string GetPhrase(string line)
         {
             return line.Split('\t')[0];
+        }
+
+        private term.Type GetType(string line)
+        {
+            string type = line.Split('\t')[2];
+            term.Type e = (term.Type)Enum.Parse(typeof(term.Type), type, true);
+            return e;
         }
     }
 }

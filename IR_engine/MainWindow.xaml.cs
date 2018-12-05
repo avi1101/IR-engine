@@ -87,7 +87,6 @@ namespace IR_engine
             watch2.Stop();
             time = time + watch2.ElapsedMilliseconds;
             time = (time / 1000.0) / 60.0;
-            Console.WriteLine("total run time = " + time);
             test.Content = time;
         }
 
