@@ -90,7 +90,7 @@ namespace IR_engine
             else { if (!File.Exists(IndexPath1 + "\\DisableStem")) { Directory.CreateDirectory(IndexPath1 + "\\DisableStem"); } outPath = IndexPath1 + "\\DisableStem"; }
             indexer = new Indexer(outPath, path + "\\Posting_and_indexes");
 
-            if (!Directory.Exists(path + "\\Posting_and_indexes\\cityIndex")) { Directory.CreateDirectory(path + "\\Posting_and_indexes\\cityIndex"); }
+            if (!Directory.Exists(path + "\\cityIndex")) { Directory.CreateDirectory(path + "\\cityIndex"); }
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
             isWorking = true;
@@ -144,7 +144,7 @@ namespace IR_engine
                                 sw.WriteLine(entry.Key.ToString());
                             }
                         }
-                        using (StreamWriter sw2 = new StreamWriter(path + "\\Posting_and_indexes\\cityIndex\\city"+ chunk + ".txt"))
+                        using (StreamWriter sw2 = new StreamWriter(path + "\\cityIndex\\city"+ chunk + ".txt"))
                         {
                            // Console.WriteLine("megaLocList "+ megaLocList.Count);
                             foreach (KeyValuePair<Location, Location> loc in megaLocList)
@@ -169,7 +169,7 @@ namespace IR_engine
                         sw.WriteLine(entry.Key.ToString());
                     }
                 }
-                using( StreamWriter sw2 = new StreamWriter(path+ "\\Posting_and_indexes\\cityIndex\\city" + chunk + ".txt"))
+                using( StreamWriter sw2 = new StreamWriter(path+ "\\cityIndex\\city" + chunk + ".txt"))
                 {
                     foreach(KeyValuePair<Location,Location> loc in megaLocList)
                     {
@@ -231,7 +231,7 @@ namespace IR_engine
                 }
                 locsList[i].Clear();
             }
-            using (StreamWriter sw = new StreamWriter(path + "\\Posting_and_indexes\\documents.txt", true))
+            using (StreamWriter sw = new StreamWriter(path + "\\documents.txt", true))
             {
                 foreach (KeyValuePair<string, document> entry in docs)
                 {
