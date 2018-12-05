@@ -66,10 +66,10 @@ namespace IR_engine
                     {
                         if (entry.Value[i] <= entry.Value[i - 1]) { continue; }
                     }
-                    sb.Append(entry.Value[i] + ".\t");
+                    sb.Append(entry.Value[i] + " ");
                 }
             }
-            return sb.ToString();
+            return sb.ToString()+'\t';
         }
         public override bool Equals(object obj)
         {

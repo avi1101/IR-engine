@@ -124,13 +124,13 @@ namespace IR_engine
             { "SEPTEMBER", "09" },{"october", "10" },{"October", "10" },{"OCTOBER", "10" },{"november", "11" },{"November", "11" },{"NOVEMBER", "11" },{"december", "12" },
             { "December", "12" },{"DECEMBER", "12" }, {"Jun", "06" }, {"JUN", "06" }, {"jun", "06" }, {"JAN", "01" }, {"jan", "01" }, {"Jan", "01" }, {"FEB", "02" },{"Feb", "02" },{"feb", "02" }, {"SEP", "09" }, {"Sep", "09" }, {"sep", "09" },
             { "OCT", "10" }, {"Oct", "10" }, {"oct", "10" }, {"NOV", "11" }, {"Nov", "11" }, {"nov", "11" }, {"DEC", "12" }, {"Dec", "12" }, {"dec", "12" }, {"AUG", "08" }, {"Aug", "08" }, {"aug","08" } };
-        public HashSet<char> Fixwordlist0 = new HashSet<char>() { '\"','=','+','\'','.','!','?','\n', ',', '|','[',']','(',')','{',
+        public HashSet<char> Fixwordlist0 = new HashSet<char>() { '\\','\"','=','+','\'','.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
         public HashSet<char> Fixwordlist = new HashSet<char>() { '\"','=','+','\'','!','?','\n', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
         public HashSet<char> Fixwordlistlast = new HashSet<char>() {'\"','=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`'};
-        public HashSet<char> unwanted = new HashSet<char>() {'\"','=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
+        public HashSet<char> unwanted = new HashSet<char>() {'\\','\"','=','+','\'','-', '.','!','?','\n', ',', '|','[',']','(',')','{',
                         '}','&',':','<','>',';', ':','@','&','*','^','#' ,';',' ','`', '\"'};
         public HashSet<string> percent = new HashSet<string>() { "percent", "PERCENT", "Percent", "percentage", "Percentage", "PERCENTAGE" };
         public HashSet<string> distance = new HashSet<string>() {"meter","METER","Meter","CM","KM","cm","km","centimeter", "Centimeter", "CENTIMETER", "inch","Inch","INCH",
@@ -1018,6 +1018,8 @@ namespace IR_engine
         {
             word=word.Replace("\'", "");
             word=word.Replace("--", "");
+            word = word.Replace("..", "");
+
 
             if (word == "" || word == "\n" || word[0] == '<') { return ""; }
             if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
