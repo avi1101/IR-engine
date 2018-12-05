@@ -98,7 +98,7 @@ namespace IR_engine
             }
             if (!path.Equals(""))
             {
-                if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; }
+                if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; IndexPath = null; path = null; }
                 else
                 {
                     m = new Model(path, stem.IsChecked.Value, IndexPath);
@@ -119,7 +119,10 @@ namespace IR_engine
                 }
             }
             else
+            {
                 test.Content = "path not provided.";
+                IndexPath = null; path = null;
+            }
 
             
         }
