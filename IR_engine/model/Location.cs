@@ -60,9 +60,13 @@ namespace IR_engine
             foreach (KeyValuePair<string, List<int>> entry in locationsInDocs)
             {
                 sb.Append(entry.Key+'\t');
-                foreach(int num in entry.Value)
+                for (int i = 0; i < entry.Value.Count; i++)
                 {
-                    sb.Append(num + ".\t");
+                    if (i > 0)
+                    {
+                        if (entry.Value[i] <= entry.Value[i - 1]) { continue; }
+                    }
+                    sb.Append(entry.Value[i] + ".\t");
                 }
             }
             return sb.ToString();

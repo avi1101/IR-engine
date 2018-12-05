@@ -102,7 +102,7 @@ namespace IR_engine
                         }
                         using (StreamWriter sw2 = new StreamWriter(path + "\\Posting_and_indexes\\cityIndex\\city"+ chunk + ".txt"))
                         {
-                            Console.WriteLine("megaLocList "+ megaLocList.Count);
+                           // Console.WriteLine("megaLocList "+ megaLocList.Count);
                             foreach (KeyValuePair<Location, Location> loc in megaLocList)
                             {
                                 sw2.WriteLine(loc.Key.ToString());
@@ -129,7 +129,7 @@ namespace IR_engine
                 {
                     foreach(KeyValuePair<Location,Location> loc in megaLocList)
                     {
-                        Console.WriteLine("megaLocList"+ megaLocList.Count);
+                     //   Console.WriteLine("megaLocList"+ megaLocList.Count);
                         sw2.WriteLine(loc.Key.ToString());
                     }
                 }
