@@ -7,6 +7,8 @@ using System.IO;
 using System.ComponentModel;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace IR_engine
 {
@@ -22,33 +24,74 @@ namespace IR_engine
         public static ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
         //end concurrent variables
+        public static bool isWorking = false;
         Parse parser;
         Indexer indexer;
         ReadFile readfo;
         string path;
         bool ToStem;
-        public double elapsedMsdouble;
         string IndexPath;
+        string outPath;
+        Dictionary<string, indexTerm> indexList;
+
+        public bool toStem { get => ToStem; set => ToStem = value; }
+        public string Path { get { return path; }
+            set
+            {
+                path = value;
+                if (!IndexPath1.Equals(""))
+                    indexer = new Indexer(IndexPath1, path);
+            }
+        }
+        public string IndexPath1 { get => IndexPath;
+            set
+            {
+                IndexPath = value;
+                if (!Path.Equals(""))
+                    indexer = new Indexer(IndexPath, Path);
+            }
+        }
 
         public Model(string path, bool Tostem, string ipath)
         {
-
             readfo = new ReadFile(path, Tostem, cores);
             this.path = path;
             this.IndexPath = ipath;
-            this.ToStem = Tostem;
+            this.toStem = Tostem;
             string outPath = null;
             //parser = new Parse(path, ToStem);
-            if (ToStem) { if (!File.Exists(IndexPath + "\\EnableStem")) { Directory.CreateDirectory(IndexPath + "\\EnableStem"); }outPath = IndexPath + "\\EnableStem"; }
-            else {if (!File.Exists(IndexPath + "\\DisableStem")) { Directory.CreateDirectory(IndexPath + "\\DisableStem"); }outPath = IndexPath + "\\DisableStem";}
+            if (toStem) { if (!File.Exists(IndexPath1 + "\\EnableStem")) { Directory.CreateDirectory(IndexPath1 + "\\EnableStem"); }outPath = IndexPath1 + "\\EnableStem"; }
+            else {if (!File.Exists(IndexPath1 + "\\DisableStem")) { Directory.CreateDirectory(IndexPath1 + "\\DisableStem"); }outPath = IndexPath1 + "\\DisableStem";}
             indexer = new Indexer(outPath, path+ "\\Posting_and_indexes");
+            indexList = new Dictionary<string, indexTerm>();
         }
+
+        public Model()
+        {
+            indexList = new Dictionary<string, indexTerm>();
+            toStem = false;
+            indexer = null;
+            IndexPath = "";
+            path = "";
+        }
+
         public void index()
         {
+            if(Path.Equals("") || IndexPath1.Equals(""))
+            {
+                MessageBox.Show("Invalid path");
+                return;
+            }
+            readfo = new ReadFile(path, toStem, cores);
+            if (toStem) { if (!File.Exists(IndexPath1 + "\\EnableStem")) { Directory.CreateDirectory(IndexPath1 + "\\EnableStem"); } outPath = IndexPath1 + "\\EnableStem"; }
+            else { if (!File.Exists(IndexPath1 + "\\DisableStem")) { Directory.CreateDirectory(IndexPath1 + "\\DisableStem"); } outPath = IndexPath1 + "\\DisableStem"; }
+            indexer = new Indexer(outPath, path + "\\Posting_and_indexes");
+
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            isWorking = true;
             // step one, the parsing
             int filesNum = readfo.returnSize();
             // bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
-
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
             int tasks = cores;                                  //get the number of logical proccesors 
@@ -60,7 +103,7 @@ namespace IR_engine
             createCityDic(files);
             var list = locations.Keys.ToList();
             list.Sort();
-            using (StreamWriter ct = new StreamWriter(path + "\\city_dictionary.txt"))
+            using (StreamWriter ct = new StreamWriter(Path + "\\city_dictionary.txt"))
             {
                 foreach(var key in list)
                 {
@@ -84,9 +127,8 @@ namespace IR_engine
                         ts.Wait();
                     if (k % (tasks * 5) == 0)
                     {
-                        Console.WriteLine("Memory cleanup");
                         manageResources();
-                        using (StreamWriter sw = new StreamWriter(path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
+                        using (StreamWriter sw = new StreamWriter(Path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
                         {
                             foreach (KeyValuePair<term, term> entry in terms2)
                             {
@@ -104,7 +146,7 @@ namespace IR_engine
                 foreach (Task ts in t)
                     ts.Wait();
                 manageResources();
-                using (StreamWriter sw = new StreamWriter(path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
+                using (StreamWriter sw = new StreamWriter(Path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
                 {
                     foreach (KeyValuePair<term, term> entry in terms2)
                     {
@@ -116,7 +158,13 @@ namespace IR_engine
                 t = null;
                 chunk++;
             }
+            indexList = indexer.CreateIndex();
+            Directory.Delete(Path + "\\Posting_and_indexes");
 
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            MessageBox.Show("Done indexing the curpus!\nPorking time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+" min", "DONE!");
+            isWorking = false;
         }
 
         public void manageResources()
@@ -141,7 +189,7 @@ namespace IR_engine
                 }
                 queueList[i].Clear();
             }
-            using (StreamWriter sw = new StreamWriter(path + "\\Posting_and_indexes\\documents.txt", true))
+            using (StreamWriter sw = new StreamWriter(Path + "\\documents.txt", true))
             {
                 foreach (KeyValuePair<string, document> entry in docs)
                 {
@@ -151,15 +199,10 @@ namespace IR_engine
             docs.Clear();
         }
 
-        public Dictionary<string, term> getDictionary()
+        public Dictionary<string, indexTerm> getDictionary()
         {
-            return null;
+            return indexList;
         }
-
-        //public bool hasIndex()
-        //{
-        //    return Directory.Exists(path + "\\Posting_and_indexes");
-        //}
 
         public static void createCityDic( List<string> files)
         {
@@ -232,6 +275,18 @@ namespace IR_engine
                 }
             }
             return sb.ToString();
+        }
+        public Dictionary<string, indexTerm> load_index()
+        {
+            if (indexer == null)
+                return null;
+            indexList = indexer.LoadIndex();
+            return indexList;
+        }
+        public Dictionary<string, indexTerm> load_index(string indexPath)
+        {
+            indexList = Indexer.Load_Index(indexPath);
+            return indexList;
         }
     }
 }

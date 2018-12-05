@@ -120,6 +120,7 @@
       <DependentUpon>DictionaryList.xaml</DependentUpon>
     </Compile>
     <Compile Include="model\Indexer.cs" />
+    <Compile Include="model\indexTerm.cs" />
     <Compile Include="model\Location.cs" />
     <Compile Include="model\Model.cs" />
     <Compile Include="model\Parse.cs" />

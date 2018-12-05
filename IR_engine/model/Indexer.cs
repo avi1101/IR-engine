@@ -11,13 +11,11 @@ namespace IR_engine
     {
         string ipath;
         string path;
-        Dictionary<string, Tuple<short, int>> index;    //term-<file,line in file>
 
         public Indexer(string ipath, string path)
         {
             this.ipath = ipath;             //path to the desired directory where the index will be stored
             this.path = path;               //path to the unsorted posting files (as Parser outputted)
-            this.index = new Dictionary<string, Tuple<short, int>>();
         }
 
         /// <summary>
@@ -26,26 +24,20 @@ namespace IR_engine
         /// </summary>
         /// <param name="path"> the path to the unproccessed index files the Parser creates</param>
         /// <returns> a dictionary of terms </returns>
-        public Dictionary<string, List<string>> CreateIndex()
+        public Dictionary<string, indexTerm> CreateIndex()
         {
             SortPostings();
-            Dictionary<string, List<string>> index = new Dictionary<string, List<string>>();
-            List<string> termsList = new List<string>();
-            termsList = File.ReadAllText(ipath + "\\index.txt").Split('\n').ToList();
-            for(int i = 0; i < termsList.Count; i++)
-            {
-                string[] entry = termsList[i].Split('\t');
-                if(index.ContainsKey(entry[0]))
-                {
-                    index[entry[0]].Add(entry[1]);
-                }
-                else
-                {
-                    index.Add(entry[0], new List<string>());
-                    index[entry[0]].Add(entry[1]);
-                }
-            }
-            return index;
+            return LoadIndex();
+        }
+
+        public Dictionary<string, indexTerm> LoadIndex()
+        {
+            return LoadIndex(ipath);
+        }
+
+        public Dictionary<string, indexTerm> LoadIndex(string IndexPath)
+        {
+            return Load_Index(IndexPath);
         }
 
         /// <summary>
@@ -147,25 +139,17 @@ namespace IR_engine
                 minPhrase.Append(GetPhrase(sortedFirstLines[i]));
                 bool Cap = true;
                 term.Type type = GetType(sortedFirstLines[i]);
-                double icf = 0;
-                double idf = 0;
                 for (i = 0; i < sortedFirstLines.Length; i++)
                 {
                     if (string.Compare(minPhrase.ToString(), GetPhrase(sortedFirstLines[i]), true) == 0)
                     {
-                        if (type != GetType(sortedFirstLines[i])) continue;
                         string[] splitted = sortedFirstLines[i].Split('\t');
+                        if (type != (term.Type)Enum.Parse(typeof(term.Type), splitted[2], true)) continue;
                         Cap &= splitted[1].Equals("True") ? true : false;
-                        minLine.Append(splitted[5]);
-                        icf += double.Parse(splitted[3]);
-                        idf += double.Parse(splitted[4]);
+                        minLine.Append(splitted[3]);
                     }
                     else break;
                 }
-                minLine.Append("\t");
-                minLine.Append(icf);
-                minLine.Append("\t");
-                minLine.Append(idf);
                 string termPhrase = "";
                 if (Cap) termPhrase = minPhrase.ToString().ToUpper();
                 else termPhrase = minPhrase.ToString().ToLower();
@@ -224,6 +208,25 @@ namespace IR_engine
             string type = line.Split('\t')[2];
             term.Type e = (term.Type)Enum.Parse(typeof(term.Type), type, true);
             return e;
+        }
+
+        public static Dictionary<string, indexTerm> Load_Index(string path)
+        {
+            Dictionary<string, indexTerm> index = new Dictionary<string, indexTerm>();
+            List<string> termsList = new List<string>();
+            termsList = File.ReadAllText(path + "\\index.txt").Split('\n').ToList();
+            for (int i = 0; i < termsList.Count - 1; i++)
+            {
+                indexTerm t;
+                string[] entry = termsList[i].Split('\t');
+                t = new indexTerm(entry[0], (term.Type)Enum.Parse(typeof(term.Type), entry[1], true));
+                if (entry.Length < 2) continue;
+                if (!index.ContainsKey(entry[0] + entry[1]))
+                {
+                    index.Add(entry[0] + entry[1], t);
+                }
+            }
+            return index;
         }
     }
 }

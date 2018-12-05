@@ -76,8 +76,7 @@ namespace IR_engine
 
         public override string ToString()
         {
-            idf = posting.Count;
-            return Phrase + '\t' + isUpperInCurpus + '\t' + type + '\t' + icf + '\t' + idf + '\t' + printPosting();
+            return Phrase + '\t' + isUpperInCurpus + '\t' + type + '\t' + printPosting();
         }
 
         public void AddToPosting(ConcurrentDictionary<string, short> dictionary)

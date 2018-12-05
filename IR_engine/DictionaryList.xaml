@@ -7,9 +7,11 @@
         mc:Ignorable="d"
         Title="DictionaryList" Height="450" Width="800">
     <Grid>
-        <ScrollViewer x:Name="dictionary" Height="Auto" Width="auto" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Margin="0,100,0,0">
+        <TextBox x:Name="termsList" VerticalScrollBarVisibility="Auto" IsReadOnly="true" HorizontalAlignment="Stretch" Height="343" Margin="0,72,4.6,5" TextWrapping="Wrap" Text="" VerticalAlignment="Stretch" BorderBrush="{x:Null}"/>
+        <!--<ScrollViewer x:Name="dictionary" Height="Auto" Width="auto" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Margin="0,100,0,0">
             <StackPanel x:Name="stack" Height="Auto" Width="auto" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" />
-        </ScrollViewer>
+        </ScrollViewer>-->
+
 
     </Grid>
 </Window>

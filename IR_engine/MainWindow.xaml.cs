@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
+using System.ComponentModel;
 
 namespace IR_engine
 {
@@ -29,11 +30,21 @@ namespace IR_engine
         string path = null;
         string IndexPath = null;
         Model m;
-        double time = 0;
+        volatile int time = 1;
+        volatile string stat = "";
+
         public MainWindow()
         {
             InitializeComponent();
             Console.WriteLine("START");
+            //Model.PropertyChanged += delegate (object sender, PropertyChangedEventArgs e)
+            //{
+            //    if (e.PropertyName == "STATUS")
+
+            //};
+            m = new Model();
+            path = "";
+            IndexPath = "";
         }
 
         /// <summary>
@@ -73,11 +84,16 @@ namespace IR_engine
             Load_Index.Width = 85;
             Load_Index.Height = 85;
             Load_Index.Foreground = new SolidColorBrush(Colors.Red);
-            Load_Index.FontSize = 15;
+            Load_Index.FontSize = 13;
         }
 
         private void Browse_Click(object sender, RoutedEventArgs e)
         {
+            if (Model.isWorking)
+            {
+                test.Content = "Engine is working, please wait for a completion message to pop up";
+                return;
+            }
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog()) { if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
                     path = dialog.SelectedPath;
                 }
@@ -86,13 +102,18 @@ namespace IR_engine
 
         private void Run_Click(object sender, RoutedEventArgs e)
         {
-            var watch2 = System.Diagnostics.Stopwatch.StartNew();
+            if(Model.isWorking)
+            {
+                test.Content = "Engine is working, please wait for a completion message to pop up";
+                return;
+            }
+            //var watch2 = System.Diagnostics.Stopwatch.StartNew();
             test.Content = "";
-            if (path == null)
+            if (path.Equals(""))
             {
                 path = pathText.Text;
             }
-            if (IndexPath == null)
+            if (IndexPath.Equals(""))
             {
                 IndexPath = IndexPathText.Text;
             }
@@ -101,8 +122,14 @@ namespace IR_engine
                 if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; }
                 else
                 {
-                    m = new Model(path, stem.IsChecked.Value, IndexPath);
+                    test.Content = "Working, please wait...";
+                    Thread.Sleep(100);
+                    //m = new Model(path, stem.IsChecked.Value, IndexPath);
+                    m.IndexPath1 = IndexPath;
+                    m.Path = path;
+                    m.toStem = stem.IsChecked.Value;
                     m.index();
+                    System.Windows.Forms.MessageBox.Show("Engine started, wait for popup");
                     var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
                     string a = null;
                     foreach (string x in arrayOfAllKeys)
@@ -111,11 +138,11 @@ namespace IR_engine
                         if (!a.Equals("") && !a.Equals(" "))
                             Language.Items.Add(a);
                     }
-                    watch2.Stop();
-                    time = time + watch2.ElapsedMilliseconds;
-                    time = (time / 1000.0) / 60.0;
-                    Console.WriteLine("total run time = " + time);
-                    test.Content = time;
+                    //watch2.Stop();
+                    //time = time + watch2.ElapsedMilliseconds;
+                    //time = (time / 1000.0) / 60.0;
+                    //Console.WriteLine("total run time = " + time);
+                    //test.Content = time;
                 }
             }
             else
@@ -126,18 +153,34 @@ namespace IR_engine
 
         private void showDic_Click(object sender, RoutedEventArgs e)
         {
+            if (Model.isWorking)
+            {
+                test.Content = "Engine is working, please wait for a completion message to pop up";
+                return;
+            }
+            if(m == null)
+            {
+                test.Content = "You need to run the engine first";
+                return;
+            }
             Window dictionary;
             //if (path == null || path.Equals("") || !File.Exists(path+ "\\index_elad_avi.txt"))
             //    dictionary = new DictionaryList(null);
             //else
             //    dictionary = new DictionaryList(null);
-            Dictionary<string, term> index = m.getDictionary();
-            dictionary = new DictionaryList(index);
-            dictionary.Show();
+            Dictionary<string, indexTerm> index = m.getDictionary();
+            test.Content = index.Count;
+            //dictionary = new DictionaryList(index);
+            //dictionary.Show();
         }
 
         private void BrowseIndex_Click(object sender, RoutedEventArgs e)
         {
+            if (Model.isWorking)
+            {
+                test.Content = "Engine is working, please wait for a completion message to pop up";
+                return;
+            }
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -149,14 +192,21 @@ namespace IR_engine
 
         private void Load_Index_Click(object sender, RoutedEventArgs e)
         {
+            test.Content = "this may take a few minutes";
+            if (Model.isWorking || (IndexPathText.Text == "" && IndexPath.Equals("")))
+            {
+                test.Content = "Engine is working, please wait for a completion message to pop up";
+                return;
+            }
             string ipt=null;
-            if (stem.IsChecked.Value) {ipt = IndexPath + "\\EnableStem";}
-            else {ipt = IndexPath + "\\DisableStem";}
-            if (!Directory.Exists(ipt) || !File.Exists(ipt+"index.txt"))
+            if (stem.IsChecked.Value) {ipt = IndexPath.Equals("")? IndexPathText.Text + "\\EnableStem" : IndexPath + "\\EnableStem"; }
+            else {ipt = IndexPath.Equals("") ? IndexPathText.Text + "\\DisableStem" : IndexPath + "\\DisableStem"; }
+            if (!Directory.Exists(ipt) || !File.Exists(ipt+"\\index.txt"))
                 test.Content = "No Index in path";
             else
             {
-               //TODO: STUFF
+                m.load_index(ipt);
+                test.Content = "Index was succesfully loaded from the file:\n" + ipt + "\\index.txt";
             }
         }
     }
