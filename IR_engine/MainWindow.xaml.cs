@@ -27,8 +27,8 @@ namespace IR_engine
     public partial class MainWindow : Window
     {
         //private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
-        string path = null;
-        string IndexPath = null;
+        string path = "";
+        string IndexPath = "";
         Model m;
         volatile int time = 1;
         volatile string stat = "";
@@ -119,7 +119,7 @@ namespace IR_engine
             }
             if (!path.Equals(""))
             {
-                if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; }
+                if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; IndexPath = ""; path = ""; }
                 else
                 {
                     test.Content = "Working, please wait...";
@@ -146,7 +146,10 @@ namespace IR_engine
                 }
             }
             else
+            {
                 test.Content = "path not provided.";
+                IndexPath = ""; path = "";
+            }
 
             
         }
@@ -208,6 +211,23 @@ namespace IR_engine
                 m.load_index(ipt);
                 test.Content = "Index was succesfully loaded from the file:\n" + ipt + "\\index.txt";
             }
+        }
+
+        private void reset_Click(object sender, RoutedEventArgs e)
+        {
+            if(Directory.Exists(IndexPath + "\\DisableStem"))
+            {
+                Directory.Delete(IndexPath + "\\DisableStem", true);
+            }
+            if (Directory.Exists(IndexPath + "\\EnableStem"))
+            {
+                Directory.Delete(IndexPath + "\\EnableStem", true);
+            }
+            if(Directory.Exists(path + "\\Posting_and_indexes"))
+            {
+                Directory.Delete(path + "\\Posting_and_indexes", true);
+            }
+            m.Memorydump();
         }
     }
 }

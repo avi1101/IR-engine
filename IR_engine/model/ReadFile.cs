@@ -143,6 +143,7 @@ namespace IR_engine
         public static void addLocation(string city)
         {
             string city2= city;
+
           // Console.WriteLine(city);
             if (Parse.hasChar(city, '/'))
             {

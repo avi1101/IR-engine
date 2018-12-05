@@ -17,6 +17,8 @@ namespace IR_engine
         //concurrent variables
         static int i = 0;                                                           //use to index the queues in the list
         public static List<Dictionary<string, term>> queueList = new List<Dictionary<string, term>>();        //list of Queues 
+        public static List<Dictionary<string, Location>> locsList = new List<Dictionary<string, Location>>();
+        public static Dictionary<Location, Location> megaLocList = new Dictionary<Location, Location>();
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
         public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
         public static int cores = Environment.ProcessorCount/2;
@@ -96,11 +98,15 @@ namespace IR_engine
             List<string> files = readfo.allfiles;               //gets the files list
             int tasks = cores;                                  //get the number of logical proccesors 
             //int tasks = 1;             //get the number of logical proccesors 
-            for (int ch = 0; ch < tasks; ch++)                  //initialize the queues
+            for (int ch = 0; ch < tasks; ch++)
+            {                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
+                locsList.Add(new Dictionary<string, Location>());
+            }
             int k = 0, chunk = 0, id = 0;
             t = new List<Task>();
             createCityDic(files);
+            for(int i=0;i< locsList.Count; i++) { }
             var list = locations.Keys.ToList();
             list.Sort();
             using (StreamWriter ct = new StreamWriter(Path + "\\city_dictionary.txt"))
@@ -135,13 +141,20 @@ namespace IR_engine
                                 sw.WriteLine(entry.Key.ToString());
                             }
                         }
+                        using (StreamWriter sw2 = new StreamWriter(path + "\\Posting_and_indexes\\cityIndex\\city"+ chunk + ".txt"))
+                        {
+                           // Console.WriteLine("megaLocList "+ megaLocList.Count);
+                            foreach (KeyValuePair<Location, Location> loc in megaLocList)
+                            {
+                                sw2.WriteLine(loc.Key.ToString());
+                            }
+                        }
                         terms2.Clear();
                         chunk++;
                     }
                     t = new List<Task>();
                 }
             }
-
             {
                 foreach (Task ts in t)
                     ts.Wait();
@@ -151,6 +164,14 @@ namespace IR_engine
                     foreach (KeyValuePair<term, term> entry in terms2)
                     {
                         sw.WriteLine(entry.Key.ToString());
+                    }
+                }
+                using( StreamWriter sw2 = new StreamWriter(path+ "\\Posting_and_indexes\\cityIndex\\city" + chunk + ".txt"))
+                {
+                    foreach(KeyValuePair<Location,Location> loc in megaLocList)
+                    {
+                     //   Console.WriteLine("megaLocList"+ megaLocList.Count);
+                        sw2.WriteLine(loc.Key.ToString());
                     }
                 }
                 terms2.Clear();
@@ -189,7 +210,25 @@ namespace IR_engine
                 }
                 queueList[i].Clear();
             }
-            using (StreamWriter sw = new StreamWriter(Path + "\\documents.txt", true))
+            for(int i = 0; i < locsList.Count; i++)
+            {
+                Location l = null;
+                foreach(KeyValuePair<string, Location> entry in locsList[i])
+                {
+                    l = entry.Value;
+                    if (l == null) break;
+                    if (megaLocList.ContainsKey(l))
+                    {
+                        megaLocList[l].addOccurs(l.LocationsInDocs);
+                    }
+                    else
+                    {
+                        megaLocList.Add(l, l);
+                    }
+                }
+                locsList[i].Clear();
+            }
+            using (StreamWriter sw = new StreamWriter(path + "\\Posting_and_indexes\\documents.txt", true))
             {
                 foreach (KeyValuePair<string, document> entry in docs)
                 {
@@ -276,17 +315,25 @@ namespace IR_engine
             }
             return sb.ToString();
         }
-        public Dictionary<string, indexTerm> load_index()
+        public void Memorydump()
         {
-            if (indexer == null)
-                return null;
-            indexList = indexer.LoadIndex();
-            return indexList;
-        }
-        public Dictionary<string, indexTerm> load_index(string indexPath)
-        {
-            indexList = Indexer.Load_Index(indexPath);
-            return indexList;
+            queueList.Clear();
+            locsList.Clear();
+            megaLocList.Clear();
+            foreach(term t in terms2.Values)
+            {
+                t.posting.Clear();
+            }
+            terms2.Clear();
+            docs.Clear();
+            cityIn.Clear();
+            foreach(Location l in locations.Values)
+            {
+                l.LocationsInDocs.Clear();
+            }
+            locations.Clear();
+            parser.stopwords.Clear();
+            readfo.allfiles.Clear();
         }
     }
 }

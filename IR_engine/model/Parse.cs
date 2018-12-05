@@ -139,7 +139,7 @@ namespace IR_engine
               "millimeters","Millimeters","mm","MM","MILLIMETERS","Miles","miles","MILES","FEETS","Feets","feets","decimeters",
                 "Decimeters","DECIMETERS",};
 
-        HashSet<string> stopwords = new HashSet<string>();
+        public HashSet<string> stopwords = new HashSet<string>();
         Stemmer stem;
         private int words_length; // length of words string array.
         private Dictionary<string, double> termsInDoc = new Dictionary<string, double>();
@@ -287,7 +287,12 @@ namespace IR_engine
                          * is a normal number that has to be formatted by the numbers rule
                          * we'll call the rule method here
                          */
+                        if (word.Contains("$"))
+                        {
+                            int trtr = 0;
+                        }
                         phrase = NumberSet(word, i, words, out j);
+                        if (phrase.Equals("")) { continue; }
                         type = term.Type.number;
                     }
                 }
@@ -321,14 +326,27 @@ namespace IR_engine
                                 || (phrase[ch] <= 'Z' && phrase[ch] >= 'A')) stringbuilder.Append(phrase[ch]);
                         if (!c)
                             phrase = stringbuilder.ToString();
+                        if (Model.locations.ContainsKey(phrase))
+                        {
+
+                              Location l = Model.locations[phrase];
+                            if (Model.locsList[queue].ContainsKey(phrase)) { 
+                            if (Model.locsList[queue][phrase].LocationsInDocs.ContainsKey(DocName)) { Model.locsList[queue][phrase].LocationsInDocs[DocName].Add(i); } else { Model.locsList[queue][phrase].LocationsInDocs.TryAdd(DocName, new List<int>() { i }); }
+                            }
+                            else {
+                               
+                                Model.locsList[queue].Add(phrase, l);
+                                if (Model.locsList[queue][phrase].LocationsInDocs.ContainsKey(DocName)) { Model.locsList[queue][phrase].LocationsInDocs[DocName].Add(i); } else { Model.locsList[queue][phrase].LocationsInDocs.TryAdd(DocName, new List<int>() { i }); }
+                            }
+                        }
                         type = term.Type.word;
                     }
                 }
+
                 if (phrase.Length < 1 || stopwords.Contains(phrase)) continue;
+
                 t = new term(phrase);
                 t.Type1 = type;
-               // Console.WriteLine("The term " + phrase.ToString() + " is a " + type.ToString());
-                //t.AddToPosting(DocName);
                 if (Model.queueList[queue].ContainsKey(phrase+type))
                 {
                     /*
@@ -359,17 +377,7 @@ namespace IR_engine
                 {
                     termsInDoc.Add(phrase+type, 0);
                 }
-                //t.AddToCount(DocName);
-                //Model.queueList[queue].Enqueue(t);
 
-                //t = new term(phrase);
-                //t.AddToPosting(DocName, 1);
-                //Model.queueList[queue].AddOrUpdate(phrase, t, (key, value) => {
-                //    value.AddToPosting(DocName, 1);
-                //    if (!isUpperFirstLetter) value.IsUpperInCurpus = false;
-                //    return value;
-                //});
-                //if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
                 i = j;
                 //Console.WriteLine(word);
             }
@@ -512,6 +520,8 @@ namespace IR_engine
         /// <returns></returns>
         string NumberSet(string input, int idx, string[] words, out int j)
         {
+            input = input.Replace("$", "").Replace("%", "");
+            if (input == "") {j=idx; return ""; }
             int option = 0;
             int index = idx + 1;
             var charsToRemove = new string[] { "," };
