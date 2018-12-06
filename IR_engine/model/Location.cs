@@ -59,15 +59,16 @@ namespace IR_engine
             StringBuilder sb = new StringBuilder(city + '\t');
             foreach (KeyValuePair<string, List<int>> entry in locationsInDocs)
             {
-                sb.Append(entry.Key+'\t');
+                sb.Append(entry.Key+' ');
                 for (int i = 0; i < entry.Value.Count; i++)
                 {
                     if (i > 0)
                     {
                         if (entry.Value[i] <= entry.Value[i - 1]) { continue; }
                     }
-                    sb.Append(entry.Value[i] + " ");
+                    sb.Append(entry.Value[i] +' ');
                 }
+                sb.Append(',');
             }
             return sb.ToString()+'\t';
         }
