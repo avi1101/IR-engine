@@ -231,18 +231,18 @@ namespace IR_engine
                     if (phrase.Equals("")) continue;
                     //type = term.Type.expression;
                 }
-                else if (word[0] == '\"')
-                {
-                    /*
-                     * our own rule, in case of an expression that start and end with ""
-                     * we need to save it as according to the expression rules
-                     */
-                    phrase = SetQuotationExp(i, words, out j, queue);
-                    words_length = words.Length;
-                    i = j;
-                    if (phrase.Equals("")) continue;
-                    type = term.Type.Quotation;
-                }
+                //else if (word[0] == '\"')
+                //{
+                //    /*
+                //     * our own rule, in case of an expression that start and end with ""
+                //     * we need to save it as according to the expression rules
+                //     */
+                //    phrase = SetQuotationExp(i, words, out j, queue);
+                //    words_length = words.Length;
+                //    i = j;
+                //    if (phrase.Equals("")) continue;
+                //    type = term.Type.Quotation;
+                //}
                 else if (containsNumbers(word))
                 {
                     if (Isdistance(words, i))
@@ -948,60 +948,60 @@ namespace IR_engine
                 Model.queueList[queue].Add(s +type.ToString(), t);
             }
         }
-        string SetQuotationExp(int idx, string[] words, out int j, int queue)
-        {
+        //string SetQuotationExp(int idx, string[] words, out int j, int queue)
+        //{
 
-            // TODO: remove this line after debug
-            //Console.WriteLine("Pasring an expression at doc: " + DocName + " starting at: " + words[idx]);
-            string exp = "";
-            bool expEnd = false;                                                        //will check if the end word has been reached 
-            List<string> newWords = new List<string>();
-            StringBuilder ex = new StringBuilder();
-            int i = idx;
-            int k = 0;
-            for (; i < words_length && !expEnd; i++)
-            {
-                string word = words[i];
-                if (word.Equals("")) continue;
-                if (word[word.Length - 1] == '\"' || hasEndQu(word))
-                {
-                    word = TrimAll(word);
-                    expEnd = true;
-                }
-                if (i == idx)
-                    word = word.Trim('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
-                    '}', '&', ':', '<', '>', '@', '&', '*', '^', '#', ';', ' ', '\"');
-                //word = Fixword(word);
-                newWords.Add(word);
-                ex.Append(word);
-                ex.Append(" ");
-               // Console.WriteLine("Term seperated: "+word);
+        //    // TODO: remove this line after debug
+        //    //Console.WriteLine("Pasring an expression at doc: " + DocName + " starting at: " + words[idx]);
+        //    string exp = "";
+        //    bool expEnd = false;                                                        //will check if the end word has been reached 
+        //    List<string> newWords = new List<string>();
+        //    StringBuilder ex = new StringBuilder();
+        //    int i = idx;
+        //    int k = 0;
+        //    for (; i < words_length && !expEnd; i++)
+        //    {
+        //        string word = words[i];
+        //        if (word.Equals("")) continue;
+        //        if (word[word.Length - 1] == '\"' || hasEndQu(word))
+        //        {
+        //            word = TrimAll(word);
+        //            expEnd = true;
+        //        }
+        //        if (i == idx)
+        //            word = word.Trim('.', '!', '?', '\n', ',', '|', '[', ']', '(', ')', '{',
+        //            '}', '&', ':', '<', '>', '@', '&', '*', '^', '#', ';', ' ', '\"');
+        //        //word = Fixword(word);
+        //        newWords.Add(word);
+        //        ex.Append(word);
+        //        ex.Append(" ");
+        //       // Console.WriteLine("Term seperated: "+word);
 
-                /*if(i==idx)
-                    newWords.Add(word.Remove(0,1));
-                if (expEnd)
-                    newWords.Add(word.Remove(word.Length - 1));*/
-            }
-          //  Console.WriteLine("Sending the seperated terms to parse");
+        //        /*if(i==idx)
+        //            newWords.Add(word.Remove(0,1));
+        //        if (expEnd)
+        //            newWords.Add(word.Remove(word.Length - 1));*/
+        //    }
+        //  //  Console.WriteLine("Sending the seperated terms to parse");
 
-            parseText(newWords.ToArray(), queue);                                       //will parse the new list in case for double rule
-            j = i - 1;
-            ex.Replace("\"", "");
-            ex.Replace(",", "");
-          //  Console.WriteLine("Term: " + ex.ToString());
-            return newWords.Count > 1 ? ex.ToString() : "";
+        //    parseText(newWords.ToArray(), queue);                                       //will parse the new list in case for double rule
+        //    j = i - 1;
+        //    ex.Replace("\"", "");
+        //    ex.Replace(",", "");
+        //  //  Console.WriteLine("Term: " + ex.ToString());
+        //    return newWords.Count > 1 ? ex.ToString() : "";
 
-        }
-        private bool hasEndQu(string word)
-        {
-            int len = word.Length;
-            for (int i = len - 1; i >= 0; i--)
-            {
-                if (Char.IsLetterOrDigit(word[i])) return false;
-                if (word[i] == '"') return true;
-            }
-            return false;
-        }
+        //}
+        //private bool hasEndQu(string word)
+        //{
+        //    int len = word.Length;
+        //    for (int i = len - 1; i >= 0; i--)
+        //    {
+        //        if (Char.IsLetterOrDigit(word[i])) return false;
+        //        if (word[i] == '"') return true;
+        //    }
+        //    return false;
+        //}
         private string TrimAll(string word)
         {
             int len = word.Length;

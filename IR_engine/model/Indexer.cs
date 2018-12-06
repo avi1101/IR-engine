@@ -228,5 +228,103 @@ namespace IR_engine
             }
             return index;
         }
+
+        private void sortCity(int offset, string[] files, string pathToPosting)
+        {
+            for (int i = offset; i < files.Length; i += (Model.cores))
+            {
+                List<string> fileContent = File.ReadAllText(files[i]).Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).ToList<string>();
+                fileContent = fileContent.OrderBy(s => s.Split(new string[] { "\t" }, StringSplitOptions.None)[0]).ToList();
+                using (StreamWriter sr = new StreamWriter(pathToPosting + "\\City" + i + "sorted.txt"))
+                {
+                    foreach (string s in fileContent)
+                        sr.WriteLine(s);
+                }
+                Console.WriteLine(i + " files sorted");
+            }
+        }
+
+        public void MergeLocations(string path)
+        {
+
+            string[] files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
+            int fileCount = files.Length;
+            List<Task> t = new List<Task>();
+            for (int i = 0; i < Model.cores; i++)
+            {
+                int k = i;
+                t.Add(Task.Factory.StartNew(() => sortCity(k, files, path)));
+            }
+            foreach (Task tsk in t)
+                tsk.Wait();
+            for (int i = 0; i < files.Length; i++)
+                File.Delete(files[i]);
+
+            string[] firstLines = new string[fileCount];
+            string[] sortedFirstLines;
+            StreamReader[] sr = new StreamReader[fileCount];
+            StreamWriter sw = new StreamWriter(ipath + "\\City.txt");
+            for (int i = 0; i < fileCount; i++)
+            {
+                sr[i] = new StreamReader(path + "\\City" + i + "sorted.txt");
+            }
+            for (int i = 0; i < fileCount; i++)
+            {
+                firstLines[i] = sr[i].ReadLine();
+                if (firstLines[i] == null)
+                    firstLines[i] = "\0";
+                if (firstLines[i] == "")
+                    i--;
+            }
+            int lastIndex = 0;
+            StringBuilder minLine = new StringBuilder();
+            StringBuilder minPhrase = new StringBuilder();
+            while (lastIndex < firstLines.Length)
+            {
+                minPhrase.Clear();
+                minLine.Clear();
+                int i = lastIndex;
+                sortedFirstLines = firstLines.OrderBy(s => s.Split(new string[] { "\t" }, StringSplitOptions.None)[0]).ToArray();
+                for (i = 0; i < sortedFirstLines.Length; i++)
+                {
+                    if (sortedFirstLines[i].Equals("\0")) continue;
+                    else break;
+                }
+                if (i >= sortedFirstLines.Length) break;
+                minPhrase.Append(GetPhrase(sortedFirstLines[i]));
+                for (i = 0; i < sortedFirstLines.Length; i++)
+                {
+                    if (string.Compare(minPhrase.ToString(), GetPhrase(sortedFirstLines[i]), true) == 0)
+                    {
+                        string[] splitted = sortedFirstLines[i].Split('\t');
+                        minLine.Append(splitted[1]);
+                    }
+                    else break;
+                }
+                sw.WriteLine(minPhrase.ToString() + '\t' + minLine.ToString());
+                for (i = 0; i < fileCount; i++)
+                {
+                    if (string.Compare(minPhrase.ToString(), GetPhrase(firstLines[i]), true) == 0)
+                    {
+                        if (firstLines[i].Equals("\0")) continue;
+                        firstLines[i] = sr[i].ReadLine();
+                        if (firstLines[i] == null)
+                            firstLines[i] = "\0";
+                        while (firstLines[i] == "")
+                        {
+                            firstLines[i] = sr[i].ReadLine();
+                            if (firstLines[i] == null)
+                                firstLines[i] = "\0";
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < fileCount; i++)
+            {
+                sr[i].Close();
+                File.Delete(path + "\\City" + i + "sorted.txt");
+            }
+            sw.Close();
+        }
     }
 }

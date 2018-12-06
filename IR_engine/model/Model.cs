@@ -34,7 +34,7 @@ namespace IR_engine
         bool ToStem;
         string IndexPath;
         string outPath;
-        Dictionary<string, indexTerm> indexList;
+        public Dictionary<string, indexTerm> indexList;
 
         public bool toStem { get => ToStem; set => ToStem = value; }
         public string Path { get { return path; }
@@ -88,7 +88,7 @@ namespace IR_engine
             if (toStem) { if (!File.Exists(IndexPath1 + "\\EnableStem")) { Directory.CreateDirectory(IndexPath1 + "\\EnableStem"); } outPath = IndexPath1 + "\\EnableStem"; }
             else { if (!File.Exists(IndexPath1 + "\\DisableStem")) { Directory.CreateDirectory(IndexPath1 + "\\DisableStem"); } outPath = IndexPath1 + "\\DisableStem"; }
             indexer = new Indexer(outPath, path + "\\Posting_and_indexes");
-            if(!Directory.Exists(path + "\\Posting_and_indexes\\cityIndex")) { Directory.CreateDirectory(path + "\\Posting_and_indexes\\cityIndex"); }
+            if(!Directory.Exists(path + "\\cityIndex")) { Directory.CreateDirectory(path + "\\cityIndex"); }
             var watch = System.Diagnostics.Stopwatch.StartNew();
             isWorking = true;
             // step one, the parsing
@@ -141,7 +141,7 @@ namespace IR_engine
                                 sw.WriteLine(entry.Key.ToString());
                             }
                         }
-                        using (StreamWriter sw2 = new StreamWriter(path + "\\Posting_and_indexes\\cityIndex\\city"+ chunk + ".txt"))
+                        using (StreamWriter sw2 = new StreamWriter(path + "\\cityIndex\\city"+ chunk + ".txt"))
                         {
                            // Console.WriteLine("megaLocList "+ megaLocList.Count);
                             foreach (KeyValuePair<Location, Location> loc in megaLocList)
@@ -166,11 +166,10 @@ namespace IR_engine
                         sw.WriteLine(entry.Key.ToString());
                     }
                 }
-                using( StreamWriter sw2 = new StreamWriter(path+ "\\Posting_and_indexes\\cityIndex\\city" + chunk + ".txt"))
+                using( StreamWriter sw2 = new StreamWriter(path+ "\\cityIndex\\city" + chunk + ".txt"))
                 {
                     foreach(KeyValuePair<Location,Location> loc in megaLocList)
                     {
-                     //   Console.WriteLine("megaLocList"+ megaLocList.Count);
                         sw2.WriteLine(loc.Key.ToString());
                     }
                 }
@@ -181,7 +180,7 @@ namespace IR_engine
             }
             indexList = indexer.CreateIndex();
             Directory.Delete(Path + "\\Posting_and_indexes");
-
+            indexer.MergeLocations(path + @"\cityIndex");
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
             MessageBox.Show("Done indexing the curpus!\nPorking time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+" min", "DONE!");
