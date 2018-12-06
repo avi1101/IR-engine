@@ -123,15 +123,14 @@ namespace IR_engine
                 if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; IndexPath = ""; path = ""; }
                 else
                 {
-                    var watch2 = System.Diagnostics.Stopwatch.StartNew();
                     test.Content = "Working, please wait...";
+                    var watch2 = System.Diagnostics.Stopwatch.StartNew();
                     Thread.Sleep(100);
                     //m = new Model(path, stem.IsChecked.Value, IndexPath);
                     m.IndexPath1 = IndexPath;
                     m.Path = path;
                     m.toStem = stem.IsChecked.Value;
                     m.index();
-                    System.Windows.Forms.MessageBox.Show("Engine started, wait for popup");
                     //Time();
                     var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
                     string a = null;
