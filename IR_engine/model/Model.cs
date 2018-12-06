@@ -21,7 +21,7 @@ namespace IR_engine
         public static Dictionary<Location, Location> megaLocList = new Dictionary<Location, Location>();
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
         public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
-        public static int cores = Environment.ProcessorCount/2;
+        public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
         public static ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
@@ -172,7 +172,6 @@ namespace IR_engine
                 {
                     foreach(KeyValuePair<Location,Location> loc in megaLocList)
                     {
-                     //   Console.WriteLine("megaLocList"+ megaLocList.Count);
                         sw2.WriteLine(loc.Key.ToString());
                     }
                 }
@@ -183,7 +182,7 @@ namespace IR_engine
             }
             indexList = indexer.CreateIndex();
             Directory.Delete(Path + "\\Posting_and_indexes");
-
+            indexer.MergeLocations(path + @"\cityIndex");
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
             MessageBox.Show("Done indexing the curpus!\nPorking time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+" min", "DONE!");

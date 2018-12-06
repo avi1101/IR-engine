@@ -123,6 +123,9 @@ namespace IR_engine
                 if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; IndexPath = ""; path = ""; }
                 else
                 {
+                    var watch2 = System.Diagnostics.Stopwatch.StartNew();
+                    test.Content = "Working, please wait...";
+                    Thread.Sleep(100);
                     //m = new Model(path, stem.IsChecked.Value, IndexPath);
                     m.IndexPath1 = IndexPath;
                     m.Path = path;
@@ -138,6 +141,11 @@ namespace IR_engine
                         if (!a.Equals("") && !a.Equals(" "))
                             Language.Items.Add(a);
                     }
+                    watch2.Stop();
+                    double time =watch2.ElapsedMilliseconds;
+                    time = (time / 1000.0);
+                    Console.WriteLine("total run time = " + time);
+                    test.Content = "Process took: "+time+"\n"+"We Indexed "+Model.docs.Count+"\n"+"We created "+m.indexList.Count+" terms";
                 }
             }
             else
@@ -227,7 +235,9 @@ namespace IR_engine
 
         private void reset_Click(object sender, RoutedEventArgs e)
         {
-            if(Directory.Exists(IndexPath + "\\DisableStem"))
+            IndexPath = IndexPathText.Text;
+            path = pathText.Text;
+            if (Directory.Exists(IndexPath + "\\DisableStem"))
             {
                 Directory.Delete(IndexPath + "\\DisableStem", true);
             }
@@ -239,6 +249,13 @@ namespace IR_engine
             {
                 Directory.Delete(path + "\\Posting_and_indexes", true);
             }
+            if (Directory.Exists(path + "\\cityIndex"))
+            {
+                Directory.Delete(path + "\\cityIndex", true);
+            }
+            File.Delete(path + "\\city_dictionary.txt");
+            File.Delete(path + "\\documents.txt");
+            File.Delete(path + "\\postingList.txt");
             m.Memorydump();
         }
     }
