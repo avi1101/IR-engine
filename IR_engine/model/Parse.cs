@@ -346,7 +346,8 @@ namespace IR_engine
                 }
 
                 if (phrase.Length < 1 || stopwords.Contains(phrase)) continue;
-
+                if (string.Compare("ZYDECOS", phrase, true) == 0)
+                    i = i;
                 t = new term(phrase);
                 t.Type1 = type;
                 if (Model.queueList[queue].ContainsKey(phrase+type.ToString()))
@@ -377,7 +378,7 @@ namespace IR_engine
                 }
                 else
                 {
-                    termsInDoc.Add(phrase+ type.ToString(), 0);
+                    termsInDoc.Add(phrase+ type.ToString(), 1);
                 }
 
                 i = j;

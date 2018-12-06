@@ -138,6 +138,7 @@ namespace IR_engine
                 if (i >= sortedFirstLines.Length) break;
                 minPhrase.Append(GetPhrase(sortedFirstLines[i]));
                 bool Cap = true;
+                double icf = 0, idf = 0;
                 term.Type type = GetType(sortedFirstLines[i]);
                 for (i = 0; i < sortedFirstLines.Length; i++)
                 {
@@ -147,6 +148,8 @@ namespace IR_engine
                         if (type != (term.Type)Enum.Parse(typeof(term.Type), splitted[2], true)) continue;
                         Cap &= splitted[1].Equals("True") ? true : false;
                         minLine.Append(splitted[3]);
+                        icf += double.Parse(splitted[4]);
+                        idf += double.Parse(splitted[5]);
                     }
                     else break;
                 }
@@ -185,7 +188,7 @@ namespace IR_engine
                         }
                     }
                 }
-                writers["index"].WriteLine(termPhrase + "\t" + type);
+                writers["index"].WriteLine(termPhrase + "\t" + type + "\t" + icf + "\t" + idf);
             }
             for (int i = 0; i < fileCount; i++)
             {

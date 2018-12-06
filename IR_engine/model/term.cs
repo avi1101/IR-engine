@@ -12,7 +12,7 @@ namespace IR_engine
         public enum Type { number, date, expression, distance, percentage, price, word, range, time };
 
         string phrase; // the phrase itself
-        int idf = 0; // the number of docs this term is in
+        public int idf = 0; // the number of docs this term is in
         public int icf = 0;
         Type type;
 
@@ -74,11 +74,6 @@ namespace IR_engine
             });
         }
 
-        public override string ToString()
-        {
-            return Phrase + '\t' + isUpperInCurpus + '\t' + type + '\t' + printPosting();
-        }
-
         public void AddToPosting(ConcurrentDictionary<string, short> dictionary)
         {
             foreach(KeyValuePair<string, short> entry in dictionary)
@@ -96,6 +91,11 @@ namespace IR_engine
                 res.Append(entry.Key + "_" + entry.Value + ",");
             }
             return res.ToString();
+        }
+
+        public override string ToString()
+        {
+            return Phrase + '\t' + isUpperInCurpus + '\t' + type + '\t' + printPosting() + '\t' + icf + '\t' + posting.Count;
         }
 
         public short getTFinDoc(string docname)
