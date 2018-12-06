@@ -191,7 +191,7 @@ namespace IR_engine
             if (str.Length == 0) return false;
             for (int i = 0; i < str.Length; i++)
             {
-                if ((i != 0 && i != str.Length - 1 && str[i] == '.' && str[i] == ',' && str[i] != '/')) continue;
+                if ((i != 0 && i != str.Length - 1) && (str[i] == '.' || str[i] == ',' || str[i] != '/')) continue;
                 if (str[i] > '9' || str[i] < '0')
                     return false;
             }
@@ -346,10 +346,6 @@ namespace IR_engine
                 }
 
                 if (phrase.Length < 1 || stopwords.Contains(phrase)) continue;
-                if (string.Compare("ZYDECOS", phrase, true) == 0)
-                    i = i;
-                t = new term(phrase);
-                t.Type1 = type;
                 if (Model.queueList[queue].ContainsKey(phrase+type.ToString()))
                 {
                     /*

@@ -153,6 +153,7 @@ namespace IR_engine
                 term.Type type = GetType(sortedFirstLines[i]);
                 for (i = 0; i < sortedFirstLines.Length; i++)
                 {
+                    if (sortedFirstLines[i].Equals("\0")) continue;
                     if (string.Compare(minPhrase.ToString(), GetPhrase(sortedFirstLines[i]), true) == 0)
                     {
                         string[] splitted = sortedFirstLines[i].Split('\t');
