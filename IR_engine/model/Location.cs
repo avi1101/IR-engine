@@ -56,17 +56,19 @@ namespace IR_engine
         }
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder(city + '\t');
+            StringBuilder sb = new StringBuilder(city + "\t");
             foreach (KeyValuePair<string, List<int>> entry in locationsInDocs)
             {
-                sb.Append(entry.Key+' ');
+                sb.Append(entry.Key+" ");
                 for (int i = 0; i < entry.Value.Count; i++)
                 {
                     if (i > 0)
                     {
-                        if (entry.Value[i] <= entry.Value[i - 1]) { continue; }
+                        if (entry.Value[i] <= entry.Value[i - 1])
+                        {
+                            continue; }
                     }
-                    sb.Append(entry.Value[i] +' ');
+                    sb.Append(entry.Value[i] +"-");
                 }
                 sb.Append(',');
             }
