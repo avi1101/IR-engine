@@ -7,6 +7,9 @@ using System.IO;
 
 namespace IR_engine
 {
+    /// <summary>
+    /// this is the indexer class, it is responsible to index the terms after generating them in the Parser class
+    /// </summary>
     class Indexer
     {
         string ipath;
@@ -22,19 +25,27 @@ namespace IR_engine
         /// this method creates an index file in the given directory and returns 
         /// a dictionary of terms and file pointer
         /// </summary>
-        /// <param name="path"> the path to the unproccessed index files the Parser creates</param>
+   
         /// <returns> a dictionary of terms </returns>
         public Dictionary<string, indexTerm> CreateIndex()
         {
             SortPostings();
             return LoadIndex();
         }
-
+        /// <summary>
+        /// this class is incharge of returning a dictionary that represents the  index lodad from the index file
+        /// </summary>
+        /// <returns>the index in a dictionary data structure </returns>
         public Dictionary<string, indexTerm> LoadIndex()
         {
             return LoadIndex(ipath);
         }
-
+        /// <summary>
+        /// this class is incharge of returning a dictionary that represents the  index lodad from the index file
+        /// given a specific path
+        /// </summary>
+        /// <param name="IndexPath">the path of the index file</param>
+        /// <returns>the index in a dictionary data structure </returns>
         public Dictionary<string, indexTerm> LoadIndex(string IndexPath)
         {
             return Load_Index(IndexPath);
@@ -200,19 +211,31 @@ namespace IR_engine
                 entry.Value.Close();
             }
         }
-
+        /// <summary>
+        /// function as a getter to the phrase of the term
+        /// </summary>
+        /// <param name="line">the line of the term toString</param>
+        /// <returns>the phrase</returns>
         private string GetPhrase(string line)
         {
             return line.Split('\t')[0];
         }
-
+        /// <summary>
+        /// function as a getter to the type of the term
+        /// </summary>
+        /// <param name="line">the line of the term toString</param>
+        /// <returns>the type</returns>
         private term.Type GetType(string line)
         {
             string type = line.Split('\t')[2];
             term.Type e = (term.Type)Enum.Parse(typeof(term.Type), type, true);
             return e;
         }
-
+        /// <summary>
+        /// this function return the index as a dictionary data structure from the file
+        /// </summary>
+        /// <param name="path">the path where the index is saved</param>
+        /// <returns>the index as a dictionary data structure</returns>
         public static Dictionary<string, indexTerm> Load_Index(string path)
         {
             Dictionary<string, indexTerm> index = new Dictionary<string, indexTerm>();
@@ -231,7 +254,12 @@ namespace IR_engine
             }
             return index;
         }
-
+        /// <summary>
+        /// sorts an city temp index acoording to the lexicographic order
+        /// </summary>
+        /// <param name="offset">the row which is sorted</param>
+        /// <param name="files">files to be sorted</param>
+        /// <param name="pathToPosting">where to save the new posting list</param>
         private void sortCity(int offset, string[] files, string pathToPosting)
         {
             for (int i = offset; i < files.Length; i += (3))
@@ -246,7 +274,10 @@ namespace IR_engine
                 Console.WriteLine(i + " files sorted");
             }
         }
-
+        /// <summary>
+        /// this function mergrs the location temp files
+        /// </summary>
+        /// <param name="path">the path of files to merge</param>
         public void MergeLocations(string path)
         {
 

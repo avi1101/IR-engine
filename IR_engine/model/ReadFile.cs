@@ -128,7 +128,7 @@ namespace IR_engine
         {
             string city2= city;
 
-          // Console.WriteLine(city);
+            if (city.Equals("the")) return;
             if (Parse.hasChar(city, '/'))
             {
                 city2 = city.Substring(0, city.IndexOf('/'));
@@ -214,46 +214,8 @@ namespace IR_engine
                     stb.Append(c);
                 }
             }
-            //string x = stb.ToString();
             return stb.ToString();
         }
-        //public List<string>splited(string input,char del)
-        //{
-        //    List<string> output= new List<string>();
-        //    StringBuilder str = new StringBuilder();
-        //    for(int i = 0; i < input.Length; i++)
-        //    {
-        //        if (input[i] == del)
-        //        {
-
-        //            if (str.Length != 0)
-        //            {
-        //                output.Add(str.ToString());
-        //                str.Clear();
-        //            }
-        //        }
-        //        else
-        //        {
-        //            str.Append(input[i]);
-        //        }
-                
-        //    }
-        //    if (str.Length != 0)
-        //    {
-        //        output.Add(str.ToString());
-        //        str.Clear();
-        //    }
-        //    return output;
-        //}
-        //static bool hasChar(string word, char del)
-        //{
-        //    for (int i = 0; i < word.Length; i++)
-        //    {
-        //        if (word[i] == del || word[word.Length - i - 1] == del)
-        //            return true;
-        //    }
-        //    return false;
-        //}
         public void Clear()
         {
             allfiles = null;
