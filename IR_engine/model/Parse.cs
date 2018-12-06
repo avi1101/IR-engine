@@ -312,8 +312,6 @@ namespace IR_engine
                     if (isDate(words, i))
                     {
                         phrase = ToDate(word, words[i + 1]);
-                        if (phrase.Equals(""))
-                            phrase = toStem ? stem.stemTerm(word) : word;
                         j++;
                         type = term.Type.date;
                     }
@@ -331,6 +329,7 @@ namespace IR_engine
                                 || (phrase[ch] <= 'Z' && phrase[ch] >= 'A')) stringbuilder.Append(phrase[ch]);
                         if (!c)
                             phrase = stringbuilder.ToString();
+                        phrase = phrase.ToLower();
                         if (Model.locations.ContainsKey(phrase))
                         {
 
@@ -352,14 +351,14 @@ namespace IR_engine
 
                 t = new term(phrase);
                 t.Type1 = type;
-                if (Model.queueList[queue].ContainsKey(phrase+type))
+                if (Model.queueList[queue].ContainsKey(phrase+type.ToString()))
                 {
                     /*
                      * using a dictionary, we should always search a value using a key for ammortized O(1) complexity
                      * the dictionary is implemented as a hash table with chaining
                      * so it should give us the best resaults
                      */
-                    t = Model.queueList[queue][phrase+type]; //reference to the original term
+                    t = Model.queueList[queue][phrase+ type.ToString()]; //reference to the original term
                     if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
                     t.AddToPosting(DocName, 1);
                 }
@@ -372,15 +371,15 @@ namespace IR_engine
                     t.Type1 = type;
                     if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
                     t.AddToPosting(DocName, 1);
-                    Model.queueList[queue].Add(t.Phrase+type, t);
+                    Model.queueList[queue].Add(t.Phrase+ type.ToString(), t);
                 }
-                if (termsInDoc.ContainsKey(phrase+type))
+                if (termsInDoc.ContainsKey(phrase+ type.ToString()))
                 {
                     termsInDoc[phrase+type] += 1;
                 }
                 else
                 {
-                    termsInDoc.Add(phrase+type, 0);
+                    termsInDoc.Add(phrase+ type.ToString(), 0);
                 }
 
                 i = j;
@@ -494,8 +493,14 @@ namespace IR_engine
             //    if (s[i] <= '9' && s[i] >= '0') return true;
             //return false;
             int len = s.Length;
+            int dollars = 0;
             for (int i = 0; i < len; i++)
-                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-' && s[i] != ',') return false;
+            {
+                if (s[i] == '$') dollars++;
+                if ((s[i] > '9' || s[i] < '0') && s[i] != '$' && s[i] != '%' && s[i] != '/' && s[i] != '.' && s[i] != '-' && s[i] != ',')
+                    return false;
+            }
+            if (dollars == len) return false;
             return true;
         }
         /// <summary>
@@ -924,6 +929,7 @@ namespace IR_engine
             //    return value;
             //});
             string s = t.Phrase;
+            if (s.Equals("-")) return;
             term.Type type = t.Type1;
             if (Model.queueList[queue].ContainsKey(s+ type.ToString()))
             {

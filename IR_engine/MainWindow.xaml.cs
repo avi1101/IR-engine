@@ -18,6 +18,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace IR_engine
 {
@@ -131,6 +132,7 @@ namespace IR_engine
                     m.toStem = stem.IsChecked.Value;
                     m.index();
                     System.Windows.Forms.MessageBox.Show("Engine started, wait for popup");
+                    //Time();
                     var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
                     string a = null;
                     foreach (string x in arrayOfAllKeys)
@@ -155,6 +157,23 @@ namespace IR_engine
             
         }
 
+        //private void Time()
+        //{
+        //    TimeSpan ts = new TimeSpan();
+        //    Stopwatch watch = new Stopwatch();
+
+        //    while (Model.isWorking)
+        //    {
+        //        ts = watch.Elapsed;
+        //        test.Content = String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
+        //        Form.Lab.Invoke((MethodInvoker)delegate {
+        //            // Running on the UI thread
+        //            form.Label.Text = newText;
+        //        });
+        //        Thread.Sleep(1000);
+        //    }
+        //}
+
         private void showDic_Click(object sender, RoutedEventArgs e)
         {
             if (Model.isWorking)
@@ -174,8 +193,8 @@ namespace IR_engine
             //    dictionary = new DictionaryList(null);
             Dictionary<string, indexTerm> index = m.getDictionary();
             test.Content = index.Count;
-            //dictionary = new DictionaryList(index);
-            //dictionary.Show();
+            dictionary = new DictionaryList(index);
+            dictionary.Show();
         }
 
         private void BrowseIndex_Click(object sender, RoutedEventArgs e)

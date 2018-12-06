@@ -84,11 +84,14 @@ namespace IR_engine
                 MessageBox.Show("Invalid path");
                 return;
             }
+            isWorking = true;
             readfo = new ReadFile(path, toStem, cores);
             if (toStem) { if (!File.Exists(IndexPath1 + "\\EnableStem")) { Directory.CreateDirectory(IndexPath1 + "\\EnableStem"); } outPath = IndexPath1 + "\\EnableStem"; }
             else { if (!File.Exists(IndexPath1 + "\\DisableStem")) { Directory.CreateDirectory(IndexPath1 + "\\DisableStem"); } outPath = IndexPath1 + "\\DisableStem"; }
             indexer = new Indexer(outPath, path + "\\Posting_and_indexes");
-            if(!Directory.Exists(path + "\\cityIndex")) { Directory.CreateDirectory(path + "\\cityIndex"); }
+
+            if (!Directory.Exists(path + "\\cityIndex")) { Directory.CreateDirectory(path + "\\cityIndex"); }
+
             var watch = System.Diagnostics.Stopwatch.StartNew();
             isWorking = true;
             // step one, the parsing
@@ -96,8 +99,8 @@ namespace IR_engine
             // bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-           // int tasks = cores;                                  //get the number of logical proccesors 
-            int tasks = 1;             //get the number of logical proccesors 
+            int tasks = cores;                                  //get the number of logical proccesors 
+            //int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)
             {                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
@@ -227,7 +230,7 @@ namespace IR_engine
                 }
                 locsList[i].Clear();
             }
-            using (StreamWriter sw = new StreamWriter(path + "\\Posting_and_indexes\\documents.txt", true))
+            using (StreamWriter sw = new StreamWriter(path + "\\documents.txt", true))
             {
                 foreach (KeyValuePair<string, document> entry in docs)
                 {
@@ -241,7 +244,11 @@ namespace IR_engine
         {
             return indexList;
         }
-
+        public Dictionary<string, indexTerm> load_index(string indexPath)
+        {
+            indexList = Indexer.Load_Index(indexPath);
+            return indexList;
+        }
         public static void createCityDic( List<string> files)
         {
             List<Task> lst = new List<Task>();
@@ -288,11 +295,6 @@ namespace IR_engine
                     }
                 }
             }
-        }
-        public Dictionary<string, indexTerm> load_index(string path)
-        {
-            indexList= Indexer.Load_Index(path);
-            return indexList;
         }
         static bool hasNum(string word)
         {
