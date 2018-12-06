@@ -23,8 +23,6 @@ namespace IR_engine
     public class ReadFile
     {
         public List<string> allfiles = null;
-        public static long timepertDoc = 0;
-        public static long readFiles_time = 0;
         bool ToStem;
         int index = 0;
         static HttpClient http = new HttpClient();
@@ -41,6 +39,7 @@ namespace IR_engine
             this.cores = cores;
             this.path = path;
             this.ToStem = ToStem;
+            initiate();
         }
 
         private void initiate()
@@ -67,7 +66,7 @@ namespace IR_engine
         /// <param name="file"> the string that constains all the data in the file</param>
         public void readfile(string file2, int queue)
         {
-            initiate();
+            //if (allfiles == null) initiate();
             var watch2 = System.Diagnostics.Stopwatch.StartNew();
             List<document> docslist = new List<document>();
             string file = File.ReadAllText(file2);
@@ -259,8 +258,6 @@ namespace IR_engine
         public void Clear()
         {
             allfiles = null;
-            timepertDoc = 0;
-            readFiles_time = 0;
             index = 0;
             http = new HttpClient();
             allfilesSize = 0;

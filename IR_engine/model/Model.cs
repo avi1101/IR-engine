@@ -328,7 +328,8 @@ namespace IR_engine
             terms2.Clear();
             docs.Clear();
             cityIn.Clear();
-            readfo.Clear();
+            //readfo.Clear();
+            ReadFile.Langs.Clear();
             locations.Clear();
         }
     }

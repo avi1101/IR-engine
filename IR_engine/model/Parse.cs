@@ -191,7 +191,7 @@ namespace IR_engine
             if (str.Length == 0) return false;
             for (int i = 0; i < str.Length; i++)
             {
-                if ((i != 0 && i != str.Length - 1 && str[i] == '.' && str[i] == ',')) continue;
+                if ((i != 0 && i != str.Length - 1 && str[i] == '.' && str[i] == ',' && str[i] != '/')) continue;
                 if (str[i] > '9' || str[i] < '0')
                     return false;
             }
@@ -293,13 +293,9 @@ namespace IR_engine
                          * is a normal number that has to be formatted by the numbers rule
                          * we'll call the rule method here
                          */
-
+                        if (!IsNumber(words[i])) continue; 
                         phrase = NumberSet(word, i, words, out j);
                         if (phrase.Equals("")) { continue; }
-                        if (!IsNumber(phrase))
-                        {
-                            continue;
-                        }
                         type = term.Type.number;
                     }
                 }

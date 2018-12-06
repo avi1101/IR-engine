@@ -48,7 +48,7 @@ namespace IR_engine
         {
             string[] files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
             List<Task> t = new List<Task>();
-            for(int i = 0; i < Model.cores; i++)
+            for(int i = 0; i < 3; i++)
             {
                 int k = i;
                 t.Add(Task.Factory.StartNew(() => sort(k, files, path)));
@@ -70,7 +70,7 @@ namespace IR_engine
         /// <param name="pathToPosting">the path to the temportal files</param>
         private void sort(int offset, string[] files, string pathToPosting)
         {
-            for (int i = offset; i < files.Length; i += (Model.cores))
+            for (int i = offset; i < files.Length; i += (3))
             {
                 List<string> fileContent = File.ReadAllText(files[i]).Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).ToList<string>();
                 fileContent = fileContent.OrderBy(s => s.Split(new string[] { "\t" }, StringSplitOptions.None)[0]).ToList();
