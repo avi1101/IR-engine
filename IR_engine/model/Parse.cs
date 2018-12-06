@@ -298,6 +298,10 @@ namespace IR_engine
 
                         phrase = NumberSet(word, i, words, out j);
                         if (phrase.Equals("")) { continue; }
+                        if (!IsNumber(phrase))
+                        {
+                            continue;
+                        }
                         type = term.Type.number;
                     }
                 }

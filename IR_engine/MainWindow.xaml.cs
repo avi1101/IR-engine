@@ -235,7 +235,9 @@ namespace IR_engine
 
         private void reset_Click(object sender, RoutedEventArgs e)
         {
-            if(Directory.Exists(IndexPath + "\\DisableStem"))
+            IndexPath = IndexPathText.Text;
+            path = pathText.Text;
+            if (Directory.Exists(IndexPath + "\\DisableStem"))
             {
                 Directory.Delete(IndexPath + "\\DisableStem", true);
             }
@@ -247,6 +249,13 @@ namespace IR_engine
             {
                 Directory.Delete(path + "\\Posting_and_indexes", true);
             }
+            if (Directory.Exists(path + "\\cityIndex"))
+            {
+                Directory.Delete(path + "\\cityIndex", true);
+            }
+            File.Delete(path + "\\city_dictionary.txt");
+            File.Delete(path + "\\documents.txt");
+            File.Delete(path + "\\postingList.txt");
             m.Memorydump();
         }
     }

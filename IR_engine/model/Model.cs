@@ -21,7 +21,7 @@ namespace IR_engine
         public static Dictionary<Location, Location> megaLocList = new Dictionary<Location, Location>();
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
         public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
-        public static int cores = Environment.ProcessorCount/2;
+        public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
         public static ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
@@ -338,7 +338,9 @@ namespace IR_engine
                 l.LocationsInDocs.Clear();
             }
             locations.Clear();
-            parser.stopwords.Clear();
+            if(parser!=null)
+                parser.stopwords.Clear();
+            if(readfo!=null)
             readfo.allfiles.Clear();
         }
     }
