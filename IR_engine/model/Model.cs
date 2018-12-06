@@ -27,7 +27,6 @@ namespace IR_engine
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
         //end concurrent variables
         public static bool isWorking = false;
-        Parse parser;
         Indexer indexer;
         ReadFile readfo;
         string path;
@@ -327,20 +326,11 @@ namespace IR_engine
             queueList.Clear();
             locsList.Clear();
             megaLocList.Clear();
-            foreach(term t in terms2.Values)
-            {
-                t.posting.Clear();
-            }
             terms2.Clear();
             docs.Clear();
             cityIn.Clear();
-            foreach(Location l in locations.Values)
-            {
-                l.LocationsInDocs.Clear();
-            }
+            readfo.Clear();
             locations.Clear();
-            parser.stopwords.Clear();
-            readfo.allfiles.Clear();
         }
     }
 }

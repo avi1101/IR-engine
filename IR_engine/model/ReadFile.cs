@@ -31,48 +31,34 @@ namespace IR_engine
         int allfilesSize = 0;
         string path;
         Parse[] parser;
+        int cores;
         public static HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')',' '};
         public static ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
         //public ConcurrentDictionary<string, Location> locFound = new ConcurrentDictionary<string, Location>();
 
         public ReadFile(string path, bool ToStem, int cores)
         {
-
+            this.cores = cores;
             this.path = path;
             this.ToStem = ToStem;
+        }
+
+        private void initiate()
+        {
             string[] tmp = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
             allfiles = tmp.ToList();
             allfiles.Remove(path + "\\stop_words.txt");
-            allfiles.Remove(path + "\\postingList.txt");
             //TODO: remove also posting list files and index file
             allfilesSize = allfiles.Count;
             parser = new Parse[cores];
-            for(int i = 0; i < cores; i++)
+            for (int i = 0; i < cores; i++)
                 parser[i] = new Parse(path, ToStem);
-            string root = path+@"\Posting_and_indexes";
+            string root = path + @"\Posting_and_indexes";
             // If directory does not exist, don't even try 
             if (!Directory.Exists(root))
             {
                 Directory.CreateDirectory(root);
             }
-        }
-        /// <summary>
-        /// this function gets all docs in the corpus folder and its sub-folders.
-        /// </summary>
-        /// <param name="path"></param>
-        public List<document> getDocs()
-        {
-
-            if (index + 1 < allfilesSize)
-            {
-                index++;
-                string[] ext = allfiles[index].Split('.');
-                if (ext[ext.Length - 1].Equals("txt")) return null;
-                //List < document > ans = readfile(File.ReadAllText(allfiles[index++]));
-
-                //return ans;
-            }
-            return null;
         }
         /// <summary>
         /// this function create an document type objects from the string file, and sends it to the parser
@@ -81,7 +67,7 @@ namespace IR_engine
         /// <param name="file"> the string that constains all the data in the file</param>
         public void readfile(string file2, int queue)
         {
-
+            initiate();
             var watch2 = System.Diagnostics.Stopwatch.StartNew();
             List<document> docslist = new List<document>();
             string file = File.ReadAllText(file2);
@@ -215,7 +201,7 @@ namespace IR_engine
                     Model.locations.TryAdd(city, l);
                 }
             }
-            public int returnSize()
+        public int returnSize()
         {
             return allfilesSize;
         }
@@ -270,6 +256,16 @@ namespace IR_engine
         //    }
         //    return false;
         //}
-
+        public void Clear()
+        {
+            allfiles = null;
+            timepertDoc = 0;
+            readFiles_time = 0;
+            index = 0;
+            http = new HttpClient();
+            allfilesSize = 0;
+            parser = null;
+            Langs = new ConcurrentDictionary<string, byte>();
+        }
     }
 }

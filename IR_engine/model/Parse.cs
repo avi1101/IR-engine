@@ -163,8 +163,6 @@ namespace IR_engine
             toStem = tostem;
             stopwords = new HashSet<string>();
             stem = new Stemmer();
-            if (!File.Exists(path + "\\postingList.txt"))
-                File.CreateText(path + "\\postingList.txt");
             string stopPath = path + "\\stop_words.txt";
             string[] stops = File.ReadAllText(stopPath).Split('\n');
             foreach (string word in stops)
