@@ -144,8 +144,8 @@ namespace IR_engine
                     watch2.Stop();
                     double time =watch2.ElapsedMilliseconds;
                     time = (time / 1000.0);
-                    Console.WriteLine("total run time = " + time);
-                    test.Content = "Process took: "+time+"\n"+"We Indexed "+Model.docs.Count+"\n"+"We created "+m.indexList.Count+" terms";
+                    Console.WriteLine("total run time = " + time + "sec");
+                    test.Content = "Process took: "+time+"\n"+"We Indexed "+m.counter+" docs\n"+"We created "+m.indexList.Count+" terms";
                 }
             }
             else
