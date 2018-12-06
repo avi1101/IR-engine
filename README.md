@@ -12,6 +12,7 @@ The only search engine that doesnt track you, because it doesnt work!
 # Notes:
 - We have tested the engine if many lab desktops and we noticed eat performs NOTICEABLY better then others.
 - If you experience any kind of issues, please try the desktop next to you.
+- please make sure other apps wont choke the memory while our engine is up.
 
 # System requirements:
 - Multi core CPU
