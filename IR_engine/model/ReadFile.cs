@@ -44,8 +44,7 @@ namespace IR_engine
 
         private void initiate()
         {
-            string[] tmp = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
-            allfiles = tmp.ToList();
+            allfiles = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories).Where(x => Path.GetExtension(x) != ".txt").ToList();
             allfiles.Remove(path + "\\stop_words.txt");
             //TODO: remove also posting list files and index file
             allfilesSize = allfiles.Count;

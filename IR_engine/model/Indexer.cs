@@ -231,7 +231,7 @@ namespace IR_engine
 
         private void sortCity(int offset, string[] files, string pathToPosting)
         {
-            for (int i = offset; i < files.Length; i += (Model.cores))
+            for (int i = offset; i < files.Length; i += (3))
             {
                 List<string> fileContent = File.ReadAllText(files[i]).Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).ToList<string>();
                 fileContent = fileContent.OrderBy(s => s.Split(new string[] { "\t" }, StringSplitOptions.None)[0]).ToList();
@@ -250,7 +250,7 @@ namespace IR_engine
             string[] files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
             int fileCount = files.Length;
             List<Task> t = new List<Task>();
-            for (int i = 0; i < Model.cores; i++)
+            for (int i = 0; i < 3; i++)
             {
                 int k = i;
                 t.Add(Task.Factory.StartNew(() => sortCity(k, files, path)));

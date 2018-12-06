@@ -33,6 +33,7 @@ namespace IR_engine
         bool ToStem;
         string IndexPath;
         string outPath;
+        public double counter;
         public Dictionary<string, indexTerm> indexList;
 
         public bool toStem { get => ToStem; set => ToStem = value; }
@@ -74,6 +75,7 @@ namespace IR_engine
             indexer = null;
             IndexPath = "";
             path = "";
+            counter = 0;
         }
 
         public void index()
@@ -233,6 +235,7 @@ namespace IR_engine
             {
                 foreach (KeyValuePair<string, document> entry in docs)
                 {
+                    counter++;
                     sw.WriteLine(entry.Value.ToString());
                 }
             }
