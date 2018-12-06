@@ -64,7 +64,11 @@ namespace IR_engine
             return term != null &&
                    phrase == term.Phrase;
         }
-
+        /// <summary>
+        /// updates the terms posting details
+        /// </summary>
+        /// <param name="doc">the doc where the term was seen</param>
+        /// <param name="tf">the tf in the doc</param>
         public void AddToPosting(string doc, short tf)
         {
             this.icf += tf;
@@ -73,7 +77,10 @@ namespace IR_engine
                 return value;
             });
         }
-
+        /// <summary>
+        /// merges an dictionary to the terms addposting dictionary
+        /// </summary>
+        /// <param name="dictionary">the dictionary to merge</param>
         public void AddToPosting(ConcurrentDictionary<string, short> dictionary)
         {
             foreach(KeyValuePair<string, short> entry in dictionary)
@@ -82,7 +89,10 @@ namespace IR_engine
             }
             dictionary.Clear();
         }
-
+        /// <summary>
+        /// toString for the posting dictionary of the term
+        /// </summary>
+        /// <returns>the string of the posting list</returns>
         public string printPosting()
         {
             StringBuilder res = new StringBuilder();
@@ -92,12 +102,15 @@ namespace IR_engine
             }
             return res.ToString();
         }
-
         public override string ToString()
         {
             return Phrase + '\t' + isUpperInCurpus + '\t' + type + '\t' + printPosting() + '\t' + icf + '\t' + posting.Count;
         }
-
+        /// <summary>
+        /// returns the term's tf value in a specifit doc
+        /// </summary>
+        /// <param name="docname">the doc</param>
+        /// <returns>the tf number of the term in the dc</returns>
         public short getTFinDoc(string docname)
         {
             return posting[docname];

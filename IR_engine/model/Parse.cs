@@ -186,6 +186,11 @@ namespace IR_engine
             DocName = document.DocID;
             parseText(text, queue);
         }
+        /// <summary>
+        /// checks whether the string is a number. regular or fraction
+        /// </summary>
+        /// <param name="str">the string checked</param>
+        /// <returns>a boolean value whether the string contains is a number</returns>
         private bool IsNumber(string str)
         {
             if (str.Length == 0) return false;
@@ -197,6 +202,11 @@ namespace IR_engine
             }
             return true;
         }
+        /// <summary>
+        /// this is the main function of the class, it classifiy each term and sends it to the indexer
+        /// </summary>
+        /// <param name="words">the document as a array of strings</param>
+        /// <param name="queue">the task number</param>
         public void parseText(string[] words, int queue)
         {
             words_length = words.Length;
@@ -402,7 +412,12 @@ namespace IR_engine
             termsInDoc.Clear();
         }
 
-        //TODO: need to implement isDate
+        /// <summary>
+        /// checkes whether the string is a date type term
+        /// </summary>
+        /// <param name="words">the document as a array of words</param>
+        /// <param name="idx">the current word checked as a place in the array</param>
+        /// <returns>boolean value whether the term is date or not</returns>
         private bool isDate(string[] words, int idx)
         {
             int i = idx + 1;
@@ -434,6 +449,12 @@ namespace IR_engine
                 return true;
             return false;
         }
+        /// <summary>
+        /// checkes whether the string is a time type term
+        /// </summary>
+        /// <param name="words">the document as a array of words</param>
+        /// <param name="idx">the current word checked as a place in the array</param>
+        /// <returns>boolean value whether the term is time or not</returns>
         private bool Istime(string[] words,int idx)
         {
             if (!IsNumber(words[idx])) return false;
@@ -444,6 +465,13 @@ namespace IR_engine
                 if (allAmounts.Contains(words[idx + 1]) && times.Contains(words[idx + 2])) return true;
             return false;
         }
+        /// <summary>
+        /// creates a term based on the type and requirments
+        /// </summary>
+        /// <param name="words">the document as a array of words</param>
+        /// <param name="idx">the current word checked as a place in the array</param>
+        /// <param name="j">used to update the index</param>
+        /// <returns>the term</returns>
         public string setTime(string[]words,int idx,out int j)
         {
             string output = null;
@@ -478,6 +506,12 @@ namespace IR_engine
                     return true;
             return false;
         }
+        /// <summary>
+        /// checkes whether the string is a distance type term
+        /// </summary>
+        /// <param name="words">the document as a array of words</param>
+        /// <param name="idx">the current word checked as a place in the array</param>
+        /// <returns>boolean value whether the term is distance or not</returns>
         private bool Isdistance(string[] words, int idx)
         {
             if (!IsNumber(words[idx])) return false;
@@ -486,6 +520,11 @@ namespace IR_engine
                     return true;
             return false;
         }
+        /// <summary>
+        /// checkes whether the string contains a number (only a regular number)
+        /// </summary>
+        /// <param name="s">the string</param>
+        /// <returns>boolean value whether the string contains a regular number or not</returns>
         private bool containsNumbers(string s)
         {
             //for (int i = 0; i < s.Length; i++)
@@ -529,7 +568,11 @@ namespace IR_engine
             }
             return true;
         }
-
+        /// <summary>
+        /// checkes whether an input string is a regular number
+        /// </summary>
+        /// <param name="input">the checked string</param>
+        /// <returns>a boolean value</returns>
         bool IsComNum(string input)
         {
             int len = input.Length;
@@ -540,6 +583,13 @@ namespace IR_engine
             }
             return true;
         }
+        /// <summary>
+        /// creates a term based on the type and requirments
+        /// </summary>
+        /// <param name="words">the document as a array of words</param>
+        /// <param name="idx">the current word checked as a place in the array</param>
+        /// <param name="j">used to update the index</param>
+        /// <returns>the term</returns>
         string Isprecent(string[] words, int idx, out int j)
         {
             if (IsComNum(words[idx]) && IsComNum(words[idx + 1]) && (words[idx + 2] == "%" || percent.Contains(words[idx + 2])))
@@ -628,7 +678,6 @@ namespace IR_engine
             }
 
         }
-
         /// <summary>
         /// this method gets 2 strings that contains a date and returns a single string with the formatted date
         /// </summary>
@@ -664,11 +713,25 @@ namespace IR_engine
                 sol = month + "-" + value;
             return sol;
         }
+        /// <summary>
+        /// creates a term based on the type and requirments
+        /// </summary>
+        /// <param name="words">the document as a array of words</param>
+        /// <param name="idx">the current word checked as a place in the array</param>
+        /// <param name="j">used to update the index</param>
+        /// <returns>the term</returns>
         string Setdistance(string[] words, int idx, out int j)
         {
             j = idx + 1;
             return words[idx] + " " + words[idx + 1];
         }
+        /// <summary>
+        /// creates a term based on the type and requirments
+        /// </summary>
+        /// <param name="words">the document as a array of words</param>
+        /// <param name="idx">the current word checked as a place in the array</param>
+        /// <param name="j">used to update the index</param>
+        /// <returns>the term</returns>
         string Setprice(int idx, string[] words, out int j)
         {
             string val = "";
@@ -825,6 +888,13 @@ namespace IR_engine
 
             }
         }
+        /// <summary>
+        /// creates a term based on the type and requirments
+        /// </summary>
+        /// <param name="words">the document as a array of words</param>
+        /// <param name="idx">the current word checked as a place in the array</param>
+        /// <param name="j">used to update the index</param>
+        /// <returns>the term</returns>
         string SetExp(int idx, string[] words, out int j, int queue, out term.Type type)
         {
             string word = words[idx];
@@ -919,14 +989,13 @@ namespace IR_engine
             if (sb.ToString().Length < 3) return "";
             return sb.ToString();
         }
+        /// <summary>
+        /// adds the term to theDictionary
+        /// </summary>
+        /// <param name="queue">the task number</param>
+        /// <param name="t">the term</param>
         void AddTerm(int queue, term t)
         {
-            //t.AddToPosting(DocName, 1);
-            //Model.queueList[queue].AddOrUpdate(t.Phrase, t, (key, value) => {
-            //    value.AddToPosting(DocName, 1);
-            //    if (!(t.Phrase[0] >= 'A' && t.Phrase[0] <= 'Z')) value.IsUpperInCurpus = false;
-            //    return value;
-            //});
             string s = t.Phrase;
             if (s.Equals("-")) return;
             term.Type type = t.Type1;
@@ -1019,6 +1088,11 @@ namespace IR_engine
             }
             return word;
         }
+        /// <summary>
+        /// cleans the word from unnedded chars
+        /// </summary>
+        /// <param name="word">the string to clean</param>
+        /// <returns>the cleaned string</returns>
         string Fixword(string word)
         {
             word=word.Replace("\'", "");
@@ -1074,6 +1148,11 @@ namespace IR_engine
             }
             return number;
         }
+        /// <summary>
+        /// help Fixword to remove problematic words
+        /// </summary>
+        /// <param name="word">the word to fix</param>
+        /// <returns>teh cleaned word</returns>
         private string TrimtoRemove(string word)
         {
             StringBuilder sb = new StringBuilder();
@@ -1109,6 +1188,12 @@ namespace IR_engine
             }
             return sb.ToString();
         }
+        /// <summary>
+        /// replaces the Contains function in c#, more efficient
+        /// </summary>
+        /// <param name="word">the checked word</param>
+        /// <param name="del">the delimiter to search for</param>
+        /// <returns>boolean value</returns>
         public static bool hasChar(string word, char del)
         {
             for (int i = 0; i < word.Length; i++)

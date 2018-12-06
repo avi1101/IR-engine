@@ -124,6 +124,10 @@ namespace IR_engine
                 }
             }
         }
+        /// <summary>
+        /// creates a location object and adds the location to the dictionary
+        /// </summary>
+        /// <param name="city">the name of the location city</param>
         public static void addLocation(string city)
         {
             string city2= city;
@@ -199,10 +203,19 @@ namespace IR_engine
                     Model.locations.TryAdd(city, l);
                 }
             }
+        /// <summary>
+        /// getter to the number of files
+        /// </summary>
+        /// <returns></returns>
         public int returnSize()
         {
             return allfilesSize;
         }
+        /// <summary>
+        /// cleans a city according to a specifit delimiters
+        /// </summary>
+        /// <param name="input">the string to clean</param>
+        /// <returns>the cleand string</returns>
         public static string rmvStr(string input)
         {
             StringBuilder stb = new StringBuilder();
@@ -216,6 +229,9 @@ namespace IR_engine
             }
             return stb.ToString();
         }
+        /// <summary>
+        /// clears all the local dictionaries
+        /// </summary>
         public void Clear()
         {
             allfiles = null;

@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace IR_engine
-{
+{/// <summary>
+/// thsi function represents the IndexTerm object, a term with less data to be saved at the dictionary
+/// </summary>
     public class indexTerm
     {
         public int icf;

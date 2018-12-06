@@ -77,7 +77,9 @@ namespace IR_engine
             path = "";
             counter = 0;
         }
-
+        /// <summary>
+        /// this fucntion is incharge of all the logic operations in the engine (the parser and the index)
+        /// </summary>
         public void index()
         {
             if(Path.Equals("") || IndexPath1.Equals(""))
@@ -190,7 +192,9 @@ namespace IR_engine
             MessageBox.Show("Done indexing the curpus!\nPorking time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+" min", "DONE!");
             isWorking = false;
         }
-
+        /// <summary>
+        /// funtion to free up the ram space by writing the accumulated values to the Disk
+        /// </summary>
         public void manageResources()
         {
             for (int i = 0; i < queueList.Count; i++)
@@ -241,16 +245,28 @@ namespace IR_engine
             }
             docs.Clear();
         }
-
+        /// <summary>
+        /// a getter of the indexTerm dictionary
+        /// </summary>
+        /// <returns>the dictionary of the terms </returns>
         public Dictionary<string, indexTerm> getDictionary()
         {
             return indexList;
         }
+        /// <summary>
+        /// this function loads the dictionary from the given index to the ram
+        /// </summary>
+        /// <param name="indexPath">the path of the index int the disk</param>
+        /// <returns>the index as a dictionary data structure</returns>
         public Dictionary<string, indexTerm> load_index(string indexPath)
         {
             indexList = Indexer.Load_Index(indexPath);
             return indexList;
         }
+        /// <summary>
+        /// creates a dictionary of cities based a list of found cities ' is the posting list
+        /// </summary>
+        /// <param name="files">list of temp city files</param>
         public static void createCityDic( List<string> files)
         {
             List<Task> lst = new List<Task>();
@@ -298,6 +314,11 @@ namespace IR_engine
                 }
             }
         }
+        /// <summary>
+        /// boolean value whether the string contains a digit
+        /// </summary>
+        /// <param name="word"></param>
+        /// <returns></returns>
         static bool hasNum(string word)
         {
             for (int i = 0; i < word.Length; i++)
@@ -307,6 +328,11 @@ namespace IR_engine
             }
             return false;
         }
+        /// <summary>
+        /// cleans all the unnedded and un relevent chars from the string
+        /// </summary>
+        /// <param name="word">the string to edit</param>
+        /// <returns>the new cleaner string</returns>
         public static string cleanAll(string word)
         {
             StringBuilder sb = new StringBuilder();
@@ -323,6 +349,9 @@ namespace IR_engine
             }
             return sb.ToString();
         }
+        /// <summary>
+        /// cleans all the dictionaries in the program
+        /// </summary>
         public void Memorydump()
         {
             queueList.Clear();

@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
 namespace IR_engine
-{
+{/// <summary>
+/// this class represents the Location object (city and relevent data)
+/// </summary>
     public class Location
     {
         private string country;
@@ -32,6 +34,10 @@ namespace IR_engine
             city = "";
             locationsInDocs = new ConcurrentDictionary<string, List<int>>();
         }
+        /// <summary>
+        /// this function update the location and adds a dictionary of doc names and location in docs
+        /// </summary>
+        /// <param name="n">the dictionary of the locationsInDocs to add</param>
         public void addOccurs(ConcurrentDictionary<string, List<int>> n)
         {
             foreach(KeyValuePair<string, List<int>> entry in n)
