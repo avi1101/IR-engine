@@ -87,6 +87,7 @@ namespace IR_engine
                 MessageBox.Show("Invalid path");
                 return;
             }
+            counter = 0;
             isWorking = true;
             readfo = new ReadFile(path, toStem, cores);
             if (toStem) { if (!File.Exists(IndexPath1 + "\\EnableStem")) { Directory.CreateDirectory(IndexPath1 + "\\EnableStem"); } outPath = IndexPath1 + "\\EnableStem"; }
