@@ -32,7 +32,6 @@ namespace IR_engine
         int cores;
         public static HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')',' '};
         public static ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
-        //public ConcurrentDictionary<string, Location> locFound = new ConcurrentDictionary<string, Location>();
 
         public ReadFile(string path, bool ToStem, int cores)
         {
@@ -45,7 +44,7 @@ namespace IR_engine
         private void initiate()
         {
             allfiles = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories).Where(x => Path.GetExtension(x) != ".txt").ToList();
-            allfiles.Remove(path + "\\stop_words.txt");
+            //allfiles.Remove(path + "\\stop_words.txt");
             //TODO: remove also posting list files and index file
             allfilesSize = allfiles.Count;
             parser = new Parse[cores];
@@ -65,9 +64,6 @@ namespace IR_engine
         /// <param name="file"> the string that constains all the data in the file</param>
         public void readfile(string file2, int queue)
         {
-            //if (allfiles == null) initiate();
-            var watch2 = System.Diagnostics.Stopwatch.StartNew();
-            List<document> docslist = new List<document>();
             string file = File.ReadAllText(file2);
             //file = File.ReadAllText(file);
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.RemoveEmptyEntries);
@@ -85,17 +81,17 @@ namespace IR_engine
                     st1 = doc.IndexOf("<DOCNO>");
                     if (st1 != -1)
                         end1 = doc.IndexOf("</DOCNO>", st1);
-                    if (st1 != -1 && end1 != -1) { docNo = /*RemoveStringReader*/(/*doc.Substring(st1 + 7, (end1 - st1) - 8));*/doc.Substring(st1 + 7, (end1 - st1) - 8)); }
+                    if (st1 != -1 && end1 != -1) { docNo = /*RemoveStringReader*/(/*doc.Substring(st1 + 7, (end1 - st1) - 8));*/doc.Substring(st1 + 7, (end1 - st1) - 7)); }
                     st2 = doc.IndexOf("<DATE1>");
                     if (st2 != -1)
                         end2 = doc.IndexOf("</DATE1>", st2, 50);
-                    if (st2 != -1 && end2 != -1) { date =/* RemoveStringReader*/(/*doc.Substring(st2 + 7, (end2 - st2) - 8));*/doc.Substring(st2 + 7, (end2 - st2) - 8)); }
+                    if (st2 != -1 && end2 != -1) { date =/* RemoveStringReader*/(/*doc.Substring(st2 + 7, (end2 - st2) - 8));*/doc.Substring(st2 + 7, (end2 - st2) - 7)); }
                     st3 = doc.IndexOf("<TI>");
                     if (st3 != -1) end3 = doc.IndexOf("</TI>", st3, 100);
-                    if (st3 != -1 && end3 != -1) { head =/* RemoveStringReader*/(/*doc.Substring(st3 + 4, (end3 - st3) - 4));*/doc.Substring(st3 + 4, (end3 - st3) - 4)); }
+                    if (st3 != -1 && end3 != -1) { head =/* RemoveStringReader*/(/*doc.Substring(st3 + 4, (end3 - st3) - 4));*/doc.Substring(st3 + 4, (end3 - st3) - 3)); }
                     st4 = doc.IndexOf("<TEXT>");
                     if (st4 != -1) end4 = doc.IndexOf("</TEXT>", st4);
-                    if (st4 != -1 && end4 != -1) { data = /*RemoveStringReader*/(/*doc.Substring(st4 + 6, (end4 - st4) - 7));*/doc.Substring(st4 + 6, (end4 - st4) - 7)); }
+                    if (st4 != -1 && end4 != -1) { data = /*RemoveStringReader*/(/*doc.Substring(st4 + 6, (end4 - st4) - 7));*/doc.Substring(st4 + 6, (end4 - st4) - 6)); }
                     st5 = doc.IndexOf("<F P=104>");
                     if (st5 != -1)
                     { 

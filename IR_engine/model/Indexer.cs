@@ -158,7 +158,7 @@ namespace IR_engine
                     {
                         string[] splitted = sortedFirstLines[i].Split('\t');
                         if (type != (term.Type)Enum.Parse(typeof(term.Type), splitted[2], true)) continue;
-                        Cap &= splitted[1].Equals("True") ? true : false;
+                        Cap &= splitted[1].Equals("T") ? true : false;
                         minLine.Append(splitted[3]);
                         icf += double.Parse(splitted[4]);
                         idf += double.Parse(splitted[5]);
@@ -272,7 +272,6 @@ namespace IR_engine
                     foreach (string s in fileContent)
                         sr.WriteLine(s);
                 }
-                Console.WriteLine(i + " files sorted");
             }
         }
         /// <summary>

@@ -151,6 +151,7 @@ namespace IR_engine
         public string DocName = "";
         public double time = 0;
         StringBuilder sb = new StringBuilder();
+        List<IRule> rules;
 
         /// <summary>
         /// this is the constructor for the Parser class
@@ -163,13 +164,14 @@ namespace IR_engine
             toStem = tostem;
             stopwords = new HashSet<string>();
             stem = new Stemmer();
-            string stopPath = path + "\\stop_words.txt";
+            string stopPath = Directory.GetFiles(path, "stop_words.txt", SearchOption.AllDirectories).ToArray()[0];
             string[] stops = File.ReadAllText(stopPath).Split('\n');
             foreach (string word in stops)
             {
                 string stpword = word.Trim();
                 stopwords.Add(stpword);
             }
+            rules = RuleFactory.Factory();
         }
         /// <summary>
         /// gets the text part of the document, turns it into a list of words and sends to parser
@@ -973,8 +975,6 @@ namespace IR_engine
                 sb.Append(exp);
                 if (part + 1 < splittedExpression.Length)
                     sb.Append("-");
-                if (toStem)                                                             //stem if needed
-                    exp = stem.stemTerm(exp);
                 //term t = new term(exp);
                 //AddTerm(queue, t);                                      //adding a new term or updating an existing term
                 newWords.Add(exp);
@@ -1061,17 +1061,6 @@ namespace IR_engine
         //  //  Console.WriteLine("Term: " + ex.ToString());
         //    return newWords.Count > 1 ? ex.ToString() : "";
 
-        //}
-        //private bool hasEndQu(string word)
-        //{
-        //    int len = word.Length;
-        //    for (int i = len - 1; i >= 0; i--)
-        //    {
-        //        if (Char.IsLetterOrDigit(word[i])) return false;
-        //        if (word[i] == '"') return true;
-        //    }
-        //    return false;
-        //}
         private string TrimAll(string word)
         {
             int len = word.Length;

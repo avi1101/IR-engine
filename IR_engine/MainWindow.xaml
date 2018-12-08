@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:IR_engine"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="900">
-    <Grid>
+        Title="MainWindow" Height="550" Width="910">
+    <Grid Background="#FFEDEDED">
         <Button x:Name="Browse" Content="Browse" HorizontalAlignment="Center" Margin="494,-100,214.6,0" VerticalAlignment="Center" Width="85" Height="26" FontFamily="Showcard Gothic" Background="White" Foreground="#FF009FFF" BorderBrush="#FF5F5F5F" Click="Browse_Click">
             <Button.Effect>
                 <DropShadowEffect/>
@@ -51,8 +51,12 @@
             </Label.Effect>
         </Label>
         <Image x:Name="image" Source="barvaz.JPG" HorizontalAlignment="Center" Height="145" Margin="-700,-300,0,0" VerticalAlignment="Center" Width="169"/>
-        <Label x:Name="test" Content="{Binding Path=STATUS}" HorizontalAlignment="Left" Margin="10,180,0,0" VerticalAlignment="Top" Height="230" Width="284"/>
-        <Button x:Name="showDic" Content="show dictionary" HorizontalAlignment="Center" Margin="0,375,0,0" VerticalAlignment="Center" Width="75" Click="showDic_Click"/>
+        <Label x:Name="test" Content="{Binding Path=STATUS}" HorizontalAlignment="Center" Margin="10,197,610,35.8" VerticalAlignment="Center" Height="288" Width="284"/>
+        <Button x:Name="showDic" Content="show dictionary" HorizontalAlignment="Center" Margin="327,415,447.6,10.4" VerticalAlignment="Center" Width="119" Click="showDic_Click" Foreground="Black" BorderBrush="#FF00C3FF" Background="#FF00C3FF" Height="45">
+            <Button.Effect>
+                <DropShadowEffect/>
+            </Button.Effect>
+        </Button>
         <TextBox x:Name="pathText" HorizontalAlignment="Center" Height="23" Margin="-40,-100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="199"/>
         <Button x:Name="BrowseIndex" Content="Browse" HorizontalAlignment="Center" Margin="494,-10,214.6,0" VerticalAlignment="Center" Width="85" Height="26" FontFamily="Showcard Gothic" Background="White" Foreground="#FF009FFF" BorderBrush="#FF5F5F5F" Click="BrowseIndex_Click">
             <Button.Effect>
@@ -60,10 +64,10 @@
             </Button.Effect>
         </Button>
         <TextBox x:Name="IndexPathText" HorizontalAlignment="Center" Height="23" Margin="-40,-10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="199"/>
-        <ComboBox x:Name="Language"  HorizontalAlignment="Left" Margin="544,290,0,0" VerticalAlignment="Top" Width="120"/>
-        <Label Content="Languages" HorizontalAlignment="Left" Height="32" Margin="566,267,0,0" VerticalAlignment="Top" Width="119"/>
+        <ComboBox x:Name="Language"  HorizontalAlignment="Center" Margin="698,315,75,173.8" VerticalAlignment="center" Width="131" Height="32"/>
+        <Label Content="Languages" HorizontalAlignment="center" Height="32" Margin="722,278,112,210.8" VerticalAlignment="center" Width="70"/>
         <Button Width="82" x:Name="Load_Index" HorizontalAlignment="Center" Content="Load Index" VerticalAlignment="Center"
-            Height="82" Margin="310,250,0,0" Foreground="#FF0A0C0F" FontFamily="Stencil" FontSize="12
+            Height="82" Margin="562,319,249.6,69.4" Foreground="#FF0A0C0F" FontFamily="Stencil" FontSize="12
                 " AutomationProperties.HelpText="click here to load Index" MouseEnter="load_MouseEnter" MouseLeave="load_MouseLeave" Click="Load_Index_Click">
             <Button.Effect>
                 <DropShadowEffect/>
@@ -95,7 +99,13 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button x:Name="reset" Content="reset" HorizontalAlignment="Left" Height="59" Margin="727,174,0,0" VerticalAlignment="Top" Width="60" Click="reset_Click"/>
+        <Button x:Name="reset" Content="reset" HorizontalAlignment="center" Height="45" Margin="150,405,0,0" VerticalAlignment="center" Width="119" Click="reset_Click" BorderBrush="Red" Foreground="Black" Background="Red">
+            <Button.Effect>
+                <DropShadowEffect/>
+            </Button.Effect>
+        </Button>
+        <Label Content="Curpus Path" HorizontalAlignment="Center" Margin="460,-90,0,0" VerticalAlignment="Center"/>
+        <Label Content="Index Directory Path" HorizontalAlignment="Center" Margin="500,-10,0,0" VerticalAlignment="center"/>
 
 
 

@@ -104,7 +104,21 @@ namespace IR_engine
         }
         public override string ToString()
         {
-            return Phrase + '\t' + isUpperInCurpus + '\t' + type + '\t' + printPosting() + '\t' + icf + '\t' + posting.Count;
+            char b = isUpperInCurpus ? 'T' : 'F';
+            StringBuilder sb = new StringBuilder();
+            sb.Append(Phrase);
+            sb.Append("\t");
+            sb.Append(b);
+            sb.Append("\t");
+            sb.Append(type);
+            sb.Append("\t");
+            sb.Append(printPosting());
+            sb.Append("\t");
+            sb.Append(icf);
+            sb.Append("\t");
+            sb.Append(posting.Count);
+            //return Phrase + '\t' + b + '\t' + type + '\t' + printPosting() + '\t' + icf + '\t' + posting.Count;
+            return sb.ToString();
         }
         /// <summary>
         /// returns the term's tf value in a specifit doc

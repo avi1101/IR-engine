@@ -31,13 +31,11 @@ namespace IR_engine
         string path = "";
         string IndexPath = "";
         Model m;
-        volatile int time = 1;
-        volatile string stat = "";
+        bool isDictionaryStemmed;
 
         public MainWindow()
         {
             InitializeComponent();
-            Console.WriteLine("START");
             //Model.PropertyChanged += delegate (object sender, PropertyChangedEventArgs e)
             //{
             //    if (e.PropertyName == "STATUS")
@@ -46,6 +44,8 @@ namespace IR_engine
             m = new Model();
             path = "";
             IndexPath = "";
+            isDictionaryStemmed = false;
+            test.Content = "Welcome to BarvazBarvazGo!\nPlease make sure you have internet connection.";
         }
 
         /// <summary>
@@ -124,13 +124,13 @@ namespace IR_engine
                 else
                 {
                     test.Content = "Working, please wait...";
+                    isDictionaryStemmed = stem.IsChecked.Value;
                     var watch2 = System.Diagnostics.Stopwatch.StartNew();
-                    Thread.Sleep(100);
                     //m = new Model(path, stem.IsChecked.Value, IndexPath);
                     m.IndexPath1 = IndexPath;
                     m.Path = path;
                     m.toStem = stem.IsChecked.Value;
-                    m.index();
+                    Task.Factory.StartNew(()=>m.index());
                     //Time();
                     var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
                     string a = null;
@@ -143,8 +143,8 @@ namespace IR_engine
                     watch2.Stop();
                     double time =watch2.ElapsedMilliseconds;
                     time = (time / 1000.0);
-                    Console.WriteLine("total run time = " + time + "sec");
-                    test.Content = "Process took: "+time+"\n"+"We Indexed "+m.counter+" docs\n"+"We created "+m.indexList.Count+" terms";
+                    //Console.WriteLine("total run time = " + time + "sec");
+                    //test.Content = "Process took: "+time+"\n"+"We Indexed "+m.counter+" docs\n"+"We created "+m.indexList.Count+" terms";
                 }
             }
             else
@@ -175,23 +175,29 @@ namespace IR_engine
 
         private void showDic_Click(object sender, RoutedEventArgs e)
         {
+            if (m == null)
+            {
+                test.Content = "You need to run the engine first";
+                return;
+            }
             if (Model.isWorking)
             {
                 test.Content = "Engine is working, please wait for a completion message to pop up";
                 return;
             }
-            if(m == null)
+            Dictionary<string, indexTerm> index = m.getDictionary();
+            if (index.Count == 0)
             {
-                test.Content = "You need to run the engine first";
+                test.Content = "No index was loaded.\nPlease load the index first";
+                return;
+            }
+            if (isDictionaryStemmed != stem.IsChecked.Value)
+            {
+                string s = isDictionaryStemmed ? "is" : "isn't";
+                test.Content = "The current loaded index " + s + " stemmed.\nin order to load the desired index,\nplease load it first by pressing the 'load index' button.";
                 return;
             }
             Window dictionary;
-            //if (path == null || path.Equals("") || !File.Exists(path+ "\\index_elad_avi.txt"))
-            //    dictionary = new DictionaryList(null);
-            //else
-            //    dictionary = new DictionaryList(null);
-            Dictionary<string, indexTerm> index = m.getDictionary();
-            test.Content = index.Count;
             dictionary = new DictionaryList(index);
             dictionary.Show();
         }
@@ -215,9 +221,14 @@ namespace IR_engine
         private void Load_Index_Click(object sender, RoutedEventArgs e)
         {
             test.Content = "this may take a few minutes";
-            if (Model.isWorking || (IndexPathText.Text == "" && IndexPath.Equals("")))
+            if (Model.isWorking)
             {
                 test.Content = "Engine is working, please wait for a completion message to pop up";
+                return;
+            }
+            if((IndexPathText.Text == "" && IndexPath.Equals("")))
+            {
+                test.Content = "No index path provided.\nPlease input a path to the index.txt file";
                 return;
             }
             string ipt=null;
@@ -227,6 +238,7 @@ namespace IR_engine
                 test.Content = "No Index in path";
             else
             {
+                isDictionaryStemmed = stem.IsChecked.Value;
                 m.load_index(ipt);
                 test.Content = "Index was succesfully loaded from the file:\n" + ipt + "\\index.txt";
             }
@@ -234,8 +246,17 @@ namespace IR_engine
 
         private void reset_Click(object sender, RoutedEventArgs e)
         {
-            IndexPath = IndexPathText.Text;
-            path = pathText.Text;
+            if(m != null)
+                m.Memorydump();
+            if (IndexPath.Equals(""))
+            {
+                IndexPath = IndexPathText.Text;
+            }
+            if(IndexPath.Equals(""))
+            {
+                test.Content = "Memory cleared but posting and index directories\ndid not because there is no path to the directory.\nPlease insert an index directory path for the posting\nfiles to be cleaned.";
+                return;
+            }
             if (Directory.Exists(IndexPath + "\\DisableStem"))
             {
                 Directory.Delete(IndexPath + "\\DisableStem", true);
@@ -244,18 +265,9 @@ namespace IR_engine
             {
                 Directory.Delete(IndexPath + "\\EnableStem", true);
             }
-            if(Directory.Exists(path + "\\Posting_and_indexes"))
-            {
-                Directory.Delete(path + "\\Posting_and_indexes", true);
-            }
-            if (Directory.Exists(path + "\\cityIndex"))
-            {
-                Directory.Delete(path + "\\cityIndex", true);
-            }
-            File.Delete(path + "\\city_dictionary.txt");
-            File.Delete(path + "\\documents.txt");
-            File.Delete(path + "\\postingList.txt");
-            m.Memorydump();
+            File.Delete(IndexPath + "\\city_dictionary.txt");
+            File.Delete(IndexPath + "\\documents.txt");
+            //m.Memorydump();
         }
     }
 }

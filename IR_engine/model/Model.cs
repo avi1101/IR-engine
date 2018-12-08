@@ -27,6 +27,7 @@ namespace IR_engine
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
         //end concurrent variables
         public static bool isWorking = false;
+        public bool isDictionaryStemmed;
         Indexer indexer;
         ReadFile readfo;
         string path;
@@ -87,6 +88,11 @@ namespace IR_engine
                 MessageBox.Show("Invalid path");
                 return;
             }
+            if (File.Exists(IndexPath1 + @"\documents.txt"))
+                File.Delete(IndexPath1 + @"\documents.txt");
+            if (File.Exists(IndexPath1 + @"\city_dictionary.txt"))
+                File.Delete(IndexPath1 + @"\city_dictionary.txt");
+            Memorydump();
             counter = 0;
             isWorking = true;
             readfo = new ReadFile(path, toStem, cores);
@@ -95,7 +101,7 @@ namespace IR_engine
             indexer = new Indexer(outPath, path + "\\Posting_and_indexes");
 
             if (!Directory.Exists(path + "\\cityIndex")) { Directory.CreateDirectory(path + "\\cityIndex"); }
-
+            isDictionaryStemmed = toStem;
             var watch = System.Diagnostics.Stopwatch.StartNew();
             isWorking = true;
             // step one, the parsing
@@ -116,7 +122,7 @@ namespace IR_engine
             for(int i=0;i< locsList.Count; i++) { }
             var list = locations.Keys.ToList();
             list.Sort();
-            using (StreamWriter ct = new StreamWriter(Path + "\\city_dictionary.txt"))
+            using (StreamWriter ct = new StreamWriter(IndexPath1 + "\\city_dictionary.txt"))
             {
                 foreach(var key in list)
                 {
@@ -188,9 +194,12 @@ namespace IR_engine
             indexList = indexer.CreateIndex();
             Directory.Delete(Path + "\\Posting_and_indexes");
             indexer.MergeLocations(path + @"\cityIndex");
+            Directory.Delete(path + @"\cityIndex");
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
-            MessageBox.Show("Done indexing the curpus!\nPorking time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+" min", "DONE!");
+            MessageBox.Show("Done indexing the curpus!\nProccessing time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+" min\n"+
+                +double.Parse(elapsedMs.ToString()) / 1000.0+" sec\n"+
+                "Terms Parsed: " +indexList.Count+"\nDocuments Parsed: "+counter, "BarvazBarvazGo");
             isWorking = false;
         }
         /// <summary>
@@ -236,7 +245,7 @@ namespace IR_engine
                 }
                 locsList[i].Clear();
             }
-            using (StreamWriter sw = new StreamWriter(path + "\\documents.txt", true))
+            using (StreamWriter sw = new StreamWriter(IndexPath1 + "\\documents.txt", true))
             {
                 foreach (KeyValuePair<string, document> entry in docs)
                 {
