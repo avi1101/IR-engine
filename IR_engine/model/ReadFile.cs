@@ -110,7 +110,9 @@ namespace IR_engine
                     }
                     string city = "";
                     if (st5 != -1 && end5 != -1) { city = ( /*doc.Substring(st5 + 9, (end5 - st5) - 4).Trim();*/sb.ToString(st5 + 9, (end5 - st5) - 9)); }
-                    document d = new document(data, docNo, date, head, city.Split(' ')[0]);
+                    string[] c = city.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    string cityName = c.Length > 1 ? c[0] : "";
+                    document d = new document(data, docNo, date, head, cityName);
                     Model.docs.TryAdd(docNo, d);
                     parser[queue].Text2list(d, queue);
                 }
