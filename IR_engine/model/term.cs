@@ -8,48 +8,35 @@ using System.Collections.Concurrent;
 namespace IR_engine
 {
      public class term
-    {
-        public static int postingFileLine = 0; //global variable to assign pointers
+     {
+        public enum Type { number, date, expression, distance, percentage, price, word, range, time };
 
-        int pointer;   // pointer to the line in the posting list file
-        string postingFile;// pointer to the posting list file
         string phrase; // the phrase itself
-        int numOfDocs; // the number of docs this term is in
-        public int idf = 0;
+        public int idf = 0; // the number of docs this term is in
+        public int icf = 0;
+        Type type;
 
         //used for global information, global occurances of the term in the curpus and if upper
-        int globalOccurances;
         bool isUpperInCurpus;
         //end global variables
 
-        //used to count occurances in the currect file being parsed
-        string currectDoc;
-        int currectCount;
-        //end currect variables
+        public ConcurrentDictionary<string, short> posting; //string = doc name, int = occurances
 
-        public ConcurrentDictionary<string, int> posting; //string = doc name, int = occurances
-
-        List<string> postingList; //this will be used in the format: <docname>_<number> of occurances of the term>
 
         public term()
         {
-            postingFile = "";
             IsUpperInCurpus = true;
-            postingList = new List<string>();
-            numOfDocs = globalOccurances = 0;
             phrase = "";
-            currectDoc = "";
-            posting = new ConcurrentDictionary<string, int>();
+            posting = new ConcurrentDictionary<string, short>();
+            idf = icf = 0;
         }
 
         public term(string phrase)
         {
             Phrase = phrase;
             IsUpperInCurpus = true;
-            postingList = new List<string>();
-            numOfDocs = globalOccurances = 0;
-            currectDoc = "";
-            posting = new ConcurrentDictionary<string, int>();
+            idf = icf = 0;
+            posting = new ConcurrentDictionary<string, short>();
         }
 
         public string Phrase
@@ -57,16 +44,14 @@ namespace IR_engine
             set { phrase = value; }
             get { return phrase; }
         }
-        public int NumofDocs
+        public int Icf
         {
-            set { numOfDocs = value; }
-            get { return numOfDocs;}
+            set { Icf = value; }
+            get { return Icf; }
         }
 
-        public int GlobalOccurances { get => globalOccurances; set => globalOccurances = value; }
         public bool IsUpperInCurpus { get => isUpperInCurpus; set => isUpperInCurpus = value; }
-        public int Pointer { get => pointer; set => pointer = value; }
-        public string PostingFile { get => postingFile; set => postingFile = value; }
+        public Type Type1 { get => type; set => type = value; }
 
         /// <summary>
         /// this method check equality between this object and a given object
@@ -79,52 +64,78 @@ namespace IR_engine
             return term != null &&
                    phrase == term.Phrase;
         }
-
-        public override int GetHashCode()
+        /// <summary>
+        /// updates the terms posting details
+        /// </summary>
+        /// <param name="doc">the doc where the term was seen</param>
+        /// <param name="tf">the tf in the doc</param>
+        public void AddToPosting(string doc, short tf)
         {
-            return 2090604936 + EqualityComparer<string>.Default.GetHashCode(phrase);
-        }
-
-        public void shown()
-        {
-            numOfDocs++;
-        }
-
-        public void addDocumentToPostingList(string filename, int occurances)
-        {
-            postingList.Add(filename + "_" + occurances);
-        }
-
-        public void AddToPosting(string doc, int tf)
-        {
+            this.icf += tf;
             posting.AddOrUpdate(doc, tf, (key, value) => {
                 value += tf;
                 return value;
             });
         }
-
-        public void AddToPosting(ConcurrentDictionary<string, int> dictionary)
+        /// <summary>
+        /// merges an dictionary to the terms addposting dictionary
+        /// </summary>
+        /// <param name="dictionary">the dictionary to merge</param>
+        public void AddToPosting(ConcurrentDictionary<string, short> dictionary)
         {
-            foreach(KeyValuePair<string, int> entry in dictionary)
+            foreach(KeyValuePair<string, short> entry in dictionary)
             {
                 AddToPosting(entry.Key, entry.Value);
             }
             dictionary.Clear();
         }
-
+        /// <summary>
+        /// toString for the posting dictionary of the term
+        /// </summary>
+        /// <returns>the string of the posting list</returns>
         public string printPosting()
         {
             StringBuilder res = new StringBuilder();
-            foreach(KeyValuePair<string, int> entry in posting)
+            foreach(KeyValuePair<string, short> entry in posting)
             {
-                res.Append(entry.Key + "[" + entry.Value + "],");
+                res.Append(entry.Key + "_" + entry.Value + ",");
             }
             return res.ToString();
         }
-
-        public int getTFinDoc(string docname)
+        public override string ToString()
+        {
+            char b = isUpperInCurpus ? 'T' : 'F';
+            StringBuilder sb = new StringBuilder();
+            sb.Append(Phrase);
+            sb.Append("\t");
+            sb.Append(b);
+            sb.Append("\t");
+            sb.Append(type);
+            sb.Append("\t");
+            sb.Append(printPosting());
+            sb.Append("\t");
+            sb.Append(icf);
+            sb.Append("\t");
+            sb.Append(posting.Count);
+            //return Phrase + '\t' + b + '\t' + type + '\t' + printPosting() + '\t' + icf + '\t' + posting.Count;
+            return sb.ToString();
+        }
+        /// <summary>
+        /// returns the term's tf value in a specifit doc
+        /// </summary>
+        /// <param name="docname">the doc</param>
+        /// <returns>the tf number of the term in the dc</returns>
+        public short getTFinDoc(string docname)
         {
             return posting[docname];
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -842790187;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(phrase);
+            hashCode = hashCode * -1521134295 + type.GetHashCode();
+            return hashCode;
         }
     }
 }

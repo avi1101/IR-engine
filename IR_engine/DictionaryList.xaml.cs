@@ -19,21 +19,17 @@ namespace IR_engine
     /// </summary>
     public partial class DictionaryList : Window
     {
-        public DictionaryList(Dictionary<string, term> list)
+        public DictionaryList(Dictionary<string, indexTerm> list)
         {
             InitializeComponent();
-            dictionary.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-
-            stack.HorizontalAlignment = HorizontalAlignment.Left;
-            stack.VerticalAlignment = VerticalAlignment.Top;
-
-            foreach(KeyValuePair<string, term> entery in list) {
-                TextBox t = new TextBox();
-                t.Text = entery.Value.Phrase + " ";/* + entery.Value.printPosting();*/
-                t.FontSize = 14;
-                stack.Children.Add(t);
-                
+            StringBuilder sb = new StringBuilder();
+            foreach(KeyValuePair<string, indexTerm> entery in list)
+            {
+                sb.Append(entery.Value.ToString());
+                sb.Append("\n");
             }
+            termsList.Text = sb.ToString();
+
         }
 
 

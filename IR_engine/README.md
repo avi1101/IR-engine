@@ -36,5 +36,3 @@ The only search engine that doesnt track you, because it doesnt work!
 # Show Entire Dictionary Instructions:
 1) After following one of the above procedures, press "Show Dictionary" button that placed at the bottom of the window (below the 'Run' button)
 2) wait a few minutes for the window to finish loading
-
-
