@@ -94,7 +94,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace IR_engine
 {/// <summary>
@@ -147,15 +146,9 @@ namespace IR_engine
         bool toStem;
         string path;
         public string DocName = "";
-        public bool isQuery;
+        public double time = 0;
         StringBuilder sb = new StringBuilder();
-        public static double time = 0, time2 = 0, time3 = 0;
-        public static Stopwatch s = new Stopwatch();
-        public static Stopwatch s2 = new Stopwatch();
-        public static Stopwatch s3 = new Stopwatch();
-        public static Stopwatch s4 = new Stopwatch();
         List<IRule> rules;
-        
 
         /// <summary>
         /// this is the constructor for the Parser class
@@ -168,9 +161,6 @@ namespace IR_engine
             toStem = tostem;
             stopwords = new HashSet<string>();
             stem = new Stemmer();
-            rules = RuleFactory.Factory();
-            isQuery = path.Equals("");
-            if (isQuery) return;
             string stopPath = Directory.GetFiles(path, "stop_words.txt", SearchOption.AllDirectories).ToArray()[0];
             string[] stops = File.ReadAllText(stopPath).Split('\n');
             foreach (string word in stops)
@@ -178,6 +168,7 @@ namespace IR_engine
                 string stpword = word.Trim();
                 stopwords.Add(stpword);
             }
+            rules = RuleFactory.Factory();
         }
         /// <summary>
         /// gets the text part of the document, turns it into a list of words and sends to parser
@@ -185,14 +176,12 @@ namespace IR_engine
         /// <param name="document"> the document edited</param>
         public void Text2list(document document, int queue)
         {
-            s4.Start();
             termsInDoc = new Dictionary<string, double>();
             string tmp_txt = document.Doc;
             string[] text = tmp_txt.Split(' ', '\n', '\t', '\r');
             for (int i = 0; i < text.Length; i++)
                 text[i] = Fixword(text[i]);
             DocName = document.DocID;
-            s4.Stop();
             parseText(text, queue);
         }
         /// <summary>
@@ -240,9 +229,7 @@ namespace IR_engine
                      * in this case, we found a range\expression, we'll deal with this here by splitting it and save the terms
                      */
                     if (word.Length <= 1) continue;
-                    s3.Start();
                     phrase = SetExp(IsNumber(words[i]), i, words, out j, queue, out type);
-                    s3.Stop();
                     words_length = words.Length;
                     i = j;
                     if (phrase.Equals("")) continue;
@@ -334,7 +321,7 @@ namespace IR_engine
                         if (!c)
                             phrase = stringbuilder.ToString();
                         phrase = phrase.ToLower();
-                        if (!isQuery && Model.locations.ContainsKey(phrase))
+                        if (Model.locations.ContainsKey(phrase))
                         {
 
                               Location l = Model.locations[phrase];
@@ -350,13 +337,7 @@ namespace IR_engine
                         type = term.Type.word;
                     }
                 }
-                if(isQuery)
-                {
-                    if(phrase.Length > 1)
-                        Searcher.parsed.Add(phrase);
-                    i = j;
-                    continue;
-                }
+
                 if (phrase.Length < 1 || stopwords.Contains(phrase)) continue;
                 if (Model.queueList[queue].ContainsKey(phrase+type.ToString()))
                 {
@@ -396,7 +377,6 @@ namespace IR_engine
             /*
              * at the end of the doc parsing, I should end all opened doc counts for the terms
              */
-            if (isQuery) return;
             double max = 0;
             double tf = 0;
             foreach (KeyValuePair<string, double> entry in termsInDoc)
@@ -943,12 +923,7 @@ namespace IR_engine
                 if(!stopwords.Contains(right.Phrase))
                     AddTerm(queue, right);
                 j = part + idx;
-                s3.Stop();
-                StringBuilder sb1 = new StringBuilder();
-                sb1.Append(left.Phrase);
-                sb1.Append("-");
-                sb1.Append(right.Phrase);
-                return sb1.ToString();                                                                //returns the whole expression
+                return Fixword(replace(word, '\"'));                                                                //returns the whole expression
             }
             StringBuilder sb = new StringBuilder();
             List<string> newWords = new List<string>();
@@ -1029,7 +1004,6 @@ namespace IR_engine
         /// <returns>the cleaned string</returns>
         string Fixword(string word)
         {
-            s2.Start();
             word = replace(word, '\'').Replace("--", "").Replace("..", "");
 
             if (word.Equals("") || word.Equals("\n") || word[0] == '<') { return ""; }
@@ -1072,10 +1046,8 @@ namespace IR_engine
             }
             if (word != "")
             {
-                s2.Stop();
                 return word;
             }
-            s2.Stop();
             return "";
         }
         /// <summary>

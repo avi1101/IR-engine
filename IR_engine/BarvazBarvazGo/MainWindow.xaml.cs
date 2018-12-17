@@ -31,20 +31,15 @@ namespace IR_engine
         string IndexPath = "";
         Model m;
         bool isDictionaryStemmed;
-        bool semantics;
 
         public MainWindow()
         {
             InitializeComponent();
-            semantics = false;
             m = new Model();
             path = "";
             IndexPath = "";
             isDictionaryStemmed = false;
             test.Content = "Welcome to BarvazBarvazGo!\nPlease make sure you have internet connection.";
-            model_CB.Items.Add("Select Model");
-            model_CB.Items.Add("Costumize");
-            model_CB.SelectedIndex = 0;
         }
 
         /// <summary>
@@ -74,33 +69,17 @@ namespace IR_engine
         }
         private void load_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            Load_Index.Width = 100;
-            Load_Index.Height = 100;
+            Load_Index.Width = 82;
+            Load_Index.Height = 82;
             Load_Index.Foreground = new SolidColorBrush(Colors.Black);
             Load_Index.FontSize = 12;
         }
         private void load_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            Load_Index.Width = 110;
-            Load_Index.Height = 110;
+            Load_Index.Width = 85;
+            Load_Index.Height = 85;
             Load_Index.Foreground = new SolidColorBrush(Colors.Red);
             Load_Index.FontSize = 13;
-        }
-
-        private void Search_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            SearchBtn.Width = 100;
-            SearchBtn.Height = 100;
-            SearchBtn.Foreground = new SolidColorBrush(Colors.Red);
-            SearchBtn.FontSize = 22;
-        }
-
-        private void SearchBtn_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            SearchBtn.Width = 90;
-            SearchBtn.Height = 90;
-            SearchBtn.Foreground = new SolidColorBrush(Colors.Black);
-            SearchBtn.FontSize = 20;
         }
 
         private void Browse_Click(object sender, RoutedEventArgs e)
@@ -258,32 +237,6 @@ namespace IR_engine
             }
             File.Delete(IndexPath + "\\city_dictionary.txt");
             File.Delete(IndexPath + "\\documents.txt");
-        }
-
-        private void browseQry_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            semantics = semanticsCheckBox.IsChecked.Value;
-            if (semantics)
-                model_CB.IsEnabled = true;
-            else
-            {
-                model_CB.IsEnabled = false;
-                createModel.IsEnabled = false;
-            }
-        }
-
-        private void model_CB_DropDownClosed(object sender, EventArgs e)
-        {
-            test.Content = model_CB.SelectedValue;
-            if (model_CB.SelectedValue.Equals("Costumize"))
-                createModel.IsEnabled = true;
-            else
-                createModel.IsEnabled = false;
         }
     }
 }
