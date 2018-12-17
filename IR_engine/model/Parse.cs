@@ -409,7 +409,6 @@ namespace IR_engine
             Model.docs[DocName].uniqueTerms = termsInDoc.Count;
             termsInDoc.Clear();
         }
-
         /// <summary>
         /// checkes whether the string is a date type term
         /// </summary>
@@ -573,6 +572,7 @@ namespace IR_engine
         /// <returns>a boolean value</returns>
         bool IsComNum(string input)
         {
+            if (input.Length == 0) return false;
             int len = input.Length;
             for (int i = 0; i < len; i++)
             {
@@ -604,15 +604,18 @@ namespace IR_engine
         /// <returns></returns>
         string NumberSet(string input, int idx, string[] words, out int j)
         {
-            input = input.Replace("$", "").Replace("%", "");
+            input = replace(replace(input, '$'), '%');
+           // input = input.Replace("$", "").Replace("%", "");
             if (input == "") {j=idx; return ""; }
             int option = 0;
             int index = idx + 1;
-            var charsToRemove = new string[] { "," };
-            foreach (var c in charsToRemove)
-            {
-                input = input.Replace(c, string.Empty);
-            }
+            input = replace(input, ',');
+            //var charsToRemove = new string[] { "," };
+            //foreach (var c in charsToRemove)
+            //{
+                
+            //    input = input.Replace(c, string.Empty);
+            //}
             if (idx + 1 == words_length) { option = 0; }
             else if (thousends.Contains(words[index])) { option = 1; }
             else if (million.Contains(words[index])) { option = 2; }
@@ -683,7 +686,7 @@ namespace IR_engine
         /// <param name="secondTerm">second token of the date</param>
         /// <returns></returns>
         string ToDate(string firstTerm, string secondTerm)
-        {// TODO: change the method to support beckward term checking
+        {
             string month = "";
             string number = "";
             string sol = "";
@@ -699,7 +702,6 @@ namespace IR_engine
                 number = secondTerm;
             }
             int value = (int)FormatNumber(number);
-            // int value = int.Parse(number);                                      //get the numeric value of the year/day
             if (monthsToNumber.ContainsKey(month))
             {
                 month = monthsToNumber[month];
@@ -734,7 +736,7 @@ namespace IR_engine
         {
             string val = "";
             if (words[idx][0] == '$' && words[idx].Length == 1) { j = idx + 1; return "$"; }
-            if (words[idx][0] == '$' && IsComNum(words[idx].Remove(0, 1).Replace(",", "")))
+            if (words[idx][0] == '$' && IsComNum(replace(words[idx].Remove(0, 1),',')/*.Replace(",", "")*/))
             {
                 string numOnly = words[idx].Remove(0, 1);
                 if (hasChar(numOnly, '.'))
@@ -769,7 +771,6 @@ namespace IR_engine
                             val = words[idx].Remove(0, 1);
                             return val + " Dollars";
                         }
-                        // string lvl = words[idx + 1].ToUpper();
                         if (million.Contains(words[idx + 1])) { string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
                         else if (billion.Contains(words[idx + 1])) { amount = amount * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
                         else if (trillion.Contains(words[idx + 1])) { amount = amount * 1000 * 1000; string x2 = amount.ToString("#,##0.##"); val = x2 + " M"; j = idx + 1; }
@@ -943,8 +944,10 @@ namespace IR_engine
                 {
                     left = new term(Fixword(splittedExpression[0]));                                     //normal range
                     right = new term(Fixword(splittedExpression[1]));
-                    right.Phrase = right.Phrase.Replace(",", "").Replace("\"", "").Replace(",", "");
-                    left.Phrase = left.Phrase.Replace(",", "").Replace("\"", "").Replace(",", "");
+                    right.Phrase = replace(replace(right.Phrase, ','), '\"');
+                    //right.Phrase = right.Phrase.Replace(",", "").Replace("\"", "");
+                    left.Phrase = replace(replace(left.Phrase, ','), '\"');
+                    //left.Phrase = left.Phrase.Replace(",", "").Replace("\"", "").Replace(",", "");
                     left.IsUpperInCurpus = left.Phrase[0] >= 'A' && left.Phrase[0] <= 'Z' ? true : false;
                     right.IsUpperInCurpus = right.Phrase[0] >= 'A' && right.Phrase[0] <= 'Z' ? true : false;
                     left.Type1 = term.Type.number;
@@ -956,7 +959,7 @@ namespace IR_engine
                 if(!stopwords.Contains(right.Phrase))
                     AddTerm(queue, right);
                 j = part + idx;
-                return Fixword(word.Replace("\"",""));                                                                //returns the whole expression
+                return Fixword(replace(word,'\"')/*.Replace("\"","")*/);                                                                //returns the whole expression
             }
             StringBuilder sb = new StringBuilder();
             List<string> newWords = new List<string>();
@@ -1060,7 +1063,6 @@ namespace IR_engine
         //    ex.Replace(",", "");
         //  //  Console.WriteLine("Term: " + ex.ToString());
         //    return newWords.Count > 1 ? ex.ToString() : "";
-
         private string TrimAll(string word)
         {
             int len = word.Length;
@@ -1068,7 +1070,8 @@ namespace IR_engine
             {
                 char c = word[i];
                 if (Char.IsLetterOrDigit(c)) break;
-                word = word.Replace(c + "", "");
+                word = replace(word, c);
+                //word = word.Replace(c + "", "");
                 i = word.Length - 1;
             }
             return word;
@@ -1080,17 +1083,46 @@ namespace IR_engine
         /// <returns>the cleaned string</returns>
         string Fixword(string word)
         {
-            word=word.Replace("\'", "");
-            word=word.Replace("--", "");
-            word = word.Replace("..", "");
+           // word=word.Replace("\'", "");
+            word= replace(word, '\'').Replace("--", "").Replace("..", "");
 
-
-            if (word == "" || word == "\n" || word[0] == '<') { return ""; }
+            if (word.Equals("") || word.Equals("\n") || word[0] == '<') { return ""; }
             if (word.Length <= 1 && (Char.IsLetterOrDigit(word[0]))) return word;
             else if (word.Length <= 1 && !(Char.IsLetterOrDigit(word[0]))) return "";
             else
             {
-                word = TrimtoRemove(word);
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < word.Length; i++)
+                {
+                    char c = word[i];
+                    if (i == 0)
+                    {
+                        if (!Fixwordlist0.Contains(c) && (c != '-' && word[i + 1] != '-'))
+                        {
+                            if (c == '-' && word[i + 1] == '-') { i++; continue; }
+                            if (c == '.' && word[i + 1] == '.') { i++; continue; }
+                            sb.Append(c);
+                        }
+                    }
+                    else if (i == word.Length - 1)
+                    {
+                        if (!Fixwordlistlast.Contains(c))
+                        {
+                            if (c == '-' && word[i + 1] == '-') { i++; continue; }
+                            if (c == '.' && word[i + 1] == '.') { i++; continue; }
+                            sb.Append(c);
+                        }
+                    }
+                    else
+                    {
+                        if (!Fixwordlist.Contains(c))
+                        {
+                            if (c == '-' && word[i + 1] == '-') { i++; continue; }
+                            sb.Append(c);
+                        }
+                    }
+                }
+                word = sb.ToString();
             }
             if (word != "")
             {
@@ -1134,46 +1166,6 @@ namespace IR_engine
             return number;
         }
         /// <summary>
-        /// help Fixword to remove problematic words
-        /// </summary>
-        /// <param name="word">the word to fix</param>
-        /// <returns>teh cleaned word</returns>
-        private string TrimtoRemove(string word)
-        {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < word.Length; i++)
-            {
-                char c = word[i];
-                if (i == 0)
-                {
-                    if (!Fixwordlist0.Contains(c) &&(c!='-'&&word[i+1]!='-'))
-                    {
-                        if (c == '-' && word[i + 1] == '-') { i++;continue;}
-                        if (c == '.' && word[i + 1] == '.') { i++; continue; }
-                        sb.Append(c);
-                    }
-                }
-                else if (i == word.Length - 1)
-                {
-                    if (!Fixwordlistlast.Contains(c))
-                    {
-                        if (c == '-' && word[i + 1] == '-') { i++; continue; }
-                        if (c == '.' && word[i + 1] == '.') { i++; continue; }
-                        sb.Append(c);
-                    }
-                }
-                else
-                {
-                    if (!Fixwordlist.Contains(c))
-                    {
-                        if (c == '-' && word[i + 1] == '-') { i++; continue; }
-                        sb.Append(c);
-                    }
-                }
-            }
-            return sb.ToString();
-        }
-        /// <summary>
         /// replaces the Contains function in c#, more efficient
         /// </summary>
         /// <param name="word">the checked word</param>
@@ -1187,6 +1179,24 @@ namespace IR_engine
                     return true;
             }
             return false;
+        }
+        public static string replace(string str, char remove)
+        {
+            if (str.Length == 0 || str.IndexOf(remove) == -1)
+            {
+                return str;
+            }
+            char[] chars = str.ToCharArray();
+            int pos = 0;
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (chars[i] != remove)
+                {
+                    chars[pos++] = chars[i];
+                }
+            }
+            return new String(chars, 0, pos);
+
         }
     }
 }

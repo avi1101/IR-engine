@@ -36,7 +36,6 @@ namespace IR_engine
         string outPath;
         public double counter;
         public Dictionary<string, indexTerm> indexList;
-
         public bool toStem { get => ToStem; set => ToStem = value; }
         public string Path { get { return path; }
             set
@@ -54,7 +53,6 @@ namespace IR_engine
                     indexer = new Indexer(IndexPath, Path);
             }
         }
-
         public Model(string path, bool Tostem, string ipath)
         {
             readfo = new ReadFile(path, Tostem, cores);
@@ -68,7 +66,6 @@ namespace IR_engine
             indexer = new Indexer(outPath, path+ "\\Posting_and_indexes");
             indexList = new Dictionary<string, indexTerm>();
         }
-
         public Model()
         {
             indexList = new Dictionary<string, indexTerm>();
@@ -104,13 +101,10 @@ namespace IR_engine
             isDictionaryStemmed = toStem;
             var watch = System.Diagnostics.Stopwatch.StartNew();
             isWorking = true;
-            // step one, the parsing
             int filesNum = readfo.returnSize();
-            // bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-            int tasks = cores;                                  //get the number of logical proccesors 
-            //int tasks = 1;             //get the number of logical proccesors 
+            int tasks = cores;                                  //get the number of logical proccesors
             for (int ch = 0; ch < tasks; ch++)
             {                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
@@ -156,7 +150,6 @@ namespace IR_engine
                         }
                         using (StreamWriter sw2 = new StreamWriter(path + "\\cityIndex\\city"+ chunk + ".txt"))
                         {
-                           // Console.WriteLine("megaLocList "+ megaLocList.Count);
                             foreach (KeyValuePair<Location, Location> loc in megaLocList)
                             {
                                 sw2.WriteLine(loc.Key.ToString());
@@ -214,7 +207,6 @@ namespace IR_engine
                 {
                     t = entry.Value;
                     if (t == null) break;
-                    //queueList[i].TryRemove(t.Phrase, out t);
                     if (terms2.ContainsKey(t))
                     {
                         terms2[t].AddToPosting(t.posting);
@@ -370,7 +362,6 @@ namespace IR_engine
             terms2.Clear();
             docs.Clear();
             cityIn.Clear();
-            //readfo.Clear();
             ReadFile.Langs.Clear();
             locations.Clear();
         }

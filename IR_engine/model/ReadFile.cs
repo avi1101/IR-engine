@@ -40,18 +40,17 @@ namespace IR_engine
             this.ToStem = ToStem;
             initiate();
         }
-
+        /// <summary>
+        /// function to initialize the parser's and het all the file pathes
+        /// </summary>
         private void initiate()
         {
             allfiles = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories).Where(x => Path.GetExtension(x) != ".txt").ToList();
-            //allfiles.Remove(path + "\\stop_words.txt");
-            //TODO: remove also posting list files and index file
             allfilesSize = allfiles.Count;
             parser = new Parse[cores];
             for (int i = 0; i < cores; i++)
                 parser[i] = new Parse(path, ToStem);
             string root = path + @"\Posting_and_indexes";
-            // If directory does not exist, don't even try 
             if (!Directory.Exists(root))
             {
                 Directory.CreateDirectory(root);
@@ -65,11 +64,9 @@ namespace IR_engine
         public void readfile(string file2, int queue)
         {
             string file = File.ReadAllText(file2);
-            //file = File.ReadAllText(file);
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string doc in docs)
             {
-                //StringBuilder sb = new StringBuilder(doc);
                 int st1 = 0, st2 = 0, st3 = 0, st4 = 0, st5 = 0, end1 = 0, end2 = 0, end3 = 0, end4 = 0, end5 = 0,st6 = 0,end6 = 0;
                 if (doc.Equals("")) continue;
                 string docNo = "";
@@ -81,24 +78,24 @@ namespace IR_engine
                     st1 = doc.IndexOf("<DOCNO>");
                     if (st1 != -1)
                         end1 = doc.IndexOf("</DOCNO>", st1);
-                    if (st1 != -1 && end1 != -1) { docNo = /*RemoveStringReader*/(/*doc.Substring(st1 + 7, (end1 - st1) - 8));*/doc.Substring(st1 + 7, (end1 - st1) - 7)); }
+                    if (st1 != -1 && end1 != -1) { docNo =doc.Substring(st1 + 7, (end1 - st1) - 7); }
                     st2 = doc.IndexOf("<DATE1>");
                     if (st2 != -1)
                         end2 = doc.IndexOf("</DATE1>", st2, 50);
-                    if (st2 != -1 && end2 != -1) { date =/* RemoveStringReader*/(/*doc.Substring(st2 + 7, (end2 - st2) - 8));*/doc.Substring(st2 + 7, (end2 - st2) - 7)); }
+                    if (st2 != -1 && end2 != -1) { date =doc.Substring(st2 + 7, (end2 - st2) - 7); }
                     st3 = doc.IndexOf("<TI>");
                     if (st3 != -1) end3 = doc.IndexOf("</TI>", st3, 100);
-                    if (st3 != -1 && end3 != -1) { head =/* RemoveStringReader*/(/*doc.Substring(st3 + 4, (end3 - st3) - 4));*/doc.Substring(st3 + 4, (end3 - st3) - 3)); }
+                    if (st3 != -1 && end3 != -1) { head =doc.Substring(st3 + 4, (end3 - st3) - 3); }
                     st4 = doc.IndexOf("<TEXT>");
                     if (st4 != -1) end4 = doc.IndexOf("</TEXT>", st4);
-                    if (st4 != -1 && end4 != -1) { data = /*RemoveStringReader*/(/*doc.Substring(st4 + 6, (end4 - st4) - 7));*/doc.Substring(st4 + 6, (end4 - st4) - 6)); }
+                    if (st4 != -1 && end4 != -1) { data =doc.Substring(st4 + 6, (end4 - st4) - 6); }
                     st5 = doc.IndexOf("<F P=104>");
                     if (st5 != -1)
                     { 
                         end5 = doc.IndexOf("</F>", st5, 100);
                     }
                     string city = "";
-                    if (st5 != -1 && end5 != -1) { city = ( /*doc.Substring(st5 + 9, (end5 - st5) - 4).Trim();*/doc.Substring(st5 + 9, (end5 - st5) - 9)); }
+                    if (st5 != -1 && end5 != -1) { city = (doc.Substring(st5 + 9, (end5 - st5) - 9)); }
                     st6 = doc.IndexOf("<F P=105>");
                     if(st6 != -1)
                     {
@@ -155,9 +152,8 @@ namespace IR_engine
                         }
                     }
                 }
-                if (curr=="" && country =="" && pop =="" && cap=="")
+                if (curr.Equals("") && country.Equals("") && pop.Equals("") && cap=="")
                 { return; }
-                    //public Location(string city, string Country, string populationTemp,string currency,string Capital)
                     Location l = new Location(city, country, pop, curr, cap);
                     Model.locations.TryAdd(city, l);
                 
@@ -166,8 +162,7 @@ namespace IR_engine
             {
                 string[] arr1 = responseBody1.Remove(responseBody1.Length - 1).Split(']');
                 string datas = rmvStr(arr1[1]);
-                string[] data1 = datas.Split(','); //splited(datas,',');
-               // string country = null; string pop = null; string cap = null;
+                string[] data1 = datas.Split(',');
 
                 for (int i =0; i < data1.Length; i++)
                 {

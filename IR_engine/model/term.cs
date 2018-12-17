@@ -117,7 +117,6 @@ namespace IR_engine
             sb.Append(icf);
             sb.Append("\t");
             sb.Append(posting.Count);
-            //return Phrase + '\t' + b + '\t' + type + '\t' + printPosting() + '\t' + icf + '\t' + posting.Count;
             return sb.ToString();
         }
         /// <summary>

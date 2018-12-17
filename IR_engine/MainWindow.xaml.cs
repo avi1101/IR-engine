@@ -27,7 +27,6 @@ namespace IR_engine
     /// </summary>
     public partial class MainWindow : Window
     {
-        //private enum months { january, february, march, april, may, june, july, august, september, october, november, december };
         string path = "";
         string IndexPath = "";
         Model m;
@@ -36,11 +35,7 @@ namespace IR_engine
         public MainWindow()
         {
             InitializeComponent();
-            //Model.PropertyChanged += delegate (object sender, PropertyChangedEventArgs e)
-            //{
-            //    if (e.PropertyName == "STATUS")
 
-            //};
             m = new Model();
             path = "";
             IndexPath = "";
@@ -100,7 +95,6 @@ namespace IR_engine
                 }
             }
         }
-
         private void Run_Click(object sender, RoutedEventArgs e)
         {
             if(Model.isWorking)
@@ -108,7 +102,6 @@ namespace IR_engine
                 test.Content = "Engine is working, please wait for a completion message to pop up";
                 return;
             }
-            //var watch2 = System.Diagnostics.Stopwatch.StartNew();
             test.Content = "";
             if (path.Equals(""))
             {
@@ -126,12 +119,10 @@ namespace IR_engine
                     test.Content = "Working, please wait...";
                     isDictionaryStemmed = stem.IsChecked.Value;
                     var watch2 = System.Diagnostics.Stopwatch.StartNew();
-                    //m = new Model(path, stem.IsChecked.Value, IndexPath);
                     m.IndexPath1 = IndexPath;
                     m.Path = path;
                     m.toStem = stem.IsChecked.Value;
                     Task.Factory.StartNew(()=>m.index());
-                    //Time();
                     var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
                     string a = null;
                     foreach (string x in arrayOfAllKeys)
@@ -143,8 +134,6 @@ namespace IR_engine
                     watch2.Stop();
                     double time =watch2.ElapsedMilliseconds;
                     time = (time / 1000.0);
-                    //Console.WriteLine("total run time = " + time + "sec");
-                    //test.Content = "Process took: "+time+"\n"+"We Indexed "+m.counter+" docs\n"+"We created "+m.indexList.Count+" terms";
                 }
             }
             else
@@ -155,24 +144,6 @@ namespace IR_engine
 
             
         }
-
-        //private void Time()
-        //{
-        //    TimeSpan ts = new TimeSpan();
-        //    Stopwatch watch = new Stopwatch();
-
-        //    while (Model.isWorking)
-        //    {
-        //        ts = watch.Elapsed;
-        //        test.Content = String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
-        //        Form.Lab.Invoke((MethodInvoker)delegate {
-        //            // Running on the UI thread
-        //            form.Label.Text = newText;
-        //        });
-        //        Thread.Sleep(1000);
-        //    }
-        //}
-
         private void showDic_Click(object sender, RoutedEventArgs e)
         {
             if (m == null)
@@ -267,7 +238,6 @@ namespace IR_engine
             }
             File.Delete(IndexPath + "\\city_dictionary.txt");
             File.Delete(IndexPath + "\\documents.txt");
-            //m.Memorydump();
         }
     }
 }

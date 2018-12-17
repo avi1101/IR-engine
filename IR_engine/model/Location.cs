@@ -74,7 +74,7 @@ namespace IR_engine
                         {
                             continue; }
                     }
-                    sb.Append(entry.Value[i] +"-");
+                    sb.Append(entry.Value[i] +"|");
                 }
                 sb.Append(',');
             }
