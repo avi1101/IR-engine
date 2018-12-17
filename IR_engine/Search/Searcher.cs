@@ -46,6 +46,41 @@ namespace IR_engine
             this.indexPath = indexPath;
             this.queryPath = "";
         }
+
+        //string[] returnedDocs = new string[50]; //amount of returned documents is restricted to 50
+        //string[] entities = new string[5]; //amount of entities is restricted to 5
+        //List<string> docsIncities = new List<string>(); //the docs we want to search in
+
+        //public void search(string query, List<string> cities, string dataPath)
+        //{
+        //    string[] qry = query.Split(' ');
+        //    string line;
+        //    HashSet<string> ctHash = new HashSet<string>();
+        //    foreach (string city in cities)
+        //    {
+        //        ctHash.Add(city);
+        //    }
+        //    if (cities != null && cities.Count > 0)
+        //    {
+        //        using (StreamReader st = new StreamReader(dataPath + "\\documents.txt"))
+        //        {
+        //            while ((line = st.ReadLine()) != null)
+        //                if (ctHash.Contains(line.Split('\t')[4]))
+        //                    docsIncities.Add(line.Split('\t')[0]);
+        //        }
+
+        //    }
+        //    else
+        //    {
+        //        using (StreamReader st = new StreamReader(dataPath + "\\documents.txt"))
+        //        {
+        //            while ((line = st.ReadLine()) != null)
+        //                docsIncities.Add(line.Split('\t')[0]);
+        //        }
+        //    }
+        //    //TODO: send list of docs to rank
+        //}
+
         /// <summary>
         /// will search and recover all docs that may be relevant to the queries
         /// </summary>
