@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace IR_engine.QueryTreatment
 {
@@ -17,10 +18,8 @@ namespace IR_engine.QueryTreatment
         public List<string> docs = null;
 
 
-        Ranker(List<string> qry, List<string> docs)
+        Ranker()
         {
-            this.qry = qry;
-            this.docs = docs;
         }
         /// <summary>
         /// Uses BM25 to compute a weight for a term in a document.
@@ -30,9 +29,9 @@ namespace IR_engine.QueryTreatment
         /// <param name="docLength">the document's length</param>
         /// <param name="averageDocumentLength">average document length</param>
         /// <param name="queryFrequency"></param>
-        /// <param name="documentFrequency"></param>
+        /// <param name="idf"></param>
         /// <returns></returns>
-        public double BM25A(double tf, double numberOfDocuments, double docLength, double averageDocumentLength,double queryFrequency,double documentFrequency)
+        public double BM25A(double tf, double numberOfDocuments, double docLength, double averageDocumentLength,double queryFrequency,double idf)
         {
 
             double K = k1 * ((1 - b) + ((b * docLength) / averageDocumentLength));
@@ -45,21 +44,60 @@ namespace IR_engine.QueryTreatment
         /// <summary>
         /// Returns a relevance score between a term and a document based on a corpus.
         /// </summary>
-        /// <param name="documentFrequency">the frequency of searching term in the document to rank</param>
+        /// <param name="tf">the frequency of searching term in the document to rank</param>
         /// <param name="docLength"> the size of document to rank</param>
         /// <param name="averageDocumentLength">the average size of documents in the corpus</param>
         /// <param name="numberOfDocuments">number of documents in the corpus</param>
-        /// <param name="documentFrequency">number of documents containing the given term in the corpus</param>
+        /// <param name="idf">number of documents containing the given term in the corpus</param>
         /// <returns></returns>
-        public double BM25B(double tf, int docLength, double averageDocumentLength, long numberOfDocuments, long documentFrequency)
+        /// 
+        /*
+        public double BM25B(double tf, int docLength, double averageDocumentLength, long numberOfDocuments, long idf)
         {
+            private static Dictionary<string, KeyValuePair<int, term.Type>> currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
+        List<KeyValuePair<string, string>> qry;
+            Dictionary<string, List<string>> fin = new Dictionary<string, List<string>>();
+            foreach (KeyValuePair<string, string> q in qry.value    )
+            {
+                if (!fin.ContainsKey(q.Key))
+                {
+                    List<string> x = new List<string>();
+                    x.Add(q.Value);
+                    fin.Add(q.Key, x);
+                }
+                else { fin[q.Key].Add(q.Value); }
+            }
+            foreach (string value in fin.Keys)
+            {
+                using (StreamReader sr)
+            }
+
+
+
             if (tf <= 0) return 0.0;
             double tf2 = tf * (k1 + 1) / (tf + k1 * (1 - b + b * docLength / averageDocumentLength));
             double idf = Math.Log((numberOfDocuments - documentFrequency + 0.5) / (documentFrequency + 0.5));
 
             return (tf2+delta) * idf;
         }
+        */
+        public double BM25B(Dictionary<string, KeyValuePair<int, term.Type>> qries, List<string> docs)
+        {
+            Dictionary<string, List<string>> fin = new Dictionary<string, List<string>>();
+            foreach (KeyValuePair<int, term.Type> q in qries.Values)
+            {
+                if (!fin.ContainsKey(q.Value+""))
+                {
+                    List<string> x = new List<string>();
+                    x.Add(qries)
+                    fin.Add(q.Key, x);
+                }
+                else { fin[q.Key].Add(q.Value); }
+            }
+        }
+        }
 
+        /*
         public double BM25P(List<string> qry, List<string> docs)
         {
             double ans = 0;
@@ -70,6 +108,6 @@ namespace IR_engine.QueryTreatment
 
 
 
-        }
+        }*/
     }
 }
