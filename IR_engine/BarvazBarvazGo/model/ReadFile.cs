@@ -12,7 +12,6 @@ using System.Collections.Concurrent;
 using Newtonsoft.Json;
 using System.Net;
 using Newtonsoft.Json.Linq;
-using System.Diagnostics;
 
 
 namespace IR_engine
@@ -31,9 +30,6 @@ namespace IR_engine
         string path;
         Parse[] parser;
         int cores;
-        public static Stopwatch s = new Stopwatch();
-        public static Stopwatch s1 = new Stopwatch();
-        public static double time = 0;
         public static HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')',' '};
         public static ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
 
@@ -66,7 +62,6 @@ namespace IR_engine
         /// <param name="file"> the string that constains all the data in the file</param>
         public void readfile(string file2, int queue)
         {
-            s.Start();
             string file = File.ReadAllText(file2);
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string doc in docs)
@@ -117,14 +112,9 @@ namespace IR_engine
                         d = new document(data, docNo, date, head, fullname[0]);
                     }
                     Model.docs.TryAdd(docNo, d);
-                    s.Stop();
-                    s1.Start();
                     parser[queue].Text2list(d, queue);
-                    s1.Stop();
-                    s.Start();
                 }
             }
-            s.Stop();
         }
         /// <summary>
         /// creates a location object and adds the location to the dictionary

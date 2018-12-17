@@ -36,6 +36,7 @@ namespace IR_engine
         string outPath;
         public double counter;
         public Dictionary<string, indexTerm> indexList;
+
         public bool toStem { get => ToStem; set => ToStem = value; }
         public string Path { get { return path; }
             set
@@ -53,6 +54,7 @@ namespace IR_engine
                     indexer = new Indexer(IndexPath, Path);
             }
         }
+
         public Model(string path, bool Tostem, string ipath)
         {
             readfo = new ReadFile(path, Tostem, cores);
@@ -66,6 +68,7 @@ namespace IR_engine
             indexer = new Indexer(outPath, path+ "\\Posting_and_indexes");
             indexList = new Dictionary<string, indexTerm>();
         }
+
         public Model()
         {
             indexList = new Dictionary<string, indexTerm>();
@@ -101,10 +104,11 @@ namespace IR_engine
             isDictionaryStemmed = toStem;
             var watch = System.Diagnostics.Stopwatch.StartNew();
             isWorking = true;
+            // step one, the parsing
             int filesNum = readfo.returnSize();
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-            int tasks = cores;                                  //get the number of logical proccesors
+            int tasks = cores;                                  //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)
             {                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
@@ -112,16 +116,17 @@ namespace IR_engine
             }
             int k = 0, chunk = 0, id = 0;
             t = new List<Task>();
-            //createCityDic(files);
-            //var list = locations.Keys.ToList();
-            //list.Sort();
-            //using (StreamWriter ct = new StreamWriter(IndexPath1 + "\\city_dictionary.txt"))
-            //{
-            //    foreach(var key in list)
-            //    {
-            //        ct.WriteLine(key + "\t" + locations[key].Country + "\t" + locations[key].Currency + "\t" + locations[key].Population);
-            //    }
-            //}
+            createCityDic(files);
+            for(int i=0;i< locsList.Count; i++) { }
+            var list = locations.Keys.ToList();
+            list.Sort();
+            using (StreamWriter ct = new StreamWriter(IndexPath1 + "\\city_dictionary.txt"))
+            {
+                foreach(var key in list)
+                {
+                    ct.WriteLine(key + "\t" + locations[key].Country + "\t" + locations[key].Currency + "\t" + locations[key].Population);
+                }
+            }
 
             foreach (string file in files)
             {
@@ -183,19 +188,14 @@ namespace IR_engine
                 t = null;
                 chunk++;
             }
-            //indexList = indexer.CreateIndex();
-            //Directory.Delete(Path + "\\Posting_and_indexes");
-            //indexer.MergeLocations(path + @"\cityIndex");
-            //Directory.Delete(path + @"\cityIndex");
+            indexList = indexer.CreateIndex();
+            Directory.Delete(Path + "\\Posting_and_indexes");
+            indexer.MergeLocations(path + @"\cityIndex");
+            Directory.Delete(path + @"\cityIndex");
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
-            MessageBox.Show("Done indexing the curpus!\nProccessing time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+
-                " min\nTime spent in readfile: "+(ReadFile.s.ElapsedMilliseconds/1000.0)/60.0+" min\n"+
-                "Time spent in parse: "+(ReadFile.s.ElapsedMilliseconds / 1000.0)/60.0+" min\n"+
-                "Time spent in Fixword: " + (Parse.s2.ElapsedMilliseconds / 1000.0) / 60.0 + " min\n" +
-                "Time spent in SetExp: " + (Parse.s3.ElapsedMilliseconds / 1000.0) / 60.0 + " min\n" +
-                "Time spent in Text2List: " + (Parse.s4.ElapsedMilliseconds / 1000.0) / 60.0 + " min\n" +
-                double.Parse(elapsedMs.ToString()) / 1000.0+" sec\n"+
+            MessageBox.Show("Done indexing the curpus!\nProccessing time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+" min\n"+
+                +double.Parse(elapsedMs.ToString()) / 1000.0+" sec\n"+
                 "Terms Parsed: " +indexList.Count+"\nDocuments Parsed: "+counter, "BarvazBarvazGo");
             isWorking = false;
         }
@@ -367,6 +367,7 @@ namespace IR_engine
             terms2.Clear();
             docs.Clear();
             cityIn.Clear();
+            //readfo.Clear();
             ReadFile.Langs.Clear();
             locations.Clear();
         }
