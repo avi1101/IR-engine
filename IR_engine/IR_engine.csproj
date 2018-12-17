@@ -132,6 +132,7 @@
     <Compile Include="model\ReadFile.cs" />
     <Compile Include="model\Stemmer.cs" />
     <Compile Include="model\term.cs" />
+    <Compile Include="QueryTreatment\Searcher.cs" />
     <Compile Include="Rules\Distance.cs" />
     <Compile Include="Rules\IRule.cs" />
     <Compile Include="Rules\RuleFactory.cs" />
