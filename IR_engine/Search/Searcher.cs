@@ -13,8 +13,8 @@ namespace IR_engine
             "have","has","had","he","in","is","it","its","more","new","not","what", "where", "which", "how", "who",
             "of","on","page","part","that","the","this",
             "to","s","was","were","will","with"};
-        private static Dictionary<string, int> currentKeywords = new Dictionary<string, int>();
-        public static List<string> parsed = new List<string>();
+        private static Dictionary<string, KeyValuePair<int, term.Type>> currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
+        public static List<KeyValuePair<string, term.Type>> parsed = new List<KeyValuePair<string, term.Type>>();
         Dictionary<string, indexTerm> index;
         bool Semantics;
         Ranker ranker;
@@ -55,13 +55,17 @@ namespace IR_engine
         {
             List<query> queries = new List<query>();
             // dictionary of <queryID, dictionary of <parsed query, occrenced>>
-            Dictionary<int, Dictionary<string, int>> parsedQueires = parseAllQueires(matching, toStem);
+            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires(matching, toStem);
+            foreach(var q in parsedQueires)
+            {
 
+            }
         }
 
-        private Dictionary<int, Dictionary<string, int>> parseAllQueires(List<string> matching, bool toStem)
+        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires(List<string> matching, bool toStem)
         {
-            Dictionary<int, Dictionary<string, int>> qs = new Dictionary<int, Dictionary<string, int>>();
+            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> qs =
+                new Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>>();
             List<string> content = File.ReadAllLines(queryPath).ToList();
             int currentID = 0;
             string last = "";
@@ -103,7 +107,7 @@ namespace IR_engine
                     }
                     qs.Add(currentID, currentKeywords);
                     currentID = 0;
-                    currentKeywords = new Dictionary<string, int>();
+                    currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
                 }
                 else
                 {
@@ -125,8 +129,9 @@ namespace IR_engine
         {
             Parse p = new Parse("", toStem);
             p.parseText(line.Split(' '), 0);
-            foreach (var word in parsed)
+            foreach (var pair in parsed)
             {
+                string word = pair.Key;
                 if (!string.IsNullOrWhiteSpace(word) && !(word[0] == '<'))
                 {
                     String result = ProcessWord(word, toStem);
@@ -134,11 +139,12 @@ namespace IR_engine
                     {
                         if(currentKeywords.ContainsKey(result))
                         {
-                            currentKeywords[result]++;
+                            int occ = currentKeywords[result].Key;
+                            currentKeywords[result] = new KeyValuePair<int, term.Type>(occ + 1, pair.Value);
                         }
                         else
                         {
-                            currentKeywords.Add(result, 1);
+                            currentKeywords.Add(result, new KeyValuePair<int, term.Type>(1, pair.Value));
                         }
                     }
                 }

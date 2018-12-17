@@ -353,7 +353,7 @@ namespace IR_engine
                 if(isQuery)
                 {
                     if(phrase.Length > 1)
-                        Searcher.parsed.Add(phrase);
+                        Searcher.parsed.Add(new KeyValuePair<string, term.Type>(phrase, type));
                     i = j;
                     continue;
                 }

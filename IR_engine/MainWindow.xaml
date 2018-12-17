@@ -170,5 +170,7 @@
             </Button>
         </Grid>
         <Label Content="Query file path" HorizontalAlignment="center" Height="32" Margin="509,302,351.2,286" VerticalAlignment="center" Width="103" RenderTransformOrigin="0.903,0.863"/>
+        <Label Content="Searching" HorizontalAlignment="Left" Margin="664,267,0,0" VerticalAlignment="Top" FontSize="16" FontFamily="Rockwell Extra Bold"/>
+        <TextBox x:Name="textQuery" HorizontalAlignment="Center" Height="23" Margin="0,0,0,170" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="348"/>
     </Grid>
 </Window>
