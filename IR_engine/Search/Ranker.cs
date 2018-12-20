@@ -32,8 +32,8 @@ namespace IR_engine
         /// <param name="queryFrequency"></param>
         /// <param name="idf"></param>
         /// <returns></returns>
-        public double BM25A(double tf, double numberOfDocuments, double docLength, double averageDocumentLength, double queryFrequency, double idf)
-        {
+        //public double BM25A(double tf, double numberOfDocuments, double docLength, double averageDocumentLength, double queryFrequency, double idf)
+        //{
 
             double K = k1 * ((1 - b) + ((b * docLength) / averageDocumentLength));
             double weight = (((k1 + 1d) * tf) / (K + tf));	//first part

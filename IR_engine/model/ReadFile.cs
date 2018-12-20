@@ -31,11 +31,10 @@ namespace IR_engine
         string path;
         Parse[] parser;
         int cores;
-        public static Stopwatch s = new Stopwatch();
-        public static Stopwatch s1 = new Stopwatch();
-        public static double time = 0;
         public static HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')',' '};
         public static ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
+        private static Mutex m = new Mutex();
+        private static int DocIndex = 0;
 
         public ReadFile(string path, bool ToStem, int cores)
         {
@@ -66,7 +65,6 @@ namespace IR_engine
         /// <param name="file"> the string that constains all the data in the file</param>
         public void readfile(string file2, int queue)
         {
-            s.Start();
             string file = File.ReadAllText(file2);
             string[] docs = file.Split(new string[] { "<DOC>" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string doc in docs)
@@ -116,15 +114,13 @@ namespace IR_engine
                     {
                         d = new document(data, docNo, date, head, fullname[0]);
                     }
-                    Model.docs.TryAdd(docNo, d);
-                    s.Stop();
-                    s1.Start();
+                    m.WaitOne();
+                    d.DocIndex1 = DocIndex++;
+                    m.ReleaseMutex();
+                    Model.docs.TryAdd(d.DocIndex1, d);
                     parser[queue].Text2list(d, queue);
-                    s1.Stop();
-                    s.Start();
                 }
             }
-            s.Stop();
         }
         /// <summary>
         /// creates a location object and adds the location to the dictionary
