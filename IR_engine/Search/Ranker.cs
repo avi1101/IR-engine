@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace IR_engine
 {
@@ -12,13 +13,14 @@ namespace IR_engine
         public double k3 = 8;
         public double b = 0.75;
         public double delta = 1.0;   //TODO: change and check
-
+        public string dataPath = null;
         public List<string> qry = null;
         public List<string> docs = null;
 
 
-        public Ranker()
+        public Ranker(string path)
         {
+            dataPath = path;
         }
         /// <summary>
         /// Uses BM25 to compute a weight for a term in a document.
@@ -37,8 +39,8 @@ namespace IR_engine
             double weight = (((k1 + 1d) * tf) / (K + tf));	//first part
             weight = weight * (((k3 + 1) * queryFrequency) / (k3 + queryFrequency));  //second part
             // multiply the weight with idf 
-            double idf = weight * Math.Log((numberOfDocuments - documentFrequency + 0.5) / (documentFrequency + 0.5));
-            return idf;
+            double idf2 = weight * Math.Log((numberOfDocuments - idf + 0.5) / (idf + 0.5));
+            return idf2;
         }
         /// <summary>
         /// Returns a relevance score between a term and a document based on a corpus.
@@ -90,17 +92,28 @@ namespace IR_engine
         //
         public double BM25B(Dictionary<string, KeyValuePair<int, term.Type>> qries, List<string> docs)
         {
-            Dictionary<string, List<string>> fin = new Dictionary<string, List<string>>();
-            foreach (KeyValuePair<int, term.Type> q in qries.Values)
+            string line;
+            Dictionary<string, int[]> terms = new Dictionary<string, int[]>();
+            Dictionary<string, List<string>> fin = new Dictionary<string, List<string>>(); // key = type, value=list of terms
+            foreach (string q in qries.Keys)
             {
-                if (!fin.ContainsKey(q.Value + ""))
-                {
+                if (!fin.ContainsKey(qries[q].Value + "")){
                     List<string> x = new List<string>();
-                    x.Add(qries)
-                    fin.Add(q.Key, x);
+                    x.Add(q);
+                    fin.Add(qries[q].Value+"", x);
                 }
-                else { fin[q.Key].Add(q.Value); }
+                else { fin[qries[q].Value + ""].Add(q); }
+            }
+            foreach (string str in fin.Keys)
+            {
+                using (StreamReader st = new StreamReader(dataPath + "\\"+ str + ""+".txt"))
+                {
+                    while ((line = st.ReadLine()) != null)
+                  //      if(fin.Contains)
+                }
             }
         }
+
+        
     }
 }
