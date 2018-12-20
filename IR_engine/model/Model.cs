@@ -20,11 +20,13 @@ namespace IR_engine
         public static List<Dictionary<string, Location>> locsList = new List<Dictionary<string, Location>>();
         public static Dictionary<Location, Location> megaLocList = new Dictionary<Location, Location>();
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
-        public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
+        public static ConcurrentDictionary<int, document> docs = new ConcurrentDictionary<int, document>(); //holds doc names and <max TF, distinct, location>
         public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
         public static ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
+        public static long avg_doc_size = 0;
+        public static double avgDocsSize = 0;
         //end concurrent variables
         public static bool isWorking = false;
         public bool isDictionaryStemmed;
@@ -183,20 +185,16 @@ namespace IR_engine
                 t = null;
                 chunk++;
             }
-            //indexList = indexer.CreateIndex();
-            //Directory.Delete(Path + "\\Posting_and_indexes");
-            //indexer.MergeLocations(path + @"\cityIndex");
-            //Directory.Delete(path + @"\cityIndex");
+            indexList = indexer.CreateIndex();
+            Directory.Delete(Path + "\\Posting_and_indexes");
+            indexer.MergeLocations(path + @"\cityIndex");
+            Directory.Delete(path + @"\cityIndex");
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
-            MessageBox.Show("Done indexing the curpus!\nProccessing time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+
-                " min\nTime spent in readfile: "+(ReadFile.s.ElapsedMilliseconds/1000.0)/60.0+" min\n"+
-                "Time spent in parse: "+(ReadFile.s.ElapsedMilliseconds / 1000.0)/60.0+" min\n"+
-                "Time spent in Fixword: " + (Parse.s2.ElapsedMilliseconds / 1000.0) / 60.0 + " min\n" +
-                "Time spent in SetExp: " + (Parse.s3.ElapsedMilliseconds / 1000.0) / 60.0 + " min\n" +
-                "Time spent in Text2List: " + (Parse.s4.ElapsedMilliseconds / 1000.0) / 60.0 + " min\n" +
+            MessageBox.Show("Done indexing the curpus!\nProccessing time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+"min\n"+
                 double.Parse(elapsedMs.ToString()) / 1000.0+" sec\n"+
                 "Terms Parsed: " +indexList.Count+"\nDocuments Parsed: "+counter, "BarvazBarvazGo");
+            avgDocsSize = ((double)avg_doc_size) / (counter);
             isWorking = false;
         }
         /// <summary>
@@ -244,10 +242,10 @@ namespace IR_engine
             }
             using (StreamWriter sw = new StreamWriter(IndexPath1 + "\\documents.txt", true))
             {
-                foreach (KeyValuePair<string, document> entry in docs)
+                foreach (KeyValuePair<int, document> entry in docs)
                 {
                     counter++;
-                    sw.WriteLine(entry.Value.ToString());
+                    sw.WriteLine(entry.Key+"\t"+entry.Value.ToString());
                 }
             }
             docs.Clear();

@@ -30,16 +30,16 @@ namespace IR_engine
         /// <param name="queryFrequency"></param>
         /// <param name="idf"></param>
         /// <returns></returns>
-        public double BM25A(double tf, double numberOfDocuments, double docLength, double averageDocumentLength, double queryFrequency, double idf)
-        {
+        //public double BM25A(double tf, double numberOfDocuments, double docLength, double averageDocumentLength, double queryFrequency, double idf)
+        //{
 
-            double K = k1 * ((1 - b) + ((b * docLength) / averageDocumentLength));
-            double weight = (((k1 + 1d) * tf) / (K + tf));	//first part
-            weight = weight * (((k3 + 1) * queryFrequency) / (k3 + queryFrequency));  //second part
-            // multiply the weight with idf 
-            double idf = weight * Math.Log((numberOfDocuments - documentFrequency + 0.5) / (documentFrequency + 0.5));
-            return idf;
-        }
+        //    double K = k1 * ((1 - b) + ((b * docLength) / averageDocumentLength));
+        //    double weight = (((k1 + 1d) * tf) / (K + tf));	//first part
+        //    weight = weight * (((k3 + 1) * queryFrequency) / (k3 + queryFrequency));  //second part
+        //    // multiply the weight with idf 
+        //    double idf = weight * Math.Log((numberOfDocuments - documentFrequency + 0.5) / (documentFrequency + 0.5));
+        //    return idf;
+        //}
         /// <summary>
         /// Returns a relevance score between a term and a document based on a corpus.
         /// </summary>
@@ -88,19 +88,19 @@ namespace IR_engine
         //
         // List<string> = a list of all retrieved documents you'll need to rank
         //
-        public double BM25B(Dictionary<string, KeyValuePair<int, term.Type>> qries, List<string> docs)
-        {
-            Dictionary<string, List<string>> fin = new Dictionary<string, List<string>>();
-            foreach (KeyValuePair<int, term.Type> q in qries.Values)
-            {
-                if (!fin.ContainsKey(q.Value + ""))
-                {
-                    List<string> x = new List<string>();
-                    x.Add(qries)
-                    fin.Add(q.Key, x);
-                }
-                else { fin[q.Key].Add(q.Value); }
-            }
-        }
+        //public double BM25B(Dictionary<string, KeyValuePair<int, term.Type>> qries, List<string> docs)
+        //{
+        //    Dictionary<string, List<string>> fin = new Dictionary<string, List<string>>();
+        //    foreach (KeyValuePair<int, term.Type> q in qries.Values)
+        //    {
+        //        if (!fin.ContainsKey(q.Value + ""))
+        //        {
+        //            List<string> x = new List<string>();
+        //            x.Add(qries)
+        //            fin.Add(q.Key, x);
+        //        }
+        //        else { fin[q.Key].Add(q.Value); }
+        //    }
+        //}
     }
 }

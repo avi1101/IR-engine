@@ -20,14 +20,14 @@ namespace IR_engine
         bool isUpperInCurpus;
         //end global variables
 
-        public ConcurrentDictionary<string, short> posting; //string = doc name, int = occurances
+        public ConcurrentDictionary<int, short> posting; //string = doc index, int = occurances
 
 
         public term()
         {
             IsUpperInCurpus = true;
             phrase = "";
-            posting = new ConcurrentDictionary<string, short>();
+            posting = new ConcurrentDictionary<int, short>();
             idf = icf = 0;
         }
 
@@ -36,7 +36,7 @@ namespace IR_engine
             Phrase = phrase;
             IsUpperInCurpus = true;
             idf = icf = 0;
-            posting = new ConcurrentDictionary<string, short>();
+            posting = new ConcurrentDictionary<int, short>();
         }
 
         public string Phrase
@@ -69,7 +69,7 @@ namespace IR_engine
         /// </summary>
         /// <param name="doc">the doc where the term was seen</param>
         /// <param name="tf">the tf in the doc</param>
-        public void AddToPosting(string doc, short tf)
+        public void AddToPosting(int doc, short tf)
         {
             this.icf += tf;
             posting.AddOrUpdate(doc, tf, (key, value) => {
@@ -81,9 +81,9 @@ namespace IR_engine
         /// merges an dictionary to the terms addposting dictionary
         /// </summary>
         /// <param name="dictionary">the dictionary to merge</param>
-        public void AddToPosting(ConcurrentDictionary<string, short> dictionary)
+        public void AddToPosting(ConcurrentDictionary<int, short> dictionary)
         {
-            foreach(KeyValuePair<string, short> entry in dictionary)
+            foreach(KeyValuePair<int, short> entry in dictionary)
             {
                 AddToPosting(entry.Key, entry.Value);
             }
@@ -96,7 +96,7 @@ namespace IR_engine
         public string printPosting()
         {
             StringBuilder res = new StringBuilder();
-            foreach(KeyValuePair<string, short> entry in posting)
+            foreach(KeyValuePair<int, short> entry in posting)
             {
                 res.Append(entry.Key + "_" + entry.Value + ",");
             }
@@ -124,7 +124,7 @@ namespace IR_engine
         /// </summary>
         /// <param name="docname">the doc</param>
         /// <returns>the tf number of the term in the dc</returns>
-        public short getTFinDoc(string docname)
+        public short getTFinDoc(int docname)
         {
             return posting[docname];
         }
