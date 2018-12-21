@@ -12,7 +12,6 @@ using System.Collections.Concurrent;
 using Newtonsoft.Json;
 using System.Net;
 using Newtonsoft.Json.Linq;
-using System.Diagnostics;
 
 
 namespace IR_engine
@@ -33,8 +32,6 @@ namespace IR_engine
         int cores;
         public static HashSet<char> fixHash = new HashSet<char>() { '\"', ']', '}', '[', '{','(',')',' '};
         public static ConcurrentDictionary<string, byte> Langs = new ConcurrentDictionary<string, byte>();
-        private static Mutex m = new Mutex();
-        private static int DocIndex = 0;
 
         public ReadFile(string path, bool ToStem, int cores)
         {
@@ -114,15 +111,11 @@ namespace IR_engine
                     {
                         d = new document(data, docNo, date, head, fullname[0]);
                     }
-                    m.WaitOne();
-                    d.DocIndex1 = DocIndex++;
-                    m.ReleaseMutex();
-                    Model.docs.TryAdd(d.DocIndex1, d);
+                    Model.docs.TryAdd(docNo, d);
                     parser[queue].Text2list(d, queue);
                 }
             }
         }
-
         /// <summary>
         /// creates a location object and adds the location to the dictionary
         /// </summary>

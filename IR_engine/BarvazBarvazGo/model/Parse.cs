@@ -94,8 +94,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Threading;
 
 namespace IR_engine
 {/// <summary>
@@ -148,11 +146,9 @@ namespace IR_engine
         bool toStem;
         string path;
         public string DocName = "";
-        public bool isQuery;
-        private int index;
+        public double time = 0;
         StringBuilder sb = new StringBuilder();
         List<IRule> rules;
-        
 
         /// <summary>
         /// this is the constructor for the Parser class
@@ -165,9 +161,6 @@ namespace IR_engine
             toStem = tostem;
             stopwords = new HashSet<string>();
             stem = new Stemmer();
-            rules = RuleFactory.Factory();
-            isQuery = path.Equals("");
-            if (isQuery) return;
             string stopPath = Directory.GetFiles(path, "stop_words.txt", SearchOption.AllDirectories).ToArray()[0];
             string[] stops = File.ReadAllText(stopPath).Split('\n');
             foreach (string word in stops)
@@ -175,6 +168,7 @@ namespace IR_engine
                 string stpword = word.Trim();
                 stopwords.Add(stpword);
             }
+            rules = RuleFactory.Factory();
         }
         /// <summary>
         /// gets the text part of the document, turns it into a list of words and sends to parser
@@ -183,13 +177,10 @@ namespace IR_engine
         public void Text2list(document document, int queue)
         {
             termsInDoc = new Dictionary<string, double>();
-            index = document.DocIndex1;
             string tmp_txt = document.Doc;
             string[] text = tmp_txt.Split(' ', '\n', '\t', '\r');
             for (int i = 0; i < text.Length; i++)
                 text[i] = Fixword(text[i]);
-            document.DocSize = text.Length;
-            Interlocked.Add(ref Model.avg_doc_size, text.Length);
             DocName = document.DocID;
             parseText(text, queue);
         }
@@ -330,7 +321,7 @@ namespace IR_engine
                         if (!c)
                             phrase = stringbuilder.ToString();
                         phrase = phrase.ToLower();
-                        if (!isQuery && Model.locations.ContainsKey(phrase))
+                        if (Model.locations.ContainsKey(phrase))
                         {
 
                               Location l = Model.locations[phrase];
@@ -346,13 +337,7 @@ namespace IR_engine
                         type = term.Type.word;
                     }
                 }
-                if(isQuery)
-                {
-                    if(phrase.Length > 1)
-                        Searcher.parsed.Add(new KeyValuePair<string, term.Type>(phrase, type));
-                    i = j;
-                    continue;
-                }
+
                 if (phrase.Length < 1 || stopwords.Contains(phrase)) continue;
                 if (Model.queueList[queue].ContainsKey(phrase+type.ToString()))
                 {
@@ -363,7 +348,7 @@ namespace IR_engine
                      */
                     t = Model.queueList[queue][phrase+ type.ToString()]; //reference to the original term
                     if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
-                    t.AddToPosting(index, 1);
+                    t.AddToPosting(DocName, 1);
                 }
                 else
                 {
@@ -373,7 +358,7 @@ namespace IR_engine
                     t = new term(phrase);
                     t.Type1 = type;
                     if (!isUpperFirstLetter) t.IsUpperInCurpus = false;
-                    t.AddToPosting(index, 1);
+                    t.AddToPosting(DocName, 1);
                     Model.queueList[queue].Add(t.Phrase+ type.ToString(), t);
                 }
                 if (termsInDoc.ContainsKey(phrase+ type.ToString()))
@@ -392,7 +377,6 @@ namespace IR_engine
             /*
              * at the end of the doc parsing, I should end all opened doc counts for the terms
              */
-            if (isQuery) return;
             double max = 0;
             double tf = 0;
             foreach (KeyValuePair<string, double> entry in termsInDoc)
@@ -400,8 +384,8 @@ namespace IR_engine
                 tf = entry.Value;
                 max = tf > max ? tf : max;
             }
-            Model.docs[index].maxTF = max;
-            Model.docs[index].uniqueTerms = termsInDoc.Count;
+            Model.docs[DocName].maxTF = max;
+            Model.docs[DocName].uniqueTerms = termsInDoc.Count;
             termsInDoc.Clear();
         }
 
@@ -939,11 +923,7 @@ namespace IR_engine
                 if(!stopwords.Contains(right.Phrase))
                     AddTerm(queue, right);
                 j = part + idx;
-                StringBuilder sb1 = new StringBuilder();
-                sb1.Append(left.Phrase);
-                sb1.Append("-");
-                sb1.Append(right.Phrase);
-                return sb1.ToString();                                                                //returns the whole expression
+                return Fixword(replace(word, '\"'));                                                                //returns the whole expression
             }
             StringBuilder sb = new StringBuilder();
             List<string> newWords = new List<string>();
@@ -991,7 +971,7 @@ namespace IR_engine
                  */
                 t = Model.queueList[queue][s + t.Type1]; //reference to the original term
                 if (!(s[0] <= 'Z' && s[0] >= 'A')) t.IsUpperInCurpus = false;
-                t.AddToPosting(this.index, 1);
+                t.AddToPosting(DocName, 1);
             }
             else
             {
@@ -1001,7 +981,7 @@ namespace IR_engine
                 t = new term(s);
                 t.Type1 = type;
                 if (!(s[0] <= 'Z' && s[0] >= 'A')) t.IsUpperInCurpus = false;
-                t.AddToPosting(this.index, 1);
+                t.AddToPosting(DocName, 1);
                 Model.queueList[queue].Add(s +type.ToString(), t);
             }
         }

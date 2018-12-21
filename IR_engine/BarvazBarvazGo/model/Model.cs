@@ -20,13 +20,11 @@ namespace IR_engine
         public static List<Dictionary<string, Location>> locsList = new List<Dictionary<string, Location>>();
         public static Dictionary<Location, Location> megaLocList = new Dictionary<Location, Location>();
         public static Dictionary<term, term> terms2 = new Dictionary<term, term>(); //the dictionary
-        public static ConcurrentDictionary<int, document> docs = new ConcurrentDictionary<int, document>(); //holds doc names and <max TF, distinct, location>
+        public static ConcurrentDictionary<string, document> docs = new ConcurrentDictionary<string, document>(); //holds doc names and <max TF, distinct, location>
         public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
         public static ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
-        public static long avg_doc_size = 0;
-        public static double avgDocsSize = 0;
         //end concurrent variables
         public static bool isWorking = false;
         public bool isDictionaryStemmed;
@@ -38,6 +36,7 @@ namespace IR_engine
         string outPath;
         public double counter;
         public Dictionary<string, indexTerm> indexList;
+
         public bool toStem { get => ToStem; set => ToStem = value; }
         public string Path { get { return path; }
             set
@@ -55,6 +54,7 @@ namespace IR_engine
                     indexer = new Indexer(IndexPath, Path);
             }
         }
+
         public Model(string path, bool Tostem, string ipath)
         {
             readfo = new ReadFile(path, Tostem, cores);
@@ -68,6 +68,7 @@ namespace IR_engine
             indexer = new Indexer(outPath, path+ "\\Posting_and_indexes");
             indexList = new Dictionary<string, indexTerm>();
         }
+
         public Model()
         {
             indexList = new Dictionary<string, indexTerm>();
@@ -103,10 +104,11 @@ namespace IR_engine
             isDictionaryStemmed = toStem;
             var watch = System.Diagnostics.Stopwatch.StartNew();
             isWorking = true;
+            // step one, the parsing
             int filesNum = readfo.returnSize();
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-            int tasks = cores;                                  //get the number of logical proccesors
+            int tasks = cores;                                  //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)
             {                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
@@ -114,32 +116,32 @@ namespace IR_engine
             }
             int k = 0, chunk = 0, id = 0;
             t = new List<Task>();
-            //createCityDic(files);
-            //var list = locations.Keys.ToList();
-            //list.Sort();
-            //using (StreamWriter ct = new StreamWriter(IndexPath1 + "\\city_dictionary.txt"))
-            //{
-            //    foreach(var key in list)
-            //    {
-            //        ct.WriteLine(key + "\t" + locations[key].Country + "\t" + locations[key].Currency + "\t" + locations[key].Population);
-            //    }
-            //}
+            createCityDic(files);
+            for(int i=0;i< locsList.Count; i++) { }
+            var list = locations.Keys.ToList();
+            list.Sort();
+            using (StreamWriter ct = new StreamWriter(IndexPath1 + "\\city_dictionary.txt"))
+            {
+                foreach(var key in list)
+                {
+                    ct.WriteLine(key + "\t" + locations[key].Country + "\t" + locations[key].Currency + "\t" + locations[key].Population);
+                }
+            }
 
             foreach (string file in files)
             {
                 int tsk = i % tasks;
-                //t.Add(Task.Factory.StartNew(() =>
-                //{
-                //    readfo.readfile(file, tsk);
-                //}));
-                readfo.readfile(file, tsk);
+                t.Add(Task.Factory.StartNew(() =>
+                {
+                    readfo.readfile(file, tsk);
+                }));
                 id++;
                 i++;
                 k++;
                 if (k % tasks == 0)
                 {
-                    //foreach (Task ts in t)
-                    //    ts.Wait();
+                    foreach (Task ts in t)
+                        ts.Wait();
                     if (k % (tasks * 5) == 0)
                     {
                         manageResources();
@@ -160,12 +162,12 @@ namespace IR_engine
                         terms2.Clear();
                         chunk++;
                     }
-                    //t = new List<Task>();
+                    t = new List<Task>();
                 }
             }
             {
-                //foreach (Task ts in t)
-                //    ts.Wait();
+                foreach (Task ts in t)
+                    ts.Wait();
                 manageResources();
                 using (StreamWriter sw = new StreamWriter(Path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
                 {
@@ -186,20 +188,16 @@ namespace IR_engine
                 t = null;
                 chunk++;
             }
-            //readfo.Close();
             indexList = indexer.CreateIndex();
             Directory.Delete(Path + "\\Posting_and_indexes");
             indexer.MergeLocations(path + @"\cityIndex");
             Directory.Delete(path + @"\cityIndex");
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
-            MessageBox.Show("Done indexing the curpus!\nProccessing time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+"min\n"+
-                double.Parse(elapsedMs.ToString()) / 1000.0+" sec\n"+
+            MessageBox.Show("Done indexing the curpus!\nProccessing time: "+double.Parse(elapsedMs.ToString())/1000.0/60.0+" min\n"+
+                +double.Parse(elapsedMs.ToString()) / 1000.0+" sec\n"+
                 "Terms Parsed: " +indexList.Count+"\nDocuments Parsed: "+counter, "BarvazBarvazGo");
-            avgDocsSize = ((double)avg_doc_size) / (counter);
             isWorking = false;
-            //sw.Flush();
-            //sw.Close();
         }
         /// <summary>
         /// funtion to free up the ram space by writing the accumulated values to the Disk
@@ -246,10 +244,10 @@ namespace IR_engine
             }
             using (StreamWriter sw = new StreamWriter(IndexPath1 + "\\documents.txt", true))
             {
-                foreach (KeyValuePair<int, document> entry in docs)
+                foreach (KeyValuePair<string, document> entry in docs)
                 {
                     counter++;
-                    sw.WriteLine(entry.Key+"\t"+entry.Value.ToString());
+                    sw.WriteLine(entry.Value.ToString());
                 }
             }
             docs.Clear();
@@ -369,6 +367,7 @@ namespace IR_engine
             terms2.Clear();
             docs.Clear();
             cityIn.Clear();
+            //readfo.Clear();
             ReadFile.Langs.Clear();
             locations.Clear();
         }

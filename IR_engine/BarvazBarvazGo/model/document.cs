@@ -18,8 +18,6 @@ namespace IR_engine
         public double maxTF;
         public double uniqueTerms;
         private string docCity;
-        private double docSize;
-        private int DocIndex;
 
         /// <summary>
         /// this is the empty (default) constructor
@@ -78,12 +76,9 @@ namespace IR_engine
             set { docCity = value; }
         }
 
-        public double DocSize { get => docSize; set => docSize = value; }
-        public int DocIndex1 { get => DocIndex; set => DocIndex = value; }
-
         public override string ToString()
         {
-            return docID +"\t"+ docDate +"\t"+ maxTF+"\t"+uniqueTerms+"\t"+docCity+"\t"+docSize;
+            return docID +"\t"+ docDate +"\t"+ maxTF+"\t"+uniqueTerms+"\t"+docCity;
         }
     }
 }
