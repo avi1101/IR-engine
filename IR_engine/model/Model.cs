@@ -25,6 +25,7 @@ namespace IR_engine
         public static int fileCount = 0;
         public static ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
+        //public static StreamWriter sw = new StreamWriter(@"S:\C# projects\curpus\trainingSet\corpusStemmed.txt", true);
         //end concurrent variables
         public static bool isWorking = false;
         public bool isDictionaryStemmed;
@@ -109,8 +110,8 @@ namespace IR_engine
             // bool hasIndex = File.Exists(path + "\\index_elad_avi.txt");
             List<Task> t;
             List<string> files = readfo.allfiles;               //gets the files list
-            int tasks = cores;                                  //get the number of logical proccesors 
-            //int tasks = 1;             //get the number of logical proccesors 
+            //int tasks = cores;                                  //get the number of logical proccesors 
+            int tasks = 1;             //get the number of logical proccesors 
             for (int ch = 0; ch < tasks; ch++)
             {                  //initialize the queues
                 queueList.Add(new Dictionary<string, term>());
@@ -133,17 +134,18 @@ namespace IR_engine
             foreach (string file in files)
             {
                 int tsk = i % tasks;
-                t.Add(Task.Factory.StartNew(() =>
-                {
-                    readfo.readfile(file, tsk);
-                }));
+                //t.Add(Task.Factory.StartNew(() =>
+                //{
+                //    readfo.readfile(file, tsk);
+                //}));
+                readfo.readfile(file, tsk);
                 id++;
                 i++;
                 k++;
                 if (k % tasks == 0)
                 {
-                    foreach (Task ts in t)
-                        ts.Wait();
+                    //foreach (Task ts in t)
+                    //    ts.Wait();
                     if (k % (tasks * 5) == 0)
                     {
                         manageResources();
@@ -165,12 +167,12 @@ namespace IR_engine
                         terms2.Clear();
                         chunk++;
                     }
-                    t = new List<Task>();
+                    //t = new List<Task>();
                 }
             }
             {
-                foreach (Task ts in t)
-                    ts.Wait();
+                //foreach (Task ts in t)
+                //    ts.Wait();
                 manageResources();
                 using (StreamWriter sw = new StreamWriter(Path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
                 {
@@ -191,6 +193,7 @@ namespace IR_engine
                 t = null;
                 chunk++;
             }
+            //readfo.Close();
             indexList = indexer.CreateIndex();
             Directory.Delete(Path + "\\Posting_and_indexes");
             indexer.MergeLocations(path + @"\cityIndex");
@@ -201,6 +204,8 @@ namespace IR_engine
                 +double.Parse(elapsedMs.ToString()) / 1000.0+" sec\n"+
                 "Terms Parsed: " +indexList.Count+"\nDocuments Parsed: "+counter, "BarvazBarvazGo");
             isWorking = false;
+            //sw.Flush();
+            //sw.Close();
         }
         /// <summary>
         /// funtion to free up the ram space by writing the accumulated values to the Disk

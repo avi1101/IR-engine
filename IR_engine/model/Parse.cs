@@ -181,12 +181,19 @@ namespace IR_engine
         {
             termsInDoc = new Dictionary<string, double>();
             string tmp_txt = document.Doc;
-            string[] text = tmp_txt.Split(' ', '\n', '\t', '\r');
-            for (int i = 0; i < text.Length; i++)
-                text[i] = Fixword(text[i]);
-            //pre_terms = text.ToList();
+            //string[] text = tmp_txt.Split(' ', '\n', '\t', '\r');
+            //for (int i = 0; i < text.Length; i++)
+            //    text[i] = Fixword(text[i]);
+            ////pre_terms = text.ToList();
             DocName = document.DocID;
-            parseText(text, queue);
+            //parseText(text, queue);
+
+            string[] lines = tmp_txt.Split(new string[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+            foreach(string line in lines)
+            {
+                string[] words = line.Split(new string[] { " ", "\t" }, StringSplitOptions.RemoveEmptyEntries);
+                parseText(words, queue);
+            }
         }
         /// <summary>
         /// checks whether the string is a number. regular or fraction
