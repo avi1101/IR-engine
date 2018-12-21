@@ -335,12 +335,12 @@ namespace IR_engine
 
                               Location l = Model.locations[phrase];
                             if (Model.locsList[queue].ContainsKey(phrase)) { 
-                            if (Model.locsList[queue][phrase].LocationsInDocs.ContainsKey(DocName)) { Model.locsList[queue][phrase].LocationsInDocs[DocName].Add(i); } else { Model.locsList[queue][phrase].LocationsInDocs.TryAdd(DocName, new List<int>() { i }); }
+                            if (Model.locsList[queue][phrase].LocationsInDocs.ContainsKey(index)) { Model.locsList[queue][phrase].LocationsInDocs[index].Add(i); } else { Model.locsList[queue][phrase].LocationsInDocs.TryAdd(index, new List<int>() { i }); }
                             }
                             else {
                                
                                 Model.locsList[queue].Add(phrase, l);
-                                if (Model.locsList[queue][phrase].LocationsInDocs.ContainsKey(DocName)) { Model.locsList[queue][phrase].LocationsInDocs[DocName].Add(i); } else { Model.locsList[queue][phrase].LocationsInDocs.TryAdd(DocName, new List<int>() { i }); }
+                                if (Model.locsList[queue][phrase].LocationsInDocs.ContainsKey(index)) { Model.locsList[queue][phrase].LocationsInDocs[index].Add(i); } else { Model.locsList[queue][phrase].LocationsInDocs.TryAdd(index, new List<int>() { i }); }
                             }
                         }
                         type = term.Type.word;

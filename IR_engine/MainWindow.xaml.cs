@@ -19,7 +19,6 @@ using System.Windows.Forms;
 using System.IO;
 using System.ComponentModel;
 using System.Diagnostics;
-using generateModel.Net;
 
 namespace IR_engine
 {

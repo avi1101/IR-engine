@@ -12,14 +12,14 @@ namespace IR_engine
     public class Location
     {
         private string country;
-        private ConcurrentDictionary<string, List<int>> locationsInDocs;
+        private ConcurrentDictionary<int, List<int>> locationsInDocs;
         private string population;
         private string currency;
         private string capital;
         private string city;
 
         public string Country { get => country; set => country = value; }
-        public ConcurrentDictionary<string, List<int>> LocationsInDocs { get => locationsInDocs; set => locationsInDocs = value; }
+        public ConcurrentDictionary<int, List<int>> LocationsInDocs { get => locationsInDocs; set => locationsInDocs = value; }
         public string Population { get => population; set => population = value; }
         public string Currency { get => currency; set => currency = value; }
         public string Capital { get => capital; set => capital = value; }
@@ -32,15 +32,15 @@ namespace IR_engine
             currency = "";
             Capital = "";
             city = "";
-            locationsInDocs = new ConcurrentDictionary<string, List<int>>();
+            locationsInDocs = new ConcurrentDictionary<int, List<int>>();
         }
         /// <summary>
         /// this function update the location and adds a dictionary of doc names and location in docs
         /// </summary>
         /// <param name="n">the dictionary of the locationsInDocs to add</param>
-        public void addOccurs(ConcurrentDictionary<string, List<int>> n)
+        public void addOccurs(ConcurrentDictionary<int, List<int>> n)
         {
-            foreach(KeyValuePair<string, List<int>> entry in n)
+            foreach(KeyValuePair<int, List<int>> entry in n)
             {
                 locationsInDocs.TryAdd(entry.Key,entry.Value);
             }
@@ -58,12 +58,12 @@ namespace IR_engine
             this.population = popstr;
             this.currency = currency;
             this.Capital = Capital;
-            locationsInDocs = new ConcurrentDictionary<string, List<int>>();
+            locationsInDocs = new ConcurrentDictionary<int, List<int>>();
         }
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder(city + "\t");
-            foreach (KeyValuePair<string, List<int>> entry in locationsInDocs)
+            foreach (KeyValuePair<int, List<int>> entry in locationsInDocs)
             {
                 sb.Append(entry.Key+" ");
                 for (int i = 0; i < entry.Value.Count; i++)

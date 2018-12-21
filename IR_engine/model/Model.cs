@@ -114,32 +114,32 @@ namespace IR_engine
             }
             int k = 0, chunk = 0, id = 0;
             t = new List<Task>();
-            //createCityDic(files);
-            //var list = locations.Keys.ToList();
-            //list.Sort();
-            //using (StreamWriter ct = new StreamWriter(IndexPath1 + "\\city_dictionary.txt"))
-            //{
-            //    foreach(var key in list)
-            //    {
-            //        ct.WriteLine(key + "\t" + locations[key].Country + "\t" + locations[key].Currency + "\t" + locations[key].Population);
-            //    }
-            //}
+            createCityDic(files);
+            var list = locations.Keys.ToList();
+            list.Sort();
+            using (StreamWriter ct = new StreamWriter(IndexPath1 + "\\city_dictionary.txt"))
+            {
+                foreach (var key in list)
+                {
+                    ct.WriteLine(key + "\t" + locations[key].Country + "\t" + locations[key].Currency + "\t" + locations[key].Population);
+                }
+            }
 
             foreach (string file in files)
             {
                 int tsk = i % tasks;
-                //t.Add(Task.Factory.StartNew(() =>
-                //{
-                //    readfo.readfile(file, tsk);
-                //}));
-                readfo.readfile(file, tsk);
+                t.Add(Task.Factory.StartNew(() =>
+                {
+                    readfo.readfile(file, tsk);
+                }));
+                //readfo.readfile(file, tsk);
                 id++;
                 i++;
                 k++;
                 if (k % tasks == 0)
                 {
-                    //foreach (Task ts in t)
-                    //    ts.Wait();
+                    foreach (Task ts in t)
+                        ts.Wait();
                     if (k % (tasks * 5) == 0)
                     {
                         manageResources();
@@ -160,12 +160,12 @@ namespace IR_engine
                         terms2.Clear();
                         chunk++;
                     }
-                    //t = new List<Task>();
+                    t = new List<Task>();
                 }
             }
             {
-                //foreach (Task ts in t)
-                //    ts.Wait();
+                foreach (Task ts in t)
+                    ts.Wait();
                 manageResources();
                 using (StreamWriter sw = new StreamWriter(Path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
                 {
