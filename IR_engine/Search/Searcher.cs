@@ -62,7 +62,7 @@ namespace IR_engine
                 {
                     while ((line = st.ReadLine()) != null)
                         if (ctHash.Contains(line.Split('\t')[4]))
-                            docsIncities.Add(line.Split('\t')[0]);
+                            docsIncities.Add(line.Split('\t')[1]);
                 }
             }
             else
@@ -70,7 +70,7 @@ namespace IR_engine
                 using (StreamReader st = new StreamReader(dataPath + "\\documents.txt"))
                 {
                     while ((line = st.ReadLine()) != null)
-                        docsIncities.Add(line.Split('\t')[0]);
+                        docsIncities.Add(line.Split('\t')[1]);
                 }
             }
             //TODO: send list of docs to rank

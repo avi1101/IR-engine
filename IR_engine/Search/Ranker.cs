@@ -14,13 +14,15 @@ namespace IR_engine
         public double b = 0.75;
         public double delta = 1.0;   //TODO: change and check
         public string dataPath = null;
+        public string postPath = null;
         public List<string> qry = null;
         public List<string> docs = null;
 
 
-        public Ranker(string path)
+        public Ranker(string path,bool isStem)
         {
             dataPath = path;
+            if (isStem) { postPath = @"\DisableStem"; } else { postPath = @"EnableStem"; }
         }
         /// <summary>
         /// Uses BM25 to compute a weight for a term in a document.
@@ -35,13 +37,13 @@ namespace IR_engine
         //public double BM25A(double tf, double numberOfDocuments, double docLength, double averageDocumentLength, double queryFrequency, double idf)
         //{
 
-            double K = k1 * ((1 - b) + ((b * docLength) / averageDocumentLength));
-            double weight = (((k1 + 1d) * tf) / (K + tf));	//first part
-            weight = weight * (((k3 + 1) * queryFrequency) / (k3 + queryFrequency));  //second part
-            // multiply the weight with idf 
-            double idf2 = weight * Math.Log((numberOfDocuments - idf + 0.5) / (idf + 0.5));
-            return idf2;
-        }
+        //    double K = k1 * ((1 - b) + ((b * docLength) / averageDocumentLength));
+        //    double weight = (((k1 + 1d) * tf) / (K + tf));	//first part
+        //    weight = weight * (((k3 + 1) * queryFrequency) / (k3 + queryFrequency));  //second part
+        //    // multiply the weight with idf 
+        //    double idf2 = weight * Math.Log((numberOfDocuments - idf + 0.5) / (idf + 0.5));
+        //    return idf2;
+        //}
         /// <summary>
         /// Returns a relevance score between a term and a document based on a corpus.
         /// </summary>
@@ -70,7 +72,7 @@ namespace IR_engine
             }
             foreach (string value in fin.Keys)
             {
-                using (StreamReader sr)
+                using (StreamReade sr)
             }
 
 
@@ -90,30 +92,89 @@ namespace IR_engine
         //
         // List<string> = a list of all retrieved documents you'll need to rank
         //
-        public double BM25B(Dictionary<string, KeyValuePair<int, term.Type>> qries, List<string> docs)
+        public double BM25B(Dictionary<string, KeyValuePair<int, term.Type>> qries, HashSet<string> docs)
         {
+            Dictionary<string, double> scores = new Dictionary<string, double>();// ket is Document, value is score
+            int numOfDocs = 0;
+            double avgDocLength = 0;
             string line;
-            Dictionary<string, int[]> terms = new Dictionary<string, int[]>();
+            Dictionary<string, List<KeyValuePair<string,int>>> terms = new Dictionary<string, List<KeyValuePair<string, int>>> ();//key=term, value=doc,tf
             Dictionary<string, List<string>> fin = new Dictionary<string, List<string>>(); // key = type, value=list of terms
-            foreach (string q in qries.Keys)
+            Dictionary<string, int> docSize = new Dictionary<string, int>(); //key= docName value = doc size
+            using (StreamReader sr = new StreamReader(dataPath + "\\documents.txt"))
             {
-                if (!fin.ContainsKey(qries[q].Value + "")){
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (docs.Contains(line.Split('\t')[1])) { docSize.Add(line.Split('\t')[1], int.Parse(line.Split('\t')[6].Trim())); avgDocLength = avgDocLength + int.Parse(line.Split('\t')[6].Trim()); }
+                }
+            }
+            int docamount = docSize.Count;
+            avgDocLength = avgDocLength / docamount;
+                /*
+                 *  this part gest all the terms by type
+                 */
+                foreach (string q in qries.Keys)
+            {
+                if (!fin.ContainsKey(qries[q].Value + ""))
+                {
                     List<string> x = new List<string>();
                     x.Add(q);
-                    fin.Add(qries[q].Value+"", x);
+                    fin.Add(qries[q].Value + "", x);
                 }
                 else { fin[qries[q].Value + ""].Add(q); }
             }
+            /*
+             * this part fills the terms Dictionary foreach term with the docs it shows up in acoording to the docs list
+             */
             foreach (string str in fin.Keys)
             {
-                using (StreamReader st = new StreamReader(dataPath + "\\"+ str + ""+".txt"))
+                using (StreamReader st = new StreamReader(dataPath+postPath + "\\" + str + "" + ".txt"))
                 {
-                    while ((line = st.ReadLine()) != null)
-                  //      if(fin.Contains)
+                    while ((line = st.ReadLine()) != null) {
+                        string term = line.Split('\t')[0];
+                        List<string> docsforTerms = line.Split('\t')[1].Split(',').ToList();
+                        foreach(string x in docsforTerms){if (!x.Contains('_')|| !docs.Contains(x.Substring(0, x.IndexOf('_')).Trim(' '))){ docsforTerms.Remove(x);}}
+                        if (qries.ContainsKey(term))
+                        {
+                            List<KeyValuePair<string, int>> tmp = new List<KeyValuePair<string, int>>();
+                            foreach (string doc in docsforTerms)
+                            {
+                                KeyValuePair<string, int> kvp = new KeyValuePair<string, int>(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_'), doc.Length)));
+                                tmp.Add(kvp);
+                            }
+                            if (terms.ContainsKey(term))
+                            {
+                             
+
+                                terms[term].AddRange(tmp);
+                            }
+                            else {terms.Add(term, new List<KeyValuePair<string, int>>());terms[term].AddRange(tmp);}
+                        }
+                    }
                 }
             }
+            /*
+             * this part calculates the different variables for the equation
+             */
+            foreach (string docu in docs)
+            {
+                int docL = docSize[docu];
+                double scoreTmp = 0;
+                foreach (string term in terms.Keys)
+                {
+                    int qf = qries[term].Key;
+                    int nqi = terms[term].Count;
+                    int N = docs.Count;
+                    double IDF = Math.Log((N - nqi + 0.5) / (nqi) + 0.5);
+                    List<KeyValuePair<string, int>> x = terms[term];
+                    int tf = x.First(kvp => kvp.Key.Equals(docu)).Value;
+                    scoreTmp += IDF * (tf * (k1 + 1) / (tf + k1 * (1 - b + b * docL / avgDocLength)));
+                    double ctd = tf / (1 - b + b * docL / avgDocLength);
+                   // double k1_new=Math.Min()
+                }
+                
+                scores.Add(docu, scoreTmp);
+            }
         }
-
-        
     }
 }
