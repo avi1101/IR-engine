@@ -114,16 +114,16 @@ namespace IR_engine
             }
             int k = 0, chunk = 0, id = 0;
             t = new List<Task>();
-            //createCityDic(files);
-            //var list = locations.Keys.ToList();
-            //list.Sort();
-            //using (StreamWriter ct = new StreamWriter(IndexPath1 + "\\city_dictionary.txt"))
-            //{
-            //    foreach(var key in list)
-            //    {
-            //        ct.WriteLine(key + "\t" + locations[key].Country + "\t" + locations[key].Currency + "\t" + locations[key].Population);
-            //    }
-            //}
+            createCityDic(files);
+            var list = locations.Keys.ToList();
+            list.Sort();
+            using (StreamWriter ct = new StreamWriter(IndexPath1 + "\\city_dictionary.txt"))
+            {
+                foreach (var key in list)
+                {
+                    ct.WriteLine(key + "\t" + locations[key].Country + "\t" + locations[key].Currency + "\t" + locations[key].Population);
+                }
+            }
 
             foreach (string file in files)
             {
@@ -132,6 +132,7 @@ namespace IR_engine
                 {
                     readfo.readfile(file, tsk);
                 }));
+                //readfo.readfile(file, tsk);
                 id++;
                 i++;
                 k++;
@@ -185,6 +186,7 @@ namespace IR_engine
                 t = null;
                 chunk++;
             }
+            //readfo.Close();
             indexList = indexer.CreateIndex();
             Directory.Delete(Path + "\\Posting_and_indexes");
             indexer.MergeLocations(path + @"\cityIndex");
@@ -196,6 +198,8 @@ namespace IR_engine
                 "Terms Parsed: " +indexList.Count+"\nDocuments Parsed: "+counter, "BarvazBarvazGo");
             avgDocsSize = ((double)avg_doc_size) / (counter);
             isWorking = false;
+            //sw.Flush();
+            //sw.Close();
         }
         /// <summary>
         /// funtion to free up the ram space by writing the accumulated values to the Disk

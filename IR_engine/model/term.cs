@@ -110,7 +110,7 @@ namespace IR_engine
             sb.Append("\t");
             sb.Append(b);
             sb.Append("\t");
-            sb.Append(type);
+            sb.Append((int)type);
             sb.Append("\t");
             sb.Append(printPosting());
             sb.Append("\t");

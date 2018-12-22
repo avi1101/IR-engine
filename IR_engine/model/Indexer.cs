@@ -200,7 +200,7 @@ namespace IR_engine
                         }
                     }
                 }
-                writers["index"].WriteLine(termPhrase + "\t" + type + "\t" + icf + "\t" + idf);
+                writers["index"].WriteLine(termPhrase + "\t" + (int)type + "\t" + icf + "\t" + idf);
             }
             for (int i = 0; i < fileCount; i++)
             {
