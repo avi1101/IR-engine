@@ -92,9 +92,10 @@ namespace IR_engine
         //
         // List<string> = a list of all retrieved documents you'll need to rank
         //
-        public double BM25B(Dictionary<string, KeyValuePair<int, term.Type>> qries, HashSet<string> docs)
+        public void rank(Dictionary<string, KeyValuePair<int, term.Type>> qries, HashSet<string> docs)
         {
-            Dictionary<string, double> scores = new Dictionary<string, double>();// ket is Document, value is score
+            Dictionary<string, double> scoresBMOrigin = new Dictionary<string, double>();// ket is Document, value is score
+            Dictionary<string, double> scoresB2 = new Dictionary<string, double>();// ket is Document, value is score
             int numOfDocs = 0;
             double avgDocLength = 0;
             string line;
@@ -140,14 +141,8 @@ namespace IR_engine
                             foreach (string doc in docsforTerms)
                             {
                                 KeyValuePair<string, int> kvp = new KeyValuePair<string, int>(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_'), doc.Length)));
-                                tmp.Add(kvp);
-                            }
-                            if (terms.ContainsKey(term))
-                            {
-                             
-
-                                terms[term].AddRange(tmp);
-                            }
+                                tmp.Add(kvp);}
+                            if (terms.ContainsKey(term)){terms[term].AddRange(tmp);}
                             else {terms.Add(term, new List<KeyValuePair<string, int>>());terms[term].AddRange(tmp);}
                         }
                     }
@@ -156,10 +151,20 @@ namespace IR_engine
             /*
              * this part calculates the different variables for the equation
              */
+            
+            // int[] n = new int[qries.Count]; int i = 0;
+            //int[] f = new int[qries.Count];
+            //foreach (string x in qries.Keys)
+            //{
+            //    n[i] = terms[x].Count;
+            //    f[i] = terms[x].Value
+            //    i++;
+            //}
             foreach (string docu in docs)
             {
                 int docL = docSize[docu];
                 double scoreTmp = 0;
+                double scoreTmp2 = 0;
                 foreach (string term in terms.Keys)
                 {
                     int qf = qries[term].Key;
@@ -170,11 +175,40 @@ namespace IR_engine
                     int tf = x.First(kvp => kvp.Key.Equals(docu)).Value;
                     scoreTmp += IDF * (tf * (k1 + 1) / (tf + k1 * (1 - b + b * docL / avgDocLength)));
                     double ctd = tf / (1 - b + b * docL / avgDocLength);
-                   // double k1_new=Math.Min()
-                }
-                
-                scores.Add(docu, scoreTmp);
+                    scoreTmp2 += Math.Log((1 / ((nqi + 0.5) / (N - nqi + 0.5))) * ((k1 + 1) * tf / (k1 * (1 - b + b * docL / avgDocLength) + tf)) * ((1000 + 1) * qf / (1000 + qf)));
+                }    
+                scoresBMOrigin.Add(docu, scoreTmp);
+                scoresB2.Add(docu, scoreTmp2);
             }
+           // amit(qries.Count, docs.Count,n,)
         }
+        //public void amit(int termsInQuery, int amountOfdocs,int[]docsWithTerm,int[]freqInDoc,int[]qfInQuery,double k1, int k2, double b , int docL,double avgDocL )
+        //{
+        //    double mehane1;
+        //    double mehane2;
+        //    double mehane3;
+        //    double mone1;
+        //    double mone2;
+        //    double mone3;
+
+        //    double rank = 0;
+        //    double K = k1 * ((1 - b) + b * (docL / avgDocL));
+        //    int numOfWords = r.Length;
+        //    for (int i = 0; i < numOfWords; i++)
+        //    {
+        //        mone1 = (r[i] + 0.5) / (R - r[i] + 0.5);
+        //        mehane1 = (n[i] - r[i] - 0.5) / (N - n[i] - R + r[i] + 0.5);
+
+
+        //        mone2 = (k1 + 1) * f[i];
+        //        mone3 = (k2 + 1) * qf[i];
+        //        mehane2 = K + f[i];
+        //        mehane3 = k2 + qf[i];
+
+
+        //        rank += Math.Log(mone1 / mehane1, 2) * ((mone2 * mone3) / (mehane2 * mehane3));
+        //    }
+
+        //}
     }
 }
