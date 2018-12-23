@@ -260,13 +260,10 @@ namespace IR_engine
         {
             string line;
             List<string> locations=new List<string>();
-            if (isStem) { path = path + @"\EnableStem"; } else { path = path + @"\DisableStem"; }
-            using (StreamReader sr = new StreamReader(path + @"City.txt"))
+            using (StreamReader sr = new StreamReader(path + @"\city_dictionary.txt"))
             {
                 while ((line = sr.ReadLine()) != null)
-                {
-                    locations.Add(line.Split('\t')[0]);
-                }
+                {locations.Add(line.Split('\t')[0]); }
             }
             return locations;
         }
