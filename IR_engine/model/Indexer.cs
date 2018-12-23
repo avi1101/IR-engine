@@ -255,6 +255,21 @@ namespace IR_engine
             }
             return index;
         }
+
+        public List<string>  Load_locs(string path,bool isStem)
+        {
+            string line;
+            List<string> locations=new List<string>();
+            if (isStem) { path = path + @"\EnableStem"; } else { path = path + @"\DisableStem"; }
+            using (StreamReader sr = new StreamReader(path + @"City.txt"))
+            {
+                while ((line = sr.ReadLine()) != null)
+                {
+                    locations.Add(line.Split('\t')[0]);
+                }
+            }
+            return locations;
+        }
         /// <summary>
         /// sorts an city temp index acoording to the lexicographic order
         /// </summary>
