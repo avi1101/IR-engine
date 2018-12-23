@@ -17,6 +17,7 @@ namespace IR_engine
             "to","s","was","were","will","with", "documents", "i.e.", "i.e.,"};
         private static Dictionary<string, KeyValuePair<int, term.Type>> currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
         public static List<KeyValuePair<string, term.Type>> parsed = new List<KeyValuePair<string, term.Type>>();
+        static Dictionary<int, string> Index2Doc = new Dictionary<int, string>();
         Dictionary<string, indexTerm> index;
         bool Semantics;
         bool toStem;
@@ -42,6 +43,18 @@ namespace IR_engine
             {
                 Console.WriteLine("Unknown model");
                 vocabulary = null;
+            }
+            if (Index2Doc.Count == 0)
+            {
+                using (StreamReader city = new StreamReader(indexPath.Substring(0, indexPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
+                {                                   //locations list is a list of not desired locations
+                    string line = "";
+                    while ((line = city.ReadLine()) != null)
+                    {
+                        string[] splitted = line.Split('\t');
+                        Index2Doc.Add(int.Parse(splitted[0]), splitted[1]);
+                    }
+                }
             }
         }
 
@@ -101,6 +114,8 @@ namespace IR_engine
         {
             // dictionary of <queryID, dictionary of <parsed query, <occrences, type>>>
             Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires();
+            // dictionary of <queryID, list of <document, it's rank>>
+            Dictionary<int, List<KeyValuePair<string, double>>> ranks = new Dictionary<int, List<KeyValuePair<string, double>>>();
             HashSet<string> ctHash = new HashSet<string>();
             HashSet<string> docs = new HashSet<string>();
             foreach (string city in locations)
@@ -116,6 +131,7 @@ namespace IR_engine
                     string[] splitted = line.Split('\t');
                     if (!ctHash.Contains(splitted[5]))
                         docs.Add(splitted[0]);  //change 0 to 1 if needed name and not index
+
                 }
             }
 
@@ -151,7 +167,24 @@ namespace IR_engine
                 
                 // City.txt format
                 // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
-                ranker.rank(q.Value, docs);
+                ranks.Add(q.Key, ranker.rank(q.Value, docs));
+            }
+            using (StreamWriter sw = new StreamWriter(indexPath.Substring(0, indexPath.LastIndexOf('\\') + 1) + "res.txt"))
+            {
+                foreach(KeyValuePair<int, List<KeyValuePair<string, double>>> ret in ranks)
+                {
+                    int num = 0;
+                    foreach(KeyValuePair<string, double> DocRank in ret.Value)
+                    {
+                        if (num >= 50 || DocRank.Value == 0) break;
+                        sw.WriteLine(   ret.Key + " "
+                                        + 0 + " "
+                                        + Index2Doc[int.Parse(DocRank.Key)].Replace(" ", "") + " "
+                                        + DocRank.Value + " "
+                                        + "WaitWut?"    );
+                        num++;
+                    }
+                }
             }
         }
 

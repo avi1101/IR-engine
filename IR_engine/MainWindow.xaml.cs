@@ -329,8 +329,16 @@ namespace IR_engine
             {
                 modelPath = model_CB.SelectedValue + ".bin";
             }
+
+            List<string> locations = new List<string>();
+            StackPanel s = (StackPanel)scrollLocations.Content;
+            foreach (System.Windows.Controls.CheckBox c in s.Children)
+            {
+                if (c.IsChecked.Value)
+                    locations.Add(c.Content.ToString());
+            }
             search = new Searcher(ipt, qryTextBox.Text, semanticsCheckBox.IsChecked.Value, modelPath, stem.IsChecked.Value);
-            search.Search(new List<string>());
+            search.Search(locations);
             //how to read from the checkboxes from the scrollview
 
             //StackPanel s = (StackPanel)scrollLocations.Content;

@@ -87,7 +87,7 @@ namespace IR_engine
         //
         // List<string> = a list of all retrieved documents you'll need to rank
         //
-        public Dictionary<string, double> rank(Dictionary<string, KeyValuePair<int, term.Type>> qries, HashSet<string> docs)
+        public List<KeyValuePair<string, double>> rank(Dictionary<string, KeyValuePair<int, term.Type>> qries, HashSet<string> docs)
         {
             Dictionary<string, double> scoresBMOrigin = new Dictionary<string, double>();// ket is Document, value is score
             Dictionary<string, double> scoresB2 = new Dictionary<string, double>();// ket is Document, value is score
@@ -203,10 +203,10 @@ namespace IR_engine
             var items = from pair in scoresBMOrigin
                         orderby pair.Value descending
                         select pair;
-            Dictionary<string, double> ans = new Dictionary<string, double>();
-            foreach(KeyValuePair<string,double> x in items)
+            List<KeyValuePair<string, double>> ans = new List<KeyValuePair<string, double>>();
+            foreach (KeyValuePair<string,double> x in items)
             {
-                ans.Add(x.Key, x.Value);
+                ans.Add(x);
             }
             return ans;
         }
