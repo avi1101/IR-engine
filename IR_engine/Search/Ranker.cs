@@ -90,7 +90,7 @@ namespace IR_engine
         public Dictionary<string, double> rank(Dictionary<string, KeyValuePair<int, term.Type>> qries, HashSet<string> docs)
         {
             Dictionary<string, double> scoresBMOrigin = new Dictionary<string, double>();// ket is Document, value is score
-            Dictionary<string, double> scoresB2 = new Dictionary<string, double>();// ket is Document, value is score
+            Dictionary<string, double> CosSim = new Dictionary<string, double>();// ket is Document, value is score
             int numOfDocs = 0;
             double avgDocLength = 0;
             string line;
@@ -182,6 +182,8 @@ namespace IR_engine
             {
                 int docL = docSize[docu];
                 double scoreTmp = 0;
+                double w1 = 0; //root of qf^2*tf^2
+                double w2 = 0; //qf*tf
                 double scoreTmp2 = 0;
                 foreach (string term in terms.Keys)
                 {
@@ -193,12 +195,16 @@ namespace IR_engine
                     int tf = 0;
                     if (!x.ContainsKey(docu)) {  tf = 0; }
                     else { tf = x[docu]; }
+                    int tf2 = tf / docL;
+                    double idf2 = Math.Log(docs.Count / nqi);
+                    w1 += Math.Sqrt(Math.Pow(qf, 2) *Math.Pow(tf2, 2));
+                    w2 += qf * tf2;
                     scoreTmp += IDF * (tf * (k1 + 1) / (tf + k1 * (1 - b + b * docL / avgDocLength)));
                     double ctd = tf / (1 - b + b * docL / avgDocLength);
-                    scoreTmp2 += Math.Log((1 / ((nqi + 0.5) / (N - nqi + 0.5))) * ((k1 + 1) * tf / (k1 * (1 - b + b * docL / avgDocLength) + tf)) * ((1000 + 1) * qf / (1000 + qf)));
+                    scoreTmp2 += tf* IDF;
                 }    
                 scoresBMOrigin.Add(docu, scoreTmp);
-                scoresB2.Add(docu, scoreTmp2);
+                CosSim.Add(docu, w2/w1);
             }
             var items = from pair in scoresBMOrigin
                         orderby pair.Value descending
@@ -207,6 +213,14 @@ namespace IR_engine
             foreach(KeyValuePair<string,double> x in items)
             {
                 ans.Add(x.Key, x.Value);
+            }
+            var items2 = from pair in CosSim
+                         orderby pair.Value descending
+                        select pair;
+            Dictionary<string, double> ans2 = new Dictionary<string, double>();
+            foreach (KeyValuePair<string, double> x in items2)
+            {
+                ans2.Add(x.Key, x.Value);
             }
             return ans;
         }
