@@ -74,17 +74,12 @@ namespace IR_engine
             {
                 using (StreamReade sr)
             }
-
-
-
             if (tf <= 0) return 0.0;
             double tf2 = tf * (k1 + 1) / (tf + k1 * (1 - b + b * docLength / averageDocumentLength));
             double idf = Math.Log((numberOfDocuments - documentFrequency + 0.5) / (documentFrequency + 0.5));
-
             return (tf2+delta) * idf;
         }
         */
-
         // changed: Elad
         //
         // Dictionary<string, KeyValuePair<int, term.Type>>> = <the term from the query, <occurances in the query, term type>>
