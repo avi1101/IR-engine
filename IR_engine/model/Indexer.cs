@@ -256,7 +256,7 @@ namespace IR_engine
             return index;
         }
 
-        public List<string>  Load_locs(string path,bool isStem)
+        public static List<string> Load_locs(string path,bool isStem)
         {
             string line;
             List<string> locations=new List<string>();

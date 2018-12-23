@@ -97,7 +97,7 @@ namespace IR_engine
         /// </summary>
         /// <param name="toStem"></param>
         /// <returns></returns>
-        public void Search(List<string> matching, List<string> locations)
+        public void Search(List<string> locations)
         {
             // dictionary of <queryID, dictionary of <parsed query, <occrences, type>>>
             Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires();

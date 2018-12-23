@@ -272,6 +272,11 @@ namespace IR_engine
             indexList = Indexer.Load_Index(indexPath);
             return indexList;
         }
+
+        public List<string> load_location(string path)
+        {
+            return Indexer.Load_locs(path,toStem);
+        }
         /// <summary>
         /// creates a dictionary of cities based a list of found cities ' is the posting list
         /// </summary>

@@ -120,7 +120,7 @@
                 <ColumnDefinition Width="117*"/>
                 <ColumnDefinition Width="98*"/>
             </Grid.ColumnDefinitions>
-            <TextBox HorizontalAlignment="Center" Height="23" Margin="14,19,12.8,20.4" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="198"/>
+            <TextBox x:Name="qryTextBox" HorizontalAlignment="Center" Height="23" Margin="14,19,12.8,20.4" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="198"/>
             <Button x:Name="browseQry" Content="Browse" HorizontalAlignment="Center" Margin="10.2,18,6.6,18.4" VerticalAlignment="Center" Width="100" Height="26" FontFamily="Showcard Gothic" Background="White" Foreground="#FF009FFF" BorderBrush="#FF5F5F5F" Grid.Column="1" Grid.Row="0" Click="browseQry_Click">
                 <Button.Effect>
                     <DropShadowEffect/>
