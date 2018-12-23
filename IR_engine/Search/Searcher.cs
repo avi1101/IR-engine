@@ -97,26 +97,70 @@ namespace IR_engine
         /// </summary>
         /// <param name="toStem"></param>
         /// <returns></returns>
-        public void Search(List<string> matching)
+        public void Search(List<string> matching, List<string> locations)
         {
             // dictionary of <queryID, dictionary of <parsed query, <occrences, type>>>
-            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires(matching);
+            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires();
+            HashSet<string> ctHash = new HashSet<string>();
+            HashSet<string> docs = new HashSet<string>();
+            foreach (string city in locations)
+            {
+                ctHash.Add(city);
+            }
+
+            using (StreamReader city = new StreamReader(indexPath + "\\documents.txt"))
+            {                                   //locations list is a list of not desired locations
+                string line = "";
+                while((line = city.ReadLine()) != null)
+                {
+                    string[] splitted = line.Split(' ');
+                    if (!ctHash.Contains(splitted[5]))
+                        docs.Add(splitted[0]);  //change 0 to 1 if needed name and not index
+                }
+            }
+
             foreach (var q in parsedQueires)
             {
                 if (Semantics)
                 {
-                    
+                    var recWords = GetSimilar(q.Value);
+                    foreach(KeyValuePair<string, int> w in recWords)
+                    {
+                        if(q.Value.ContainsKey(w.Key))
+                        {
+                            int num = q.Value[w.Key].Key;
+                            term.Type t = q.Value[w.Key].Value;
+                            q.Value[w.Key] = new KeyValuePair<int, term.Type>(w.Value + num, t);
+                        }
+                        else
+                        {
+                            foreach(KeyValuePair<string, term.Type> e in parsed)
+                                if(e.Key.Equals(w.Key))
+                                {
+                                    q.Value.Add(w.Key, new KeyValuePair<int, term.Type>(w.Value, e.Value));
+                                    parsed.Remove(e);
+                                    break;
+                                }
+                        }
+                    }
                 }
+                //foreach(KeyValuePair <string, KeyValuePair<int, term.Type>> wordsInQuery in q.Value)
+                //{
 
+                //}
+                
+                // City.txt format
+                // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
+                ranker.rank(q.Value, docs);
             }
         }
 
-        private HashSet<string> GetSimilar(Dictionary<string, KeyValuePair<int, term.Type>> words)
+        private Dictionary<string, int> GetSimilar(Dictionary<string, KeyValuePair<int, term.Type>> words)
         {
             if (vocabulary == null) return null;
-            HashSet<string> recommendedWords = null;
-            recommendedWords = new HashSet<string>();
-            HashSet<DistanceTo> commonWords = new HashSet<DistanceTo>();
+            Dictionary<string, int> recommendedWords = null;
+            recommendedWords = new Dictionary<string, int>();
+            HashSet<string> commonWords = new HashSet<string>();
             foreach (KeyValuePair<string, KeyValuePair<int, term.Type>> word in words)
             {
                 //gets the vector (size 20) of the word
@@ -124,14 +168,17 @@ namespace IR_engine
                 //build vocabulary to find duplicates, duplicates gets inside the recommended list
                 for (int i = 0; i < dist.Length; i++)
                 {
-                    if (commonWords.Contains(dist[i]))
+                    string w = dist[i].Representation.WordOrNull;
+                    if (commonWords.Contains(w))
                     {
-                        if (!recommendedWords.Contains(dist[i].Representation.WordOrNull))
-                            recommendedWords.Add(dist[i].Representation.WordOrNull);
+                        if (!recommendedWords.ContainsKey(w))
+                            recommendedWords.Add(w, 1);
+                        else
+                            recommendedWords[w]++;
                     }
                     else
                     {
-                        commonWords.Add(dist[i]);
+                        commonWords.Add(w);
                     }
                 }
                 //adding first 5 (if any) terms with the highest probability according to the vector
@@ -139,10 +186,14 @@ namespace IR_engine
                 for (int i = 0; i < dist.Length; i++)
                 {
                     if (i == 5) break;
-                    if (!recommendedWords.Contains(dist[i].Representation.WordOrNull))
-                        recommendedWords.Add(dist[i].Representation.WordOrNull);
+                    if (!recommendedWords.ContainsKey(dist[i].Representation.WordOrNull))
+                        recommendedWords.Add(dist[i].Representation.WordOrNull, 1);
+                    else
+                        recommendedWords[dist[i].Representation.WordOrNull]++;
                 }
             }
+            parsed.Clear();
+            new Parse("", toStem).parseText(commonWords.ToArray(), 0);
             return recommendedWords;
         }
 
@@ -166,7 +217,7 @@ namespace IR_engine
             }
          */
 
-        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires(List<string> matching)
+        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires()
         {
             Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> qs =
                 new Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>>();
@@ -204,11 +255,11 @@ namespace IR_engine
                             continue;
                         ParseLine(line);
                     }
-                    if (matching != null && Semantics)
-                    {
-                        foreach (string s in matching)
-                            ParseLine(s);
-                    }
+                    //if (matching != null && Semantics)
+                    //{
+                    //    foreach (string s in matching)
+                    //        ParseLine(s);
+                    //}
                     qs.Add(currentID, currentKeywords);
                     currentID = 0;
                     currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();

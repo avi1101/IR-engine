@@ -19,6 +19,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Windows.Controls;
 
 namespace IR_engine
 {
@@ -29,7 +30,9 @@ namespace IR_engine
     {
         string path = "";
         string IndexPath = "";
+        string modelPath = "";
         Model m;
+        Searcher search;
         bool isDictionaryStemmed;
         bool semantics;
 
@@ -45,6 +48,17 @@ namespace IR_engine
             model_CB.Items.Add("Select Model");
             model_CB.Items.Add("Costumize");
             model_CB.SelectedIndex = 0;
+
+            //how to fill the scrollview with checkboxes
+
+            //StackPanel s = new StackPanel();
+            //for(int i = 0; i < 100; i++)
+            //{
+            //    System.Windows.Controls.CheckBox c = new System.Windows.Controls.CheckBox();
+            //    c.Content = i;
+            //    s.Children.Add(c);
+            //}
+            //scrollLocations.Content = s;   
         }
 
         /// <summary>
@@ -284,6 +298,39 @@ namespace IR_engine
                 createModel.IsEnabled = true;
             else
                 createModel.IsEnabled = false;
+        }
+
+        private void SearchBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (Model.isWorking)
+            {
+                test.Content = "Engine is working, please wait for a completion message to pop up";
+                return;
+            }
+            if(m.getDictionary().Count == 0)
+            {
+                test.Content = "No index was loaded, please load an index in order to search";
+                return;
+            }
+            string ipt = null;
+            if (stem.IsChecked.Value) { ipt = IndexPath.Equals("") ? IndexPathText.Text + "\\EnableStem" : IndexPath + "\\EnableStem"; }
+            else { ipt = IndexPath.Equals("") ? IndexPathText.Text + "\\DisableStem" : IndexPath + "\\DisableStem"; }
+            if (!Directory.Exists(ipt) || !File.Exists(ipt + "\\index.txt"))
+                test.Content = "No Index in path";
+            if (semanticsCheckBox.IsChecked.Value)
+            {
+                modelPath = model_CB.SelectedValue + ".bin";
+            }
+            search = new Searcher(semanticsCheckBox.IsChecked.Value, modelPath, ipt);
+
+            //how to read from the checkboxes from the scrollview
+
+            //StackPanel s = (StackPanel)scrollLocations.Content;
+            //foreach(System.Windows.Controls.CheckBox c in s.Children)
+            //{
+            //    if (c.IsChecked.Value)
+            //        Console.WriteLine("Location: " + c.Content);
+            //}
         }
     }
 }

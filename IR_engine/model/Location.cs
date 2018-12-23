@@ -78,7 +78,7 @@ namespace IR_engine
                 }
                 sb.Append(',');
             }
-            return sb.ToString()+'\t';
+            return sb.ToString();
         }
         public override bool Equals(object obj)
         {

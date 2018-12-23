@@ -137,7 +137,7 @@
             </Button>
             <Label Content="Create your own model here:" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,30,0" Grid.Row="2" Grid.Column="0"/>
             <Button Width="90" x:Name="SearchBtn" HorizontalAlignment="Center" Content="SEARCH" VerticalAlignment="Center"
-                Height="90" Margin="0,0,0,10" Foreground="#FF0A0C0F" FontFamily="Stencil" FontSize="20" AutomationProperties.HelpText="click here to run the engine" Grid.Row="3" MouseEnter="Search_MouseEnter" MouseLeave="SearchBtn_MouseLeave">
+                Height="90" Margin="0,0,0,10" Foreground="#FF0A0C0F" FontFamily="Stencil" FontSize="20" AutomationProperties.HelpText="click here to run the engine" Grid.Row="3" MouseEnter="Search_MouseEnter" MouseLeave="SearchBtn_MouseLeave" Click="SearchBtn_Click">
                 <Button.Effect>
                     <DropShadowEffect/>
                 </Button.Effect>
@@ -168,6 +168,7 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
+            <ScrollViewer x:Name="scrollLocations" Grid.Column="1" HorizontalAlignment="Right" Margin="0,5.2,4.6,0" Grid.Row="3" Width="108" Height="96" VerticalAlignment="Top" BorderBrush="Black" Background="#FFBFBFBF" OpacityMask="Black"/>
         </Grid>
         <Label Content="Query file path" HorizontalAlignment="center" Height="32" Margin="509,302,351.2,286" VerticalAlignment="center" Width="103" RenderTransformOrigin="0.903,0.863"/>
         <Label Content="Searching" HorizontalAlignment="Left" Margin="664,267,0,0" VerticalAlignment="Top" FontSize="16" FontFamily="Rockwell Extra Bold"/>
