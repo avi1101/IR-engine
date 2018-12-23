@@ -363,6 +363,7 @@ namespace IR_engine
         /// </summary>
         public void Memorydump()
         {
+            i = 0;
             queueList.Clear();
             locsList.Clear();
             megaLocList.Clear();

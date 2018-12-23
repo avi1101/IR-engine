@@ -19,17 +19,30 @@ namespace IR_engine
         public static List<KeyValuePair<string, term.Type>> parsed = new List<KeyValuePair<string, term.Type>>();
         Dictionary<string, indexTerm> index;
         bool Semantics;
+        bool toStem;
         Ranker ranker;
         string indexPath;
         string queryPath;
         string modelPath;
+        Vocabulary vocabulary;
 
-        public Searcher(string indexPath, string queryPath, bool Semantics, string modelPath)
+        public Searcher(string indexPath, string queryPath, bool Semantics, string modelPath, bool toStem)
         {
             this.indexPath = indexPath;
             this.queryPath = queryPath;
             this.Semantics = Semantics;
             this.modelPath = modelPath;
+            this.toStem = toStem;
+            this.ranker = new Ranker(indexPath, toStem);
+            try
+            {
+                vocabulary = new Word2VecBinaryReader().Read(modelPath);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Unknown model");
+                vocabulary = null;
+            }
         }
 
         public void loadIndex(Dictionary<string, indexTerm> index)
@@ -84,58 +97,103 @@ namespace IR_engine
         /// </summary>
         /// <param name="toStem"></param>
         /// <returns></returns>
-        public void Search(List<string> matching, bool toStem)
+        public void Search(List<string> matching, List<string> locations)
         {
             // dictionary of <queryID, dictionary of <parsed query, <occrences, type>>>
-            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires(matching, toStem);
-            foreach(var q in parsedQueires)
+            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires();
+            HashSet<string> ctHash = new HashSet<string>();
+            HashSet<string> docs = new HashSet<string>();
+            foreach (string city in locations)
             {
-                if(Semantics)
-                {
+                ctHash.Add(city);
+            }
 
+            using (StreamReader city = new StreamReader(indexPath + "\\documents.txt"))
+            {                                   //locations list is a list of not desired locations
+                string line = "";
+                while((line = city.ReadLine()) != null)
+                {
+                    string[] splitted = line.Split(' ');
+                    if (!ctHash.Contains(splitted[5]))
+                        docs.Add(splitted[0]);  //change 0 to 1 if needed name and not index
                 }
             }
-        }
 
-        private HashSet<string> GetSimilar(Dictionary<string, KeyValuePair<int, term.Type>> words)
-        {
-            HashSet<string> recommendedWords = null;
-            try
+            foreach (var q in parsedQueires)
             {
-                var vocabulary = new Word2VecBinaryReader().Read(modelPath);
-                recommendedWords = new HashSet<string>();
-                HashSet<DistanceTo> commonWords = new HashSet<DistanceTo>();
-                foreach(KeyValuePair<string, KeyValuePair<int, term.Type>> word in words)
+                if (Semantics)
                 {
-                    //gets the vector (size 20) of the word
-                    var dist = vocabulary.Distance(word.Key, 20);
-                    //build vocabulary to find duplicates, duplicates gets inside the recommended list
-                    for(int i = 0; i < dist.Length; i++)
+                    var recWords = GetSimilar(q.Value);
+                    foreach(KeyValuePair<string, int> w in recWords)
                     {
-                        if(commonWords.Contains(dist[i]))
+                        if(q.Value.ContainsKey(w.Key))
                         {
-                            if (!recommendedWords.Contains(dist[i].Representation.WordOrNull))
-                                recommendedWords.Add(dist[i].Representation.WordOrNull);
+                            int num = q.Value[w.Key].Key;
+                            term.Type t = q.Value[w.Key].Value;
+                            q.Value[w.Key] = new KeyValuePair<int, term.Type>(w.Value + num, t);
                         }
                         else
                         {
-                            commonWords.Add(dist[i]);
+                            foreach(KeyValuePair<string, term.Type> e in parsed)
+                                if(e.Key.Equals(w.Key))
+                                {
+                                    q.Value.Add(w.Key, new KeyValuePair<int, term.Type>(w.Value, e.Value));
+                                    parsed.Remove(e);
+                                    break;
+                                }
                         }
                     }
-                    //adding first 5 (if any) terms with the highest probability according to the vector
-                    //willl search them anyway because they have the highest probability
-                    for(int i = 0; i < dist.Length; i++)
+                }
+                //foreach(KeyValuePair <string, KeyValuePair<int, term.Type>> wordsInQuery in q.Value)
+                //{
+
+                //}
+                
+                // City.txt format
+                // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
+                ranker.rank(q.Value, docs);
+            }
+        }
+
+        private Dictionary<string, int> GetSimilar(Dictionary<string, KeyValuePair<int, term.Type>> words)
+        {
+            if (vocabulary == null) return null;
+            Dictionary<string, int> recommendedWords = null;
+            recommendedWords = new Dictionary<string, int>();
+            HashSet<string> commonWords = new HashSet<string>();
+            foreach (KeyValuePair<string, KeyValuePair<int, term.Type>> word in words)
+            {
+                //gets the vector (size 20) of the word
+                var dist = vocabulary.Distance(word.Key, 20);
+                //build vocabulary to find duplicates, duplicates gets inside the recommended list
+                for (int i = 0; i < dist.Length; i++)
+                {
+                    string w = dist[i].Representation.WordOrNull;
+                    if (commonWords.Contains(w))
                     {
-                        if (i == 5) break;
-                        if(!recommendedWords.Contains(dist[i].Representation.WordOrNull))
-                            recommendedWords.Add(dist[i].Representation.WordOrNull);
+                        if (!recommendedWords.ContainsKey(w))
+                            recommendedWords.Add(w, 1);
+                        else
+                            recommendedWords[w]++;
+                    }
+                    else
+                    {
+                        commonWords.Add(w);
                     }
                 }
+                //adding first 5 (if any) terms with the highest probability according to the vector
+                //willl search them anyway because they have the highest probability
+                for (int i = 0; i < dist.Length; i++)
+                {
+                    if (i == 5) break;
+                    if (!recommendedWords.ContainsKey(dist[i].Representation.WordOrNull))
+                        recommendedWords.Add(dist[i].Representation.WordOrNull, 1);
+                    else
+                        recommendedWords[dist[i].Representation.WordOrNull]++;
+                }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine("Unknown model");
-            }
+            parsed.Clear();
+            new Parse("", toStem).parseText(commonWords.ToArray(), 0);
             return recommendedWords;
         }
 
@@ -159,7 +217,7 @@ namespace IR_engine
             }
          */
 
-        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires(List<string> matching, bool toStem)
+        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires()
         {
             Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> qs =
                 new Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>>();
@@ -176,7 +234,7 @@ namespace IR_engine
                 }
                 else if (line.StartsWith("<title>"))
                 {
-                    ParseLine(line.Substring(8), toStem);
+                    ParseLine(line.Substring(8));
                 }
                 else if (line.StartsWith("<desc>"))
                 {
@@ -191,17 +249,17 @@ namespace IR_engine
                 else if (line.StartsWith("</top>"))
                 {
                     string[] narrLines = narr.ToString().Split('.');
-                    foreach(string l in narrLines)
+                    foreach (string l in narrLines)
                     {
                         if (l.Contains("not relevant") || l.Contains("non-relevant"))
                             continue;
-                        ParseLine(line, toStem);
+                        ParseLine(line);
                     }
-                    if (matching != null && Semantics)
-                    {
-                        foreach (string s in matching)
-                            ParseLine(s, toStem);
-                    }
+                    //if (matching != null && Semantics)
+                    //{
+                    //    foreach (string s in matching)
+                    //        ParseLine(s);
+                    //}
                     qs.Add(currentID, currentKeywords);
                     currentID = 0;
                     currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
@@ -210,7 +268,7 @@ namespace IR_engine
                 {
                     if (last.Equals("desc") && Semantics)
                     {
-                        ParseLine(line, toStem);
+                        ParseLine(line);
                     }
                     else if (last.Equals("narr") && Semantics)
                     {
@@ -222,7 +280,7 @@ namespace IR_engine
             return qs;
         }
 
-        private void ParseLine(String line, bool toStem)
+        private void ParseLine(String line)
         {
             Parse p = new Parse("", toStem);
             p.parseText(line.Split(' '), 0);
@@ -231,10 +289,10 @@ namespace IR_engine
                 string word = pair.Key;
                 if (!string.IsNullOrWhiteSpace(word) && !(word[0] == '<'))
                 {
-                    String result = ProcessWord(word, toStem);
+                    String result = ProcessWord(word);
                     if (!result.Equals(""))
                     {
-                        if(currentKeywords.ContainsKey(result))
+                        if (currentKeywords.ContainsKey(result))
                         {
                             int occ = currentKeywords[result].Key;
                             currentKeywords[result] = new KeyValuePair<int, term.Type>(occ + 1, pair.Value);
@@ -249,7 +307,7 @@ namespace IR_engine
             parsed.Clear();
         }
 
-        private String ProcessWord(String word, bool toStem)
+        private String ProcessWord(String word)
         {
             String workingCopy = word;
 

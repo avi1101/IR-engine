@@ -373,6 +373,7 @@ namespace IR_engine
                 sr[i].Close();
                 File.Delete(path + "\\City" + i + "sorted.txt");
             }
+            sw.Flush();
             sw.Close();
         }
     }

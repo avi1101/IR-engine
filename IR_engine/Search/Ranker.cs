@@ -22,7 +22,7 @@ namespace IR_engine
         public Ranker(string path,bool isStem)
         {
             dataPath = path;
-            if (isStem) { postPath = @"\DisableStem"; } else { postPath = @"EnableStem"; }
+            if (!isStem) { postPath = @"\DisableStem"; } else { postPath = @"EnableStem"; }
         }
         /// <summary>
         /// Uses BM25 to compute a weight for a term in a document.
