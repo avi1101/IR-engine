@@ -256,14 +256,14 @@ namespace IR_engine
             return index;
         }
 
-        public static List<string> Load_locs(string path,bool isStem)
+        public static List<string> Load_locs(string path, bool isStem)
         {
             string line;
-            List<string> locations=new List<string>();
+            List<string> locations = new List<string>();
             using (StreamReader sr = new StreamReader(path + @"\city_dictionary.txt"))
             {
                 while ((line = sr.ReadLine()) != null)
-                {locations.Add(line.Split('\t')[0]); }
+                { locations.Add(line.Split('\t')[0]); }
             }
             return locations;
         }

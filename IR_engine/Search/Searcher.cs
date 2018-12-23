@@ -108,12 +108,12 @@ namespace IR_engine
                 ctHash.Add(city);
             }
 
-            using (StreamReader city = new StreamReader(indexPath + "\\documents.txt"))
+            using (StreamReader city = new StreamReader(indexPath.Substring(0, indexPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
             {                                   //locations list is a list of not desired locations
                 string line = "";
                 while((line = city.ReadLine()) != null)
                 {
-                    string[] splitted = line.Split(' ');
+                    string[] splitted = line.Split('\t');
                     if (!ctHash.Contains(splitted[5]))
                         docs.Add(splitted[0]);  //change 0 to 1 if needed name and not index
                 }

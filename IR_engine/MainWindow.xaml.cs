@@ -245,6 +245,14 @@ namespace IR_engine
             {
                 isDictionaryStemmed = stem.IsChecked.Value;
                 m.load_index(ipt);
+                StackPanel s = new StackPanel();
+                foreach(string location in m.load_location(ipt.Substring(0, ipt.LastIndexOf('\\') + 1)))
+                {
+                    System.Windows.Controls.CheckBox c = new System.Windows.Controls.CheckBox();
+                    c.Content = location;
+                    s.Children.Add(c);
+                }
+                scrollLocations.Content = s;
                 test.Content = "Index was succesfully loaded from the file:\n" + ipt + "\\index.txt";
             }
         }
@@ -321,7 +329,7 @@ namespace IR_engine
             {
                 modelPath = model_CB.SelectedValue + ".bin";
             }
-            search = new Searcher(IndexPath, qryTextBox.Text, semanticsCheckBox.IsChecked.Value, modelPath, stem.IsChecked.Value);
+            search = new Searcher(ipt, qryTextBox.Text, semanticsCheckBox.IsChecked.Value, modelPath, stem.IsChecked.Value);
             search.Search(new List<string>());
             //how to read from the checkboxes from the scrollview
 

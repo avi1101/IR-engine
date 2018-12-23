@@ -87,21 +87,21 @@ namespace IR_engine
         //
         // List<string> = a list of all retrieved documents you'll need to rank
         //
-        public void rank(Dictionary<string, KeyValuePair<int, term.Type>> qries, HashSet<string> docs)
+        public Dictionary<string, double> rank(Dictionary<string, KeyValuePair<int, term.Type>> qries, HashSet<string> docs)
         {
             Dictionary<string, double> scoresBMOrigin = new Dictionary<string, double>();// ket is Document, value is score
             Dictionary<string, double> scoresB2 = new Dictionary<string, double>();// ket is Document, value is score
             int numOfDocs = 0;
             double avgDocLength = 0;
             string line;
-            Dictionary<string, List<KeyValuePair<string,int>>> terms = new Dictionary<string, List<KeyValuePair<string, int>>> ();//key=term, value=doc,tf
+            Dictionary<string, Dictionary<string,int>> terms = new Dictionary<string, Dictionary<string, int>>();//key=term, value=doc,tf
             Dictionary<string, List<string>> fin = new Dictionary<string, List<string>>(); // key = type, value=list of terms
             Dictionary<string, int> docSize = new Dictionary<string, int>(); //key= docName value = doc size
-            using (StreamReader sr = new StreamReader(dataPath + "\\documents.txt"))
+            using (StreamReader sr = new StreamReader(dataPath.Substring(0, dataPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
             {
                 while ((line = sr.ReadLine()) != null)
                 {
-                    if (docs.Contains(line.Split('\t')[1])) { docSize.Add(line.Split('\t')[1], int.Parse(line.Split('\t')[6].Trim())); avgDocLength = avgDocLength + int.Parse(line.Split('\t')[6].Trim()); }
+                    if (docs.Contains(line.Split('\t')[0])) { docSize.Add(line.Split('\t')[0], int.Parse(line.Split('\t')[6].Trim())); avgDocLength = avgDocLength + int.Parse(line.Split('\t')[6].Trim()); }
                 }
             }
             int docamount = docSize.Count;
@@ -111,34 +111,57 @@ namespace IR_engine
                  */
                 foreach (string q in qries.Keys)
             {
-                if (!fin.ContainsKey(qries[q].Value + ""))
+                if (qries[q].Value == term.Type.word)
                 {
-                    List<string> x = new List<string>();
-                    x.Add(q);
-                    fin.Add(qries[q].Value + "", x);
+                    char c = char.ToUpper(q[0]);
+                    string file = c <= 'Z' && c >= 'A' ? c+"" : "other";
+                    if (!fin.ContainsKey(file))
+                    {
+                        List<string> x = new List<string>();
+                        x.Add(q);
+                        fin.Add(file, x);
+                    }
+                    else { fin[file].Add(q); }
                 }
-                else { fin[qries[q].Value + ""].Add(q); }
+                else
+                {
+                    if (!fin.ContainsKey(qries[q].Value + ""))
+                    {
+                        List<string> x = new List<string>();
+                        x.Add(q);
+                        fin.Add(qries[q].Value + "", x);
+                    }
+                    else { fin[qries[q].Value + ""].Add(q); }
+                }
             }
             /*
              * this part fills the terms Dictionary foreach term with the docs it shows up in acoording to the docs list
              */
             foreach (string str in fin.Keys)
             {
-                using (StreamReader st = new StreamReader(dataPath+postPath + "\\" + str + "" + ".txt"))
+                using (StreamReader st = new StreamReader(dataPath + "\\" + str + "" + ".txt"))
                 {
                     while ((line = st.ReadLine()) != null) {
                         string term = line.Split('\t')[0];
-                        List<string> docsforTerms = line.Split('\t')[1].Split(',').ToList();
-                        foreach(string x in docsforTerms){if (!x.Contains('_')|| !docs.Contains(x.Substring(0, x.IndexOf('_')).Trim(' '))){ docsforTerms.Remove(x);}}
+                        List<string> docsforTerms = line.Split('\t')[1].Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                        foreach(string x in docsforTerms)
+                        {
+                            if (!x.Contains('_')|| !docs.Contains(x.Substring(0, x.IndexOf('_')).Trim(' ')))
+                            {
+                                docsforTerms.Remove(x);
+                            }
+                        }
                         if (qries.ContainsKey(term))
                         {
-                            List<KeyValuePair<string, int>> tmp = new List<KeyValuePair<string, int>>();
+                            Dictionary<string, int> tmp = new Dictionary<string, int>();
                             foreach (string doc in docsforTerms)
                             {
-                                KeyValuePair<string, int> kvp = new KeyValuePair<string, int>(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_'), doc.Length)));
-                                tmp.Add(kvp);}
-                            if (terms.ContainsKey(term)){terms[term].AddRange(tmp);}
-                            else {terms.Add(term, new List<KeyValuePair<string, int>>());terms[term].AddRange(tmp);}
+                                int y = doc.IndexOf('_');
+                                string x = doc.Substring(doc.IndexOf('_')+1, doc.Length - 1- doc.IndexOf('_'));
+                            if (terms.ContainsKey(term)){
+                                terms[term].Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_'))));}
+                            else {terms.Add(term, new  Dictionary<string, int>());terms[term].Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_'))));}
+                            }
                         }
                     }
                 }
@@ -166,8 +189,10 @@ namespace IR_engine
                     int nqi = terms[term].Count;
                     int N = docs.Count;
                     double IDF = Math.Log((N - nqi + 0.5) / (nqi) + 0.5);
-                    List<KeyValuePair<string, int>> x = terms[term];
-                    int tf = x.First(kvp => kvp.Key.Equals(docu)).Value;
+                    Dictionary<string, int> x = terms[term];
+                    int tf = 0;
+                    if (!x.ContainsKey(docu)) {  tf = 0; }
+                    else { tf = x[docu]; }
                     scoreTmp += IDF * (tf * (k1 + 1) / (tf + k1 * (1 - b + b * docL / avgDocLength)));
                     double ctd = tf / (1 - b + b * docL / avgDocLength);
                     scoreTmp2 += Math.Log((1 / ((nqi + 0.5) / (N - nqi + 0.5))) * ((k1 + 1) * tf / (k1 * (1 - b + b * docL / avgDocLength) + tf)) * ((1000 + 1) * qf / (1000 + qf)));
@@ -175,36 +200,17 @@ namespace IR_engine
                 scoresBMOrigin.Add(docu, scoreTmp);
                 scoresB2.Add(docu, scoreTmp2);
             }
-           // amit(qries.Count, docs.Count,n,)
+            var items = from pair in scoresBMOrigin
+                        orderby pair.Value descending
+                        select pair;
+            Dictionary<string, double> ans = new Dictionary<string, double>();
+            foreach(KeyValuePair<string,double> x in items)
+            {
+                ans.Add(x.Key, x.Value);
+            }
+            return ans;
         }
-        //public void amit(int termsInQuery, int amountOfdocs,int[]docsWithTerm,int[]freqInDoc,int[]qfInQuery,double k1, int k2, double b , int docL,double avgDocL )
-        //{
-        //    double mehane1;
-        //    double mehane2;
-        //    double mehane3;
-        //    double mone1;
-        //    double mone2;
-        //    double mone3;
 
-        //    double rank = 0;
-        //    double K = k1 * ((1 - b) + b * (docL / avgDocL));
-        //    int numOfWords = r.Length;
-        //    for (int i = 0; i < numOfWords; i++)
-        //    {
-        //        mone1 = (r[i] + 0.5) / (R - r[i] + 0.5);
-        //        mehane1 = (n[i] - r[i] - 0.5) / (N - n[i] - R + r[i] + 0.5);
-
-
-        //        mone2 = (k1 + 1) * f[i];
-        //        mone3 = (k2 + 1) * qf[i];
-        //        mehane2 = K + f[i];
-        //        mehane3 = k2 + qf[i];
-
-
-        //        rank += Math.Log(mone1 / mehane1, 2) * ((mone2 * mone3) / (mehane2 * mehane3));
-        //    }
-
-        //}
     }
 }
 
