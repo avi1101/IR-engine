@@ -982,6 +982,13 @@ namespace IR_engine
             string s = t.Phrase;
             if (s.Equals("-")) return;
             term.Type type = t.Type1;
+            Console.WriteLine(type.ToString());
+            if (queue == -1)
+            {
+                if (s.Length > 1)
+                    Searcher.parsed.Add(new KeyValuePair<string, term.Type>(s, type));
+                return;
+            }
             if (Model.queueList[queue].ContainsKey(s+ type.ToString()))
             {
                 /*

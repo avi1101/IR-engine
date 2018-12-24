@@ -31,6 +31,7 @@ namespace IR_engine
         string path = "";
         string IndexPath = "";
         string modelPath = "";
+        string qryPath = "";
         Model m;
         Searcher search;
         bool isDictionaryStemmed;
@@ -45,10 +46,13 @@ namespace IR_engine
             IndexPath = "";
             isDictionaryStemmed = false;
             test.Content = "Welcome to BarvazBarvazGo!\nPlease make sure you have internet connection.";
-            model_CB.Items.Add("Select Model");
-            model_CB.Items.Add("Costumize");
             model_CB.SelectedIndex = 0;
-
+            string[] models = Directory.GetFiles(@"MODELS\", "*.bin", SearchOption.AllDirectories);
+            foreach(string model in models)
+            {
+                model_CB.Items.Add(System.IO.Path.GetFileNameWithoutExtension(model));
+            }
+            model_CB.Items.Add("Costumize");
             //how to fill the scrollview with checkboxes
 
             //StackPanel s = new StackPanel();
@@ -284,7 +288,15 @@ namespace IR_engine
 
         private void browseQry_Click(object sender, RoutedEventArgs e)
         {
-
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.Title = "Browse Query Files";
+            openFileDialog1.InitialDirectory = @"C:\";
+            openFileDialog1.Filter = "Query txt files (*.txt)|*.txt";
+            openFileDialog1.CheckFileExists = true;
+            openFileDialog1.CheckPathExists = true;
+            DialogResult result = openFileDialog1.ShowDialog();
+            qryPath = openFileDialog1.FileName;
+            qryTextBox.Text = qryPath;
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
@@ -327,7 +339,8 @@ namespace IR_engine
                 test.Content = "No Index in path";
             if (semanticsCheckBox.IsChecked.Value)
             {
-                modelPath = model_CB.SelectedValue + ".bin";
+                if(!model_CB.SelectedValue.Equals("Costumize"))
+                    modelPath = @"MODELS\"+model_CB.SelectedValue + ".bin";
             }
 
             List<string> locations = new List<string>();
@@ -347,6 +360,12 @@ namespace IR_engine
             //    if (c.IsChecked.Value)
             //        Console.WriteLine("Location: " + c.Content);
             //}
+        }
+
+        private void createModel_Click(object sender, RoutedEventArgs e)
+        {
+            CreateModel cm = new CreateModel();
+            cm.Show();
         }
     }
 }

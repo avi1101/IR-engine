@@ -139,14 +139,16 @@ namespace IR_engine
              */
             foreach (string str in fin.Keys)
             {
-                using (StreamReader st = new StreamReader(dataPath + "\\" + str + "" + ".txt"))
+                //using (StreamReader st = new StreamReader(dataPath + "\\" + str + "" + ".txt"))
+                using (StreamReader st = new StreamReader(File.Open(dataPath + "\\" + str + "" + ".txt", FileMode.Open, FileAccess.Read, FileShare.Read)))
                 {
-                    while ((line = st.ReadLine()) != null) {
+                    while ((line = st.ReadLine()) != null)
+                    {
                         string term = line.Split('\t')[0];
                         List<string> docsforTerms = line.Split('\t')[1].Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
-                        foreach(string x in docsforTerms)
+                        foreach (string x in docsforTerms)
                         {
-                            if (!x.Contains('_')|| !docs.Contains(x.Substring(0, x.IndexOf('_')).Trim(' ')))
+                            if (!x.Contains('_') || !docs.Contains(x.Substring(0, x.IndexOf('_')).Trim(' ')))
                             {
                                 docsforTerms.Remove(x);
                             }
@@ -157,10 +159,12 @@ namespace IR_engine
                             foreach (string doc in docsforTerms)
                             {
                                 int y = doc.IndexOf('_');
-                                string x = doc.Substring(doc.IndexOf('_')+1, doc.Length - 1- doc.IndexOf('_'));
-                            if (terms.ContainsKey(term)){
-                                terms[term].Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_'))));}
-                            else {terms.Add(term, new  Dictionary<string, int>());terms[term].Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_'))));}
+                                string x = doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_'));
+                                if (terms.ContainsKey(term))
+                                {
+                                    terms[term].Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_'))));
+                                }
+                                else { terms.Add(term, new Dictionary<string, int>()); terms[term].Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_')))); }
                             }
                         }
                     }
@@ -202,7 +206,8 @@ namespace IR_engine
                     scoreTmp += IDF * (tf * (k1 + 1) / (tf + k1 * (1 - b + b * docL / avgDocLength)));
                     double ctd = tf / (1 - b + b * docL / avgDocLength);
                     scoreTmp2 += tf* IDF;
-                }    
+                }
+                if (scoreTmp <= 0) continue;
                 scoresBMOrigin.Add(docu, scoreTmp);
                 CosSim.Add(docu, w2/w1);
             }
