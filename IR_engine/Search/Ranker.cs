@@ -12,7 +12,7 @@ namespace IR_engine
         public double k1 = 1.2;
         public double k3 = 8;
         public double b = 0.75;
-        public double delta = 1.0;   //TODO: change and check
+        public double delta = 2.0;   //TODO: change and check
         public string dataPath = null;
         public string postPath = null;
         public List<string> qry = null;
@@ -91,7 +91,7 @@ namespace IR_engine
         {
             Dictionary<string, double> scoresBMOrigin = new Dictionary<string, double>();// ket is Document, value is score
             Dictionary<string, double> CosSim = new Dictionary<string, double>();// ket is Document, value is score
-            int numOfDocs = 0;
+            double numOfDocs = 0;
             double avgDocLength = 0;
             string line;
             Dictionary<string, Dictionary<string,int>> terms = new Dictionary<string, Dictionary<string, int>>();//key=term, value=doc,tf
@@ -184,27 +184,27 @@ namespace IR_engine
             //}
             foreach (string docu in docs)
             {
-                int docL = docSize[docu];
+                double docL = docSize[docu];
                 double scoreTmp = 0;
                 double w1 = 0; //root of qf^2*tf^2
                 double w2 = 0; //qf*tf
                 double scoreTmp2 = 0;
                 foreach (string term in terms.Keys)
                 {
-                    int qf = qries[term].Key;
-                    int nqi = terms[term].Count;
-                    int N = docs.Count;
+                    double qf = qries[term].Key;
+                    double nqi = terms[term].Count;
+                    double N = docs.Count;
                     double IDF = Math.Log((N - nqi + 0.5) / (nqi) + 0.5);
                     Dictionary<string, int> x = terms[term];
-                    int tf = 0;
+                    double tf = 0;
                     if (!x.ContainsKey(docu)) {  tf = 0; }
                     else { tf = x[docu]; }
-                    int tf2 = tf / docL;
+                    double tf2 = tf / docL;
                     double idf2 = Math.Log(docs.Count / nqi);
                     w1 += Math.Sqrt(Math.Pow(qf, 2) *Math.Pow(tf2, 2));
                     w2 += qf * tf2;
-                    scoreTmp += IDF * (tf * (k1 + 1) / (tf + k1 * (1 - b + b * docL / avgDocLength)));
-                    double ctd = tf / (1 - b + b * docL / avgDocLength);
+                    scoreTmp += IDF * (tf * (k1 + 1.0) / (tf + k1 * (1.0 - b + b * docL / avgDocLength)));
+                    double ctd = tf / (1.0 - b + b * docL / avgDocLength);
                     scoreTmp2 += tf* IDF;
                 }
                 if (scoreTmp <= 0) continue;
@@ -222,10 +222,10 @@ namespace IR_engine
             var items2 = from pair in CosSim
                          orderby pair.Value descending
                         select pair;
-            Dictionary<string, double> ans2 = new Dictionary<string, double>();
+            List<KeyValuePair<string, double>> ans2 = new List<KeyValuePair<string, double>>();
             foreach (KeyValuePair<string, double> x in items2)
             {
-                ans2.Add(x.Key, x.Value);
+                ans2.Add(x);
             }
             return ans;
         }

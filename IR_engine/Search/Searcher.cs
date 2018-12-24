@@ -207,8 +207,9 @@ namespace IR_engine
                         sw.WriteLine(   ret.Key + " "
                                         + 0 + " "
                                         + Index2Doc[int.Parse(DocRank.Key)].Replace(" ", "") + " "
+                                        + num + " "
                                         + DocRank.Value + " "
-                                        + "WaitWut?"    );
+                                        + "run"    );
                         num++;
                     }
                 }

@@ -6,15 +6,41 @@
         xmlns:local="clr-namespace:IR_engine"
         mc:Ignorable="d"
         Title="Create Model" Height="450" Width="800">
-    <Grid>
+    <Grid RenderTransformOrigin="0.954,0.813">
         <Grid.Background>
-            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                <GradientStop Color="#FF9CEFFF" Offset="0"/>
-                <GradientStop Color="#FF9CEFFF" Offset="1"/>
-                <GradientStop Color="White" Offset="0.5"/>
-            </LinearGradientBrush>
+            <RadialGradientBrush Center="0.4,0.5" RadiusX="1">
+                <GradientStop Color="#FFFFB147" Offset="1"/>
+                <GradientStop Color="#FFC8C8C8" Offset="0.744"/>
+            </RadialGradientBrush>
         </Grid.Background>
         <GroupBox x:Name="gb" Header="Important Notes" HorizontalAlignment="Left" Height="124" Margin="10,10,0,0" VerticalAlignment="Top" Width="467"/>
+        <ComboBox x:Name="threadsCB" HorizontalAlignment="Left" Margin="96,173,0,0" VerticalAlignment="Top" Width="66" Height="25"/>
+        <Label Content="Threads:" HorizontalAlignment="Left" Margin="10,173,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.492" Width="81"/>
+        <ComboBox x:Name="modelCB" HorizontalAlignment="Left" Margin="96,204,0,0" VerticalAlignment="Top" Width="66" Height="25"/>
+        <Label Content="Model:" HorizontalAlignment="Left" Margin="10,204,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.492" Width="81"/>
+        <Label Content="Vector Size:" HorizontalAlignment="Left" Margin="10,235,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.492" Width="81"/>
+        <TextBox x:Name="vectorSizeTB" HorizontalAlignment="Left" Height="23" Margin="96,235,0,0" TextWrapping="Wrap" Text="21" VerticalAlignment="Top" Width="66"/>
+        <Label Content="Learning Rate:" HorizontalAlignment="Left" Margin="10,263,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.492" Width="86"/>
+        <TextBox x:Name="learningRateTB" HorizontalAlignment="Left" Height="23" Margin="96,263,0,0" TextWrapping="Wrap" Text="0.05" VerticalAlignment="Top" Width="66"/>
+        <Label Content="Iterations:" HorizontalAlignment="Left" Margin="10,289,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.492" Width="86"/>
+        <TextBox x:Name="iterTB" HorizontalAlignment="Left" Height="23" Margin="96,289,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="66"/>
+        <Label Content="Negative Ex:" HorizontalAlignment="Left" Margin="10,317,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Width="86"/>
+        <TextBox x:Name="iterTB_Copy" HorizontalAlignment="Left" Height="23" Margin="96,317,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="66"/>
+        <Grid HorizontalAlignment="Left" Height="162" Margin="178,173,0,0" VerticalAlignment="Top" Width="453">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="29*"/>
+                <RowDefinition Height="19*"/>
+                <RowDefinition Height="16*"/>
+                <RowDefinition Height="14*"/>
+                <RowDefinition Height="17*"/>
+                <RowDefinition Height="67*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="104*"/>
+                <ColumnDefinition Width="101*"/>
+                <ColumnDefinition Width="247*"/>
+            </Grid.ColumnDefinitions>
+        </Grid>
 
     </Grid>
 </Window>
