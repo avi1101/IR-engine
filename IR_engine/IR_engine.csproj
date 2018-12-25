@@ -204,6 +204,11 @@
   <ItemGroup>
     <Resource Include="Duckduckgo.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="D:\word embedding\Word2Vec.Net\Word2Vec.Net\Word2Vec.Net.csproj">
+      <Project>{fefca2dc-137b-4eee-a779-0194bdfebe1f}</Project>
+      <Name>Word2Vec.Net</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

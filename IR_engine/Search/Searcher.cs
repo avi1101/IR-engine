@@ -7,6 +7,7 @@ using System.IO;
 using Word2vec.Tools;
 using System.Collections.Concurrent;
 using System.Threading;
+using Word2Vec.Net;
 
 namespace IR_engine
 {
@@ -19,6 +20,7 @@ namespace IR_engine
             "to","s","was","were","will","with", "documents", "i.e.", "i.e.,", ",", "?","etc"};
         private static Dictionary<string, KeyValuePair<int, term.Type>> currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
         public static List<KeyValuePair<string, term.Type>> parsed = new List<KeyValuePair<string, term.Type>>();
+        ConcurrentDictionary<int, string> titles = new ConcurrentDictionary<int, string>();
         Mutex m = new Mutex();
         static Dictionary<int, string> Index2Doc = new Dictionary<int, string>();
         Dictionary<string, indexTerm> index;
@@ -29,6 +31,7 @@ namespace IR_engine
         string queryPath;
         string modelPath;
         Vocabulary vocabulary;
+        Word2Vec.Net.Distance distance;
 
         public Searcher(string indexPath, string queryPath, bool Semantics, string modelPath, bool toStem)
         {
@@ -41,6 +44,7 @@ namespace IR_engine
             try
             {
                 vocabulary = new Word2VecBinaryReader().Read(modelPath);
+                distance = new Word2Vec.Net.Distance(modelPath);
             }
             catch (Exception e)
             {
@@ -117,7 +121,7 @@ namespace IR_engine
         {
             List<string> title = new List<string>();
             // dictionary of <queryID, dictionary of <parsed query, <occrences, type>>>
-            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires(out title);
+            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires();
             // dictionary of <queryID, list of <document, it's rank>>
             ConcurrentDictionary<int, List<KeyValuePair<string, double>>> ranks = 
                 new ConcurrentDictionary<int, List<KeyValuePair<string, double>>>();
@@ -139,12 +143,43 @@ namespace IR_engine
 
                 }
             }
-            //Parallel.ForEach(parsedQueires, (q) =>
+            Parallel.ForEach(parsedQueires, (q) =>
+            {
+                m.WaitOne();
+                if (Semantics)
+                {
+                    //var recWords = GetSimilar(q.Value);
+                    var recWords = GetSimilarToSentence(titles[q.Key]);
+                    foreach (KeyValuePair<string, int> w in recWords)
+                    {
+                        if (q.Value.ContainsKey(w.Key))
+                        {
+                            int num = q.Value[w.Key].Key;
+                            term.Type t = q.Value[w.Key].Value;
+                            q.Value[w.Key] = new KeyValuePair<int, term.Type>(w.Value + num, t);
+                        }
+                        else
+                        {
+                            foreach (KeyValuePair<string, term.Type> e in parsed)
+                                if (e.Key.Equals(w.Key))
+                                {
+                                    q.Value.Add(w.Key, new KeyValuePair<int, term.Type>(w.Value, e.Value));
+                                    parsed.Remove(e);
+                                    break;
+                                }
+                        }
+                    }
+                }
+                m.ReleaseMutex();
+                // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
+                ranks.TryAdd(q.Key, ranker.rank(q.Value, docs));
+            });
+            //foreach (var q in parsedQueires)
             //{
-            //    m.WaitOne();
             //    if (Semantics)
             //    {
-            //        var recWords = GetSimilar(q.Value);
+            //        //var recWords = GetSimilar(q.Value);
+            //        var recWords = GetSimilarToSentence(titles[q.Key]);
             //        foreach (KeyValuePair<string, int> w in recWords)
             //        {
             //            if (q.Value.ContainsKey(w.Key))
@@ -165,39 +200,9 @@ namespace IR_engine
             //            }
             //        }
             //    }
-            //    m.ReleaseMutex();
             //    // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
             //    ranks.TryAdd(q.Key, ranker.rank(q.Value, docs));
-            //});
-            foreach (var q in parsedQueires)
-            {
-                if (Semantics)
-                {
-                    //var recWords = GetSimilar(q.Value);
-                    //foreach (KeyValuePair<string, int> w in recWords)
-                    //{
-                    //    if (q.Value.ContainsKey(w.Key))
-                    //    {
-                    //        int num = q.Value[w.Key].Key;
-                    //        term.Type t = q.Value[w.Key].Value;
-                    //        q.Value[w.Key] = new KeyValuePair<int, term.Type>(w.Value + num, t);
-                    //    }
-                    //    else
-                    //    {
-                    //        foreach (KeyValuePair<string, term.Type> e in parsed)
-                    //            if (e.Key.Equals(w.Key))
-                    //            {
-                    //                q.Value.Add(w.Key, new KeyValuePair<int, term.Type>(w.Value, e.Value));
-                    //                parsed.Remove(e);
-                    //                break;
-                    //            }
-                    //    }
-                    //}
-
-                }
-                // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
-                ranks.TryAdd(q.Key, ranker.rank(q.Value, docs));
-            }
+            //}
             var items = from pair in ranks
                         orderby pair.Key ascending
                         select pair;
@@ -221,15 +226,28 @@ namespace IR_engine
             }
         }
 
-        //private Dictionary<string, int> GetSimilarToSentence(List<string> sentence)
-        //{
-        //    var result = distance.Search(text);
-        //    foreach (var bestWord in result.Where(x => !string.IsNullOrEmpty(x.Word)))
-        //    {
-        //        Console.WriteLine("{0}\t\t{1}", bestWord.Word, bestWord.Distance);
-        //    }
-        //    Console.WriteLine();
-        //}
+        private Dictionary<string, int> GetSimilarToSentence(string sentence)
+        {
+            StringBuilder sb = new StringBuilder();
+            Dictionary<string, int> vals = new Dictionary<string, int>();
+            //for(int i = 0; i < sentence.Count; i++)
+            //{
+            //    if (i == sentence.Count - 1)
+            //        sb.Append(sentence[i].ToLower());
+            //    else
+            //        sb.Append(sentence[i].ToLower()+" ");
+            //}
+            //var result = distance.Search(sb.ToString());
+            var result = distance.Search(sentence);
+            int j = 0;
+            foreach (var bestWord in result.Where(x => !string.IsNullOrEmpty(x.Word)))
+            {
+                if (j == 5 || bestWord.Distance < 0.91) break;
+                vals.Add(bestWord.Word, 1);
+                j++;
+            }
+            return vals;
+        }
 
         private Dictionary<string, int> GetSimilar(Dictionary<string, KeyValuePair<int, term.Type>> words)
         {
@@ -293,7 +311,7 @@ namespace IR_engine
             }
          */
 
-        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires(out List<string> title)
+        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires()
         {
             Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> qs =
                 new Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>>();
@@ -312,9 +330,13 @@ namespace IR_engine
                 else if (line.StartsWith("<title>"))
                 {
                     ParseLine(line.Substring(8));
-                    if(Semantics)
-                        foreach (KeyValuePair<string, term.Type> word in parsed)
-                            titleq.Add(word.Key);
+                    if (Semantics)
+                    {
+                        StringBuilder titleString = new StringBuilder();
+                        foreach (string word in currentKeywords.Keys)
+                            titleString.Append(word + " ");
+                        titles.TryAdd(currentID, titleString.ToString().TrimEnd(' '));
+                    }
 
                 }
                 else if (line.StartsWith("<desc>"))
@@ -369,7 +391,6 @@ namespace IR_engine
                     }
                 }
             }
-            title = titleq;
             return qs;
         }
 
