@@ -13,10 +13,10 @@ namespace IR_engine
     class Searcher
     {
         HashSet<string> stopwords = new HashSet<string>() {
-            "a","an","and","also","all","are","as","at","be","been","by","but","for","from",
-            "have","has","had","he","in","is","it","its","more","new","not","what", "where",
-            "which", "how", "who", "of","on","page","part","that","the","this",
-            "to","s","was","were","will","with", "documents", "i.e.", "i.e.,"};
+            "a","an","and","also","all","are","as","at","be","been","by","but","for","from","-",
+            "have","has","had","he","in","is","it","its", "not","more","new","what", "where", "discuss",
+            "which", "how", "who", "of","on","page","part","that","the","this", "regard", "regarding",
+            "to","s","was","were","will","with", "documents", "i.e.", "i.e.,", ",", "?","etc"};
         private static Dictionary<string, KeyValuePair<int, term.Type>> currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
         public static List<KeyValuePair<string, term.Type>> parsed = new List<KeyValuePair<string, term.Type>>();
         Mutex m = new Mutex();
@@ -115,8 +115,9 @@ namespace IR_engine
         /// <returns></returns>
         public void Search(List<string> locations)
         {
+            List<string> title = new List<string>();
             // dictionary of <queryID, dictionary of <parsed query, <occrences, type>>>
-            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires();
+            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires(out title);
             // dictionary of <queryID, list of <document, it's rank>>
             ConcurrentDictionary<int, List<KeyValuePair<string, double>>> ranks = 
                 new ConcurrentDictionary<int, List<KeyValuePair<string, double>>>();
@@ -138,44 +139,15 @@ namespace IR_engine
 
                 }
             }
-            Parallel.ForEach(parsedQueires, (q) =>
-            {
-                m.WaitOne();
-                if (Semantics)
-                {
-                    var recWords = GetSimilar(q.Value);
-                    foreach (KeyValuePair<string, int> w in recWords)
-                    {
-                        if (q.Value.ContainsKey(w.Key))
-                        {
-                            int num = q.Value[w.Key].Key;
-                            term.Type t = q.Value[w.Key].Value;
-                            q.Value[w.Key] = new KeyValuePair<int, term.Type>(w.Value + num, t);
-                        }
-                        else
-                        {
-                            foreach (KeyValuePair<string, term.Type> e in parsed)
-                                if (e.Key.Equals(w.Key))
-                                {
-                                    q.Value.Add(w.Key, new KeyValuePair<int, term.Type>(w.Value, e.Value));
-                                    parsed.Remove(e);
-                                    break;
-                                }
-                        }
-                    }
-                }
-                m.ReleaseMutex();
-                // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
-                ranks.TryAdd(q.Key, ranker.rank(q.Value, docs));
-            });
-            //foreach (var q in parsedQueires)
+            //Parallel.ForEach(parsedQueires, (q) =>
             //{
+            //    m.WaitOne();
             //    if (Semantics)
             //    {
             //        var recWords = GetSimilar(q.Value);
-            //        foreach(KeyValuePair<string, int> w in recWords)
+            //        foreach (KeyValuePair<string, int> w in recWords)
             //        {
-            //            if(q.Value.ContainsKey(w.Key))
+            //            if (q.Value.ContainsKey(w.Key))
             //            {
             //                int num = q.Value[w.Key].Key;
             //                term.Type t = q.Value[w.Key].Value;
@@ -183,8 +155,8 @@ namespace IR_engine
             //            }
             //            else
             //            {
-            //                foreach(KeyValuePair<string, term.Type> e in parsed)
-            //                    if(e.Key.Equals(w.Key))
+            //                foreach (KeyValuePair<string, term.Type> e in parsed)
+            //                    if (e.Key.Equals(w.Key))
             //                    {
             //                        q.Value.Add(w.Key, new KeyValuePair<int, term.Type>(w.Value, e.Value));
             //                        parsed.Remove(e);
@@ -193,12 +165,45 @@ namespace IR_engine
             //            }
             //        }
             //    }
+            //    m.ReleaseMutex();
             //    // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
             //    ranks.TryAdd(q.Key, ranker.rank(q.Value, docs));
-            //}
+            //});
+            foreach (var q in parsedQueires)
+            {
+                if (Semantics)
+                {
+                    //var recWords = GetSimilar(q.Value);
+                    //foreach (KeyValuePair<string, int> w in recWords)
+                    //{
+                    //    if (q.Value.ContainsKey(w.Key))
+                    //    {
+                    //        int num = q.Value[w.Key].Key;
+                    //        term.Type t = q.Value[w.Key].Value;
+                    //        q.Value[w.Key] = new KeyValuePair<int, term.Type>(w.Value + num, t);
+                    //    }
+                    //    else
+                    //    {
+                    //        foreach (KeyValuePair<string, term.Type> e in parsed)
+                    //            if (e.Key.Equals(w.Key))
+                    //            {
+                    //                q.Value.Add(w.Key, new KeyValuePair<int, term.Type>(w.Value, e.Value));
+                    //                parsed.Remove(e);
+                    //                break;
+                    //            }
+                    //    }
+                    //}
+
+                }
+                // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
+                ranks.TryAdd(q.Key, ranker.rank(q.Value, docs));
+            }
+            var items = from pair in ranks
+                        orderby pair.Key ascending
+                        select pair;
             using (StreamWriter sw = new StreamWriter(indexPath.Substring(0, indexPath.LastIndexOf('\\') + 1) + "res.txt"))
             {
-                foreach(KeyValuePair<int, List<KeyValuePair<string, double>>> ret in ranks)
+                foreach(KeyValuePair<int, List<KeyValuePair<string, double>>> ret in items)
                 {
                     int num = 0;
                     foreach(KeyValuePair<string, double> DocRank in ret.Value)
@@ -215,6 +220,16 @@ namespace IR_engine
                 }
             }
         }
+
+        //private Dictionary<string, int> GetSimilarToSentence(List<string> sentence)
+        //{
+        //    var result = distance.Search(text);
+        //    foreach (var bestWord in result.Where(x => !string.IsNullOrEmpty(x.Word)))
+        //    {
+        //        Console.WriteLine("{0}\t\t{1}", bestWord.Word, bestWord.Distance);
+        //    }
+        //    Console.WriteLine();
+        //}
 
         private Dictionary<string, int> GetSimilar(Dictionary<string, KeyValuePair<int, term.Type>> words)
         {
@@ -278,10 +293,11 @@ namespace IR_engine
             }
          */
 
-        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires()
+        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires(out List<string> title)
         {
             Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> qs =
                 new Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>>();
+            List<string> titleq = new List<string>();
             List<string> content = File.ReadAllLines(queryPath).ToList();
             int currentID = 0;
             string last = "";
@@ -296,6 +312,10 @@ namespace IR_engine
                 else if (line.StartsWith("<title>"))
                 {
                     ParseLine(line.Substring(8));
+                    if(Semantics)
+                        foreach (KeyValuePair<string, term.Type> word in parsed)
+                            titleq.Add(word.Key);
+
                 }
                 else if (line.StartsWith("<desc>"))
                 {
@@ -309,12 +329,21 @@ namespace IR_engine
                 // end of topic
                 else if (line.StartsWith("</top>"))
                 {
-                    string[] narrLines = narr.ToString().Split('.');
+                    string[] narrLines = narr.ToString().Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (string l in narrLines)
                     {
-                        if (l.Contains("not relevant") || l.Contains("non-relevant"))
-                            continue;
-                        ParseLine(line);
+                        string l2 = l.Replace("not", "");
+                        string[] rel = l2.Split(new string[] { "not relevant", "non-relevant" }, StringSplitOptions.RemoveEmptyEntries);
+                        if(rel.Length > 1)
+                        {
+                            foreach(string splitted in rel)
+                            {
+                                if (splitted.Contains("relevant"))
+                                    ParseLine(splitted);
+                            }
+                        }
+                        else
+                            ParseLine(rel[0]);
                     }
                     //if (matching != null && Semantics)
                     //{
@@ -324,6 +353,7 @@ namespace IR_engine
                     qs.Add(currentID, currentKeywords);
                     currentID = 0;
                     currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
+                    narr.Clear();
                 }
                 else
                 {
@@ -334,11 +364,22 @@ namespace IR_engine
                     else if (last.Equals("narr") && Semantics)
                     {
                         //ParseLine(line, toStem);
-                        narr.Append(line + " ");
+                        if (line.Contains("<top>")) continue;
+                        narr.Append(ProccessLine(line) + " ");
                     }
                 }
             }
+            title = titleq;
             return qs;
+        }
+
+        private string ProccessLine(string line)
+        {
+            string[] words = line.Split(new string[] { " ", "(", ")", "," }, StringSplitOptions.RemoveEmptyEntries);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < words.Length; i++)
+                sb.Append(ProcessWord(words[i])+" ");
+            return sb.ToString();
         }
 
         private void ParseLine(String line)
@@ -370,12 +411,12 @@ namespace IR_engine
 
         private String ProcessWord(String word)
         {
-            String workingCopy = word;
-
+            String workingCopy = word.ToLower();
             // check if stemmed is stop word, do not search complete list if not necessary
-            if ((workingCopy.Length <= 4) && stopwords.Contains(workingCopy))
+            if ((workingCopy.Length <= 4) || stopwords.Contains(workingCopy))
             {
-                return "";
+                if(!workingCopy.Equals("not"))
+                    return "";
             }
 
             // stem the word

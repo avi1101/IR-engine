@@ -10,9 +10,9 @@ namespace IR_engine
     class Ranker
     {
         public double k1 = 1.2;
-        public double k3 = 8;
+        public double k3 = 100;
         public double b = 0.75;
-        public double delta = 2.0;   //TODO: change and check
+        public double delta = 1.0;   //TODO: change and check
         public string dataPath = null;
         public string postPath = null;
         public List<string> qry = null;
@@ -94,17 +94,17 @@ namespace IR_engine
             double numOfDocs = 0;
             double avgDocLength = 0;
             string line;
-            Dictionary<string, Dictionary<string,int>> terms = new Dictionary<string, Dictionary<string, int>>();//key=term, value=doc,tf
+            Dictionary<string, Dictionary<string, double>> terms = new Dictionary<string, Dictionary<string, double>>();//key=term, value=doc,tf
             Dictionary<string, List<string>> fin = new Dictionary<string, List<string>>(); // key = type, value=list of terms
-            Dictionary<string, int> docSize = new Dictionary<string, int>(); //key= docName value = doc size
+            Dictionary<string, double> docSize = new Dictionary<string, double>(); //key= docName value = doc size
             using (StreamReader sr = new StreamReader(dataPath.Substring(0, dataPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
             {
                 while ((line = sr.ReadLine()) != null)
                 {
-                    if (docs.Contains(line.Split('\t')[0])) { docSize.Add(line.Split('\t')[0], int.Parse(line.Split('\t')[6].Trim())); avgDocLength = avgDocLength + int.Parse(line.Split('\t')[6].Trim()); }
+                    if (docs.Contains(line.Split('\t')[0])) { docSize.Add(line.Split('\t')[0], double.Parse(line.Split('\t')[6].Trim())); avgDocLength = avgDocLength + double.Parse(line.Split('\t')[6].Trim()); }
                 }
             }
-            int docamount = docSize.Count;
+            double docamount = docSize.Count;
             avgDocLength = avgDocLength / docamount;
                 /*
                  *  this part gest all the terms by type
@@ -155,16 +155,15 @@ namespace IR_engine
                         }
                         if (qries.ContainsKey(term))
                         {
-                            Dictionary<string, int> tmp = new Dictionary<string, int>();
+                            Dictionary<string, double> tmp = new Dictionary<string, double>();
                             foreach (string doc in docsforTerms)
                             {
-                                int y = doc.IndexOf('_');
-                                string x = doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_'));
+
                                 if (terms.ContainsKey(term))
                                 {
-                                    terms[term].Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_'))));
+                                    terms[term].Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '), double.Parse(doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_'))));
                                 }
-                                else { terms.Add(term, new Dictionary<string, int>()); terms[term].Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '), int.Parse(doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_')))); }
+                                else { terms.Add(term, new Dictionary<string, double>()); terms[term].Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '), double.Parse(doc.Substring(doc.IndexOf('_') + 1, doc.Length - 1 - doc.IndexOf('_')))); }
                             }
                         }
                     }
@@ -195,13 +194,13 @@ namespace IR_engine
                     double nqi = terms[term].Count;
                     double N = docs.Count;
                     double IDF = Math.Log((N - nqi + 0.5) / (nqi) + 0.5);
-                    Dictionary<string, int> x = terms[term];
+                    Dictionary<string, double> x = terms[term];
                     double tf = 0;
                     if (!x.ContainsKey(docu)) {  tf = 0; }
                     else { tf = x[docu]; }
                     double tf2 = tf / docL;
                     double idf2 = Math.Log(docs.Count / nqi);
-                    w1 += Math.Sqrt(Math.Pow(qf, 2) *Math.Pow(tf2, 2));
+                    w1 += Math.Sqrt(Math.Pow(qf, 2) +Math.Pow(tf2, 2));
                     w2 += qf * tf2;
                     scoreTmp += IDF * (tf * (k1 + 1.0) / (tf + k1 * (1.0 - b + b * docL / avgDocLength)));
                     double ctd = tf / (1.0 - b + b * docL / avgDocLength);
@@ -209,7 +208,7 @@ namespace IR_engine
                 }
                 if (scoreTmp <= 0) continue;
                 scoresBMOrigin.Add(docu, scoreTmp);
-                CosSim.Add(docu, w2/w1);
+                CosSim.Add(docu, 0.1*scoreTmp2+0.9*scoreTmp);
             }
             var items = from pair in scoresBMOrigin
                         orderby pair.Value descending
