@@ -170,6 +170,7 @@ namespace IR_engine
                         }
                     }
                 }
+                parsed.Clear();
                 m.ReleaseMutex();
                 // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
                 ranks.TryAdd(q.Key, ranker.rank(q.Value, docs));
@@ -197,6 +198,7 @@ namespace IR_engine
             //                        parsed.Remove(e);
             //                        break;
             //                    }
+
             //            }
             //        }
             //    }
@@ -246,6 +248,8 @@ namespace IR_engine
                 vals.Add(bestWord.Word, 1);
                 j++;
             }
+
+            new Parse("", toStem).parseText(vals.Keys.ToArray(), -1);
             return vals;
         }
 
