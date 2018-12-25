@@ -14,10 +14,10 @@ namespace IR_engine
     class Searcher
     {
         HashSet<string> stopwords = new HashSet<string>() {
-            "a","an","and","also","all","are","as","at","be","been","by","but","for","from","-",
-            "have","has","had","he","in","is","it","its", "not","more","new","what", "where", "discuss",
-            "which", "how", "who", "of","on","page","part","that","the","this", "regard", "regarding",
-            "to","s","was","were","will","with", "documents", "i.e.", "i.e.,", ",", "?","etc"};
+            "a","an","and","also","all","are","as","at","be","been","by","but","for","from","-", "document", "issue", "issues",
+            "have","has","had","he","in","is","it","its", "not","more","new","what", "where", "discuss", "discussing", "and/or",
+            "which", "how", "who", "of","on","page","part","that","the","this", "regard", "regarding", "considered", "and/or,",
+            "to","s","was","were","will","with", "documents", "i.e.", "i.e.,", ",", "?","etc", "information", "available"};
         private static Dictionary<string, KeyValuePair<int, term.Type>> currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
         public static List<KeyValuePair<string, term.Type>> parsed = new List<KeyValuePair<string, term.Type>>();
         ConcurrentDictionary<int, string> titles = new ConcurrentDictionary<int, string>();
@@ -120,8 +120,9 @@ namespace IR_engine
         public void Search(List<string> locations)
         {
             List<string> title = new List<string>();
+            Dictionary<int, Dictionary<string, double>> weightsPerQuery = new Dictionary<int, Dictionary<string, double>>();
             // dictionary of <queryID, dictionary of <parsed query, <occrences, type>>>
-            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires();
+            Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires(weightsPerQuery);
             // dictionary of <queryID, list of <document, it's rank>>
             ConcurrentDictionary<int, List<KeyValuePair<string, double>>> ranks = 
                 new ConcurrentDictionary<int, List<KeyValuePair<string, double>>>();
@@ -145,11 +146,12 @@ namespace IR_engine
             }
             Parallel.ForEach(parsedQueires, (q) =>
             {
+                // dictionary of terms and weights
                 m.WaitOne();
                 if (Semantics)
                 {
                     //var recWords = GetSimilar(q.Value);
-                    var recWords = GetSimilarToSentence(titles[q.Key]);
+                    var recWords = GetSimilarToSentence(titles[q.Key], weightsPerQuery[q.Key]);
                     foreach (KeyValuePair<string, int> w in recWords)
                     {
                         if (q.Value.ContainsKey(w.Key))
@@ -173,7 +175,8 @@ namespace IR_engine
                 parsed.Clear();
                 m.ReleaseMutex();
                 // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
-                ranks.TryAdd(q.Key, ranker.rank(q.Value, docs));
+                q.Value.Remove("relevant");
+                ranks.TryAdd(q.Key, ranker.rank(q.Value, docs, weightsPerQuery[q.Key]));
             });
             //foreach (var q in parsedQueires)
             //{
@@ -228,7 +231,7 @@ namespace IR_engine
             }
         }
 
-        private Dictionary<string, int> GetSimilarToSentence(string sentence)
+        private Dictionary<string, int> GetSimilarToSentence(string sentence, Dictionary<string, double> weights)
         {
             StringBuilder sb = new StringBuilder();
             Dictionary<string, int> vals = new Dictionary<string, int>();
@@ -246,6 +249,12 @@ namespace IR_engine
             {
                 if (j == 5 || bestWord.Distance < 0.91) break;
                 vals.Add(bestWord.Word, 1);
+                if(weights.ContainsKey(bestWord.Word))
+                {
+                    weights[bestWord.Word]++;
+                }
+                else
+                    weights.Add(bestWord.Word, bestWord.Distance);
                 j++;
             }
 
@@ -315,7 +324,9 @@ namespace IR_engine
             }
          */
 
-        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires()
+        private Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parseAllQueires(
+            Dictionary<int, Dictionary<string, double>> weightsPerQuery
+            )
         {
             Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> qs =
                 new Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>>();
@@ -330,10 +341,13 @@ namespace IR_engine
                 if (line.StartsWith("<num>"))
                 {
                     currentID = int.Parse(line.Substring(14));
+                    if (currentID == 351)
+                        Console.WriteLine();
+                    weightsPerQuery.Add(currentID, new Dictionary<string, double>());
                 }
                 else if (line.StartsWith("<title>"))
                 {
-                    ParseLine(line.Substring(8));
+                    ParseLine(line.Substring(8), "title", weightsPerQuery[currentID]);
                     if (Semantics)
                     {
                         StringBuilder titleString = new StringBuilder();
@@ -358,18 +372,25 @@ namespace IR_engine
                     string[] narrLines = narr.ToString().Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (string l in narrLines)
                     {
-                        string l2 = l.Replace("not", "");
-                        string[] rel = l2.Split(new string[] { "not relevant", "non-relevant" }, StringSplitOptions.RemoveEmptyEntries);
+                        //string l2 = l.Replace("not", "");
+                        string[] rel = l.Split(new string[] { "not relevant", "non-relevant" }, StringSplitOptions.None);
                         if(rel.Length > 1)
                         {
                             foreach(string splitted in rel)
                             {
                                 if (splitted.Contains("relevant"))
-                                    ParseLine(splitted);
+                                {
+                                    ParseLine(splitted.Replace("relevant", ""),"narr",weightsPerQuery[currentID]);
+                                }
+                                else
+                                {
+                                    ParseLine(splitted.Replace("relevant", ""), "negative", weightsPerQuery[currentID]);
+                                }
+                                    
                             }
                         }
                         else
-                            ParseLine(rel[0]);
+                            ParseLine(rel[0].Replace("relevant", ""), "narr", weightsPerQuery[currentID]);
                     }
                     //if (matching != null && Semantics)
                     //{
@@ -385,7 +406,7 @@ namespace IR_engine
                 {
                     if (last.Equals("desc") && Semantics)
                     {
-                        ParseLine(line);
+                        ParseLine(line, "desc", weightsPerQuery[currentID]);
                     }
                     else if (last.Equals("narr") && Semantics)
                     {
@@ -407,7 +428,7 @@ namespace IR_engine
             return sb.ToString();
         }
 
-        private void ParseLine(String line)
+        private void ParseLine(String line, string section, Dictionary<string, double> weights)
         {
             Parse p = new Parse("", toStem);
             p.parseText(line.Split(' '), -1);
@@ -419,6 +440,28 @@ namespace IR_engine
                     String result = ProcessWord(word);
                     if (!result.Equals(""))
                     {
+                        if(!weights.ContainsKey(result))
+                        {
+                            if (section.Equals("desc"))
+                                weights.Add(result, 3.5);
+                            else if (section.Equals("narr"))
+                                weights.Add(result, 2);
+                            else if (section.Equals("title"))
+                                weights.Add(result, 10);
+                            else if (section.Equals("negative"))
+                                weights.Add(result, -1);
+                        }
+                        else
+                        {
+                            if (section.Equals("desc"))
+                                weights[result] += 0.2;
+                            else if (section.Equals("narr"))
+                                weights[result] += 0.1;
+                            else if (section.Equals("title"))
+                                weights[result] += 1;
+                            else if (section.Equals("negative"))
+                                weights[result] -= 1;
+                        }
                         if (currentKeywords.ContainsKey(result))
                         {
                             int occ = currentKeywords[result].Key;

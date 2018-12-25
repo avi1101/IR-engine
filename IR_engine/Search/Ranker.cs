@@ -32,7 +32,11 @@ namespace IR_engine
         //
         // List<string> = a list of all retrieved documents you'll need to rank
         //
-        public List<KeyValuePair<string, double>> rank(Dictionary<string, KeyValuePair<int, term.Type>> qries, HashSet<string> docs)
+        public List<KeyValuePair<string, double>> rank(
+            Dictionary<string, KeyValuePair<int, term.Type>> qries,
+            HashSet<string> docs,
+            Dictionary<string, double> weights
+            )
         {
             Dictionary<string, double> scoresBMOrigin = new Dictionary<string, double>();// ket is Document, value is score
             Dictionary<string, double> CosSim = new Dictionary<string, double>();// ket is Document, value is score
@@ -103,8 +107,9 @@ namespace IR_engine
                                 docsforTerms.Remove(x);
                             }
                         }
-                        if (qries.ContainsKey(term))
+                        if (qries.ContainsKey(term) || qries.ContainsKey(term.ToLower()))
                         {
+                            term = term.ToLower();
                             Dictionary<string, int> tmp = new Dictionary<string, int>();
                             foreach (string doc in docsforTerms)
                             {

@@ -329,7 +329,6 @@ namespace IR_engine
                                 || (phrase[ch] <= 'Z' && phrase[ch] >= 'A')) stringbuilder.Append(phrase[ch]);
                         if (!c)
                             phrase = stringbuilder.ToString();
-                        phrase = phrase.ToLower();
                         if (!isQuery && Model.locations.ContainsKey(phrase))
                         {
 
@@ -353,6 +352,7 @@ namespace IR_engine
                     i = j;
                     continue;
                 }
+                phrase = phrase.ToLower();
                 if (phrase.Length < 1 || stopwords.Contains(phrase)) continue;
                 if (Model.queueList[queue].ContainsKey(phrase+type.ToString()))
                 {
@@ -967,7 +967,7 @@ namespace IR_engine
                 newWords.Add(exp);
             }
             parseText(newWords.ToArray(), queue);
-            j = 1 + idx;                                                                   //returns the index
+            j = idx;                                                                   //returns the index
             type = term.Type.expression;
             if (sb.ToString().Length < 3) return "";
             return sb.ToString();
@@ -982,7 +982,6 @@ namespace IR_engine
             string s = t.Phrase;
             if (s.Equals("-")) return;
             term.Type type = t.Type1;
-            Console.WriteLine(type.ToString());
             if (queue == -1)
             {
                 if (s.Length > 1)
