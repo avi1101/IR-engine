@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Threading;
+using System.Collections.Concurrent;
 
 namespace IR_engine
 {
@@ -14,6 +16,10 @@ namespace IR_engine
     {
         string ipath;
         string path;
+
+        ConcurrentQueue<string> q = new ConcurrentQueue<string>();
+        Dictionary<string, MaxList> elements = new Dictionary<string, MaxList>(); //dictionary of doc and 5 strongest elements
+        Semaphore q_list = new Semaphore(0, 1000000);
 
         public Indexer(string ipath, string path)
         {
@@ -70,7 +76,20 @@ namespace IR_engine
                 File.Delete(files[i]);
             if (!Directory.Exists(ipath))
                 Directory.CreateDirectory(ipath);
-            merge(files.Length, files);
+            Task t1 = new Task(()=>merge(files.Length, files));
+            t1.Start();
+            Task t2 = new Task(BuildElements);
+            t2.Start();
+            t1.Wait();
+            q_list.Release(1);
+            t2.Wait();
+            using (StreamWriter sw = new StreamWriter(ipath + "\\elements.txt"))
+            {
+                foreach(KeyValuePair<string, MaxList> doc in elements)
+                {
+                    sw.WriteLine(doc.Key + '\t' + doc.Value.ToString());
+                }
+            }
         }
 
         /// <summary>
@@ -173,6 +192,11 @@ namespace IR_engine
                     if (char.IsLetter(minPhrase[0]))
                     {
                         writers[Char.ToUpper(minPhrase[0]).ToString()].WriteLine(termPhrase + "\t" + minLine.ToString());
+                        if(Cap)
+                        {
+                            q.Enqueue(termPhrase + "\t" + minLine.ToString());
+                            q_list.Release(1);
+                        }
                     }
                     else
                     {
@@ -210,6 +234,41 @@ namespace IR_engine
             foreach (KeyValuePair<string, StreamWriter> entry in writers)
             {
                 entry.Value.Close();
+            }
+        }
+
+        private void BuildElements()
+        {
+            int i = 0;
+            while(true)
+            {
+                if (i == 1000000) break;
+                q_list.WaitOne();
+                //Thread.Sleep(10);
+                string element = "";
+                try
+                {
+                    q.TryDequeue(out element);
+                }
+                catch(Exception e) { break; }
+                if (element == null) break;
+                string[] splitted = element.Split('\t');
+                string[] posting = splitted[1].Split(',');
+                for(int post = 0; post < posting.Length-1; post++)
+                {
+                    string[] doc_tf = posting[post].Split('_');
+                    if(!elements.ContainsKey(doc_tf[0]))
+                    {
+                        MaxList m = new MaxList();
+                        m.add(new KeyValuePair<string, int>(splitted[0], int.Parse(doc_tf[1])));
+                        elements.Add(doc_tf[0], m);
+                    }
+                    else
+                    {
+                        elements[doc_tf[0]].add(new KeyValuePair<string, int>(splitted[0], int.Parse(doc_tf[1])));
+                    }
+                }
+                i++;
             }
         }
         /// <summary>
@@ -266,6 +325,22 @@ namespace IR_engine
                 { locations.Add(line.Split('\t')[0]); }
             }
             return locations;
+        }
+
+        public static Dictionary<int, string> load_elements(string path)
+        {
+            string line = "";
+            Dictionary<int, string> elements = new Dictionary<int, string>();
+            using (StreamReader sr = new StreamReader(path))
+            {
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (line.Equals(" ")) continue;
+                    string[] splitted = line.Split('\t');
+                    elements.Add(int.Parse(splitted[0]), splitted[1]);
+                }
+            }
+            return elements;
         }
         /// <summary>
         /// sorts an city temp index acoording to the lexicographic order

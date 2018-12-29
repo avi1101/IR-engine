@@ -28,6 +28,7 @@ namespace IR_engine
         public static long avg_doc_size = 0;
         public static double avgDocsSize = 0;
         //end concurrent variables
+        public Dictionary<int, string> elements = new Dictionary<int, string>();
         public static bool isWorking = false;
         public bool isDictionaryStemmed;
         Indexer indexer;
@@ -277,6 +278,13 @@ namespace IR_engine
         {
             return Indexer.Load_locs(path,toStem);
         }
+
+        public Dictionary<int, string> loadElements(string indexPath)
+        {
+            string path = indexPath + "\\elements.txt";
+            elements = Indexer.load_elements(path);
+            return elements;
+        }
         /// <summary>
         /// creates a dictionary of cities based a list of found cities ' is the posting list
         /// </summary>
@@ -377,6 +385,7 @@ namespace IR_engine
             cityIn.Clear();
             ReadFile.Langs.Clear();
             locations.Clear();
+            Searcher.Clear();
         }
     }
 }

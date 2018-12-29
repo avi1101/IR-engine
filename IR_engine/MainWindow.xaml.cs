@@ -249,6 +249,7 @@ namespace IR_engine
             {
                 isDictionaryStemmed = stem.IsChecked.Value;
                 m.load_index(ipt);
+                m.loadElements(ipt);
                 StackPanel s = new StackPanel();
                 foreach(string location in m.load_location(ipt.Substring(0, ipt.LastIndexOf('\\') + 1)))
                 {
@@ -342,7 +343,6 @@ namespace IR_engine
                 if(!model_CB.SelectedValue.Equals("Costumize"))
                     modelPath = @"MODELS\"+model_CB.SelectedValue + ".bin";
             }
-
             List<string> locations = new List<string>();
             StackPanel s = (StackPanel)scrollLocations.Content;
             foreach (System.Windows.Controls.CheckBox c in s.Children)
@@ -350,8 +350,48 @@ namespace IR_engine
                 if (c.IsChecked.Value)
                     locations.Add(c.Content.ToString());
             }
-            search = new Searcher(ipt, qryTextBox.Text, semanticsCheckBox.IsChecked.Value, modelPath, stem.IsChecked.Value);
-            search.Search(locations);
+            string query = "";
+            if(!textQuery.Text.Equals(""))
+            {
+                using (StreamWriter sr1 = new StreamWriter("qryTemp.txt"))
+                {
+                    sr1.WriteLine("<top>");
+                    sr1.WriteLine("<num> Number: 0 ");
+                    sr1.WriteLine("<title> " + textQuery.Text);
+                    sr1.WriteLine("<desc>");
+                    sr1.WriteLine("<narr>");
+                    sr1.WriteLine("</top>");
+                }
+                query = "qryTemp.txt";
+            }
+            if(!qryTextBox.Text.Equals(""))
+                query = qryTextBox.Text;
+            if (!textQuery.Text.Equals("") && !qryTextBox.Text.Equals(""))
+            {
+                MessageBoxResult result = System.Windows.MessageBox.Show("We detected that we entered a query and a file.\nWould you like to search the query anyway?\n(pressing no will search the file)",
+                    "Duplicated input",
+                    MessageBoxButton.YesNo);
+                switch (result)
+                {
+                    case MessageBoxResult.Yes:
+                        {
+                            query = "qryTemp.txt";
+                            break;
+                        }
+                    case MessageBoxResult.No:
+                        query = qryTextBox.Text;
+                        break;
+                }
+            }
+            search = new Searcher(ipt, query, semanticsCheckBox.IsChecked.Value, modelPath, stem.IsChecked.Value);
+            Dictionary<int, List<string>> RelevantDocs = search.Search(locations);
+            if (query.Equals("qryTemp.txt"))
+                File.Delete("qryTemp.txt");
+            ShowResults sr = new ShowResults(RelevantDocs, m.elements);
+            if (RelevantDocs.Count != 0)
+                sr.Show();
+            else
+                sr.Close();
             //how to read from the checkboxes from the scrollview
 
             //StackPanel s = (StackPanel)scrollLocations.Content;

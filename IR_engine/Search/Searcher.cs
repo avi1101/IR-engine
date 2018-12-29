@@ -22,7 +22,7 @@ namespace IR_engine
         public static List<KeyValuePair<string, term.Type>> parsed = new List<KeyValuePair<string, term.Type>>();
         ConcurrentDictionary<int, string> titles = new ConcurrentDictionary<int, string>();
         Mutex m = new Mutex();
-        static Dictionary<int, string> Index2Doc = new Dictionary<int, string>();
+        public static Dictionary<int, string> Index2Doc = new Dictionary<int, string>();
         Dictionary<string, indexTerm> index;
         bool Semantics;
         bool toStem;
@@ -78,47 +78,14 @@ namespace IR_engine
             this.queryPath = "";
         }
 
-        //string[] returnedDocs = new string[50]; //amount of returned documents is restricted to 50
-        //string[] entities = new string[5]; //amount of entities is restricted to 5
-        //List<string> docsIncities = new List<string>(); //the docs we want to search in
-
-        //public void search(string query, List<string> cities, string dataPath)
-        //{
-        //    string[] qry = query.Split(' ');
-        //    string line;
-        //    HashSet<string> ctHash = new HashSet<string>();
-        //    foreach (string city in cities)
-        //    {
-        //        ctHash.Add(city);
-        //    }
-        //    if (cities != null && cities.Count > 0)
-        //    {
-        //        using (StreamReader st = new StreamReader(dataPath + "\\documents.txt"))
-        //        {
-        //            while ((line = st.ReadLine()) != null)
-        //                if (ctHash.Contains(line.Split('\t')[4]))
-        //                    docsIncities.Add(line.Split('\t')[0]);
-        //        }
-
-        //    }
-        //    else
-        //    {
-        //        using (StreamReader st = new StreamReader(dataPath + "\\documents.txt"))
-        //        {
-        //            while ((line = st.ReadLine()) != null)
-        //                docsIncities.Add(line.Split('\t')[0]);
-        //        }
-        //    }
-        //    //TODO: send list of docs to rank
-        //}
-
         /// <summary>
         /// will search and recover all docs that may be relevant to the queries
         /// </summary>
         /// <param name="toStem"></param>
         /// <returns></returns>
-        public void Search(List<string> locations)
+        public Dictionary<int, List<string>> Search(List<string> locations)
         {
+            Clear();
             List<string> title = new List<string>();
             Dictionary<int, Dictionary<string, double>> weightsPerQuery = new Dictionary<int, Dictionary<string, double>>();
             // dictionary of <queryID, dictionary of <parsed query, <occrences, type>>>
@@ -211,10 +178,12 @@ namespace IR_engine
             var items = from pair in ranks
                         orderby pair.Key ascending
                         select pair;
+            Dictionary<int, List<string>> RelevantDocs = new Dictionary<int, List<string>>();
             using (StreamWriter sw = new StreamWriter(indexPath.Substring(0, indexPath.LastIndexOf('\\') + 1) + "res.txt"))
             {
                 foreach(KeyValuePair<int, List<KeyValuePair<string, double>>> ret in items)
                 {
+                    if (ret.Value == null) continue;
                     int num = 0;
                     foreach(KeyValuePair<string, double> DocRank in ret.Value)
                     {
@@ -225,10 +194,24 @@ namespace IR_engine
                                         + num + " "
                                         + DocRank.Value + " "
                                         + "run"    );
+                        //RelevantDocs.Add(Index2Doc[int.Parse(DocRank.Key)].Replace(" ", ""));
+                        if(RelevantDocs.ContainsKey(ret.Key))
+                        {
+                            //RelevantDocs[ret.Key].Add(Index2Doc[int.Parse(DocRank.Key)].Replace(" ", ""));
+                            RelevantDocs[ret.Key].Add(DocRank.Key);
+                        }
+                        else
+                        {
+                            List<string> l = new List<string>();
+                            //l.Add(Index2Doc[int.Parse(DocRank.Key)].Replace(" ", ""));
+                            l.Add(DocRank.Key);
+                            RelevantDocs.Add(ret.Key, l);
+                        }
                         num++;
                     }
                 }
             }
+            return RelevantDocs;
         }
 
         private Dictionary<string, int> GetSimilarToSentence(string sentence, Dictionary<string, double> weights)
@@ -251,7 +234,7 @@ namespace IR_engine
                 vals.Add(bestWord.Word, 1);
                 if(weights.ContainsKey(bestWord.Word))
                 {
-                    weights[bestWord.Word]++;
+                    weights[bestWord.Word] += 0.1;
                 }
                 else
                     weights.Add(bestWord.Word, bestWord.Distance);
@@ -404,11 +387,11 @@ namespace IR_engine
                 }
                 else
                 {
-                    if (last.Equals("desc") && Semantics)
+                    if (last.Equals("desc"))
                     {
                         ParseLine(line, "desc", weightsPerQuery[currentID]);
                     }
-                    else if (last.Equals("narr") && Semantics)
+                    else if (last.Equals("narr"))
                     {
                         //ParseLine(line, toStem);
                         if (line.Contains("<top>")) continue;
@@ -449,7 +432,7 @@ namespace IR_engine
                             else if (section.Equals("title"))
                                 weights.Add(result, 10);
                             else if (section.Equals("negative"))
-                                weights.Add(result, -1);
+                                weights.Add(result, 0.5);
                         }
                         else
                         {
@@ -502,6 +485,11 @@ namespace IR_engine
             return stemmer.ToString();
         }
 
+        public static void Clear()
+        {
+            currentKeywords.Clear();
+            parsed.Clear();
+        }
         //private static bool IsStopword(String toCheck)
         //{
         //    foreach (var temp in _stopWords)

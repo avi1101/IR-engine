@@ -133,6 +133,8 @@ namespace IR_engine
             {
                 double docL = docSize[docu];
                 double scoreTmp = 0;
+                double score22 = 0;
+                double score23 = 0;
                 double w1 = 0; //root of qf^2*tf^2
                 double w2 = 0; //qf*tf
                 if (!relevent_cts.Contains(docu)) continue;
@@ -147,31 +149,39 @@ namespace IR_engine
                     if (!x.ContainsKey(docu)) { tf = 0; }
                     else { tf = x[docu]; }
                     double tf2 = tf / docL;
-                    double idf2 = Math.Log(docs.Count / nqi);
+                    // double idf2 = Math.Log(docs.Count / nqi); NO USE!! bad bad stuff
                     w1 += Math.Sqrt(Math.Pow(qf, 2) * Math.Pow(tf2, 2));
                     w2 += qf * tf2;
-                    scoreTmp += IDF * (tf * (k1 + 1.0) / (tf + k1 * (1.0 - b + b * docL / avgDocLength)));
+                    score22 += qf * ((k1 + 1) * tf / (tf + k1 * (1 - b + b * docL / avgDocLength))) * IDF * weights[term];
+                    scoreTmp += (IDF * (tf * (k1 + 1.0) / (tf + k1 * (1.0 - b + b * docL / avgDocLength))))*weights[term];
                 }
                 if (scoreTmp <= 0) continue;
                 scoresBMOrigin.Add(docu, scoreTmp);
                 CosSim.Add(docu, w2 / w1);
             }
+            //double minV = scoresBMOrigin.Aggregate((l, r) => l.Value < r.Value ? l : r).Value;
+            if (scoresBMOrigin.Count == 0)
+                return null;
+            double avgScore = scoresBMOrigin.Values.Average();
             var items = from pair in scoresBMOrigin
                         orderby pair.Value descending
                         select pair;
             List<KeyValuePair<string, double>> ans = new List<KeyValuePair<string, double>>();
             foreach (KeyValuePair<string, double> x in items)
             {
-                ans.Add(x);
+                if (avgScore <= x.Value)
+                {
+                    ans.Add(x);
+                }
             }
-            var items2 = from pair in CosSim
-                         orderby pair.Value descending
-                         select pair;
-            List<KeyValuePair<string, double>> ans2 = new List<KeyValuePair<string, double>>();
-            foreach (KeyValuePair<string, double> x in items2)
-            {
-                ans2.Add(x);
-            }
+            //var items2 = from pair in CosSim
+            //             orderby pair.Value descending
+            //             select pair;
+            //List<KeyValuePair<string, double>> ans2 = new List<KeyValuePair<string, double>>();
+            //foreach (KeyValuePair<string, double> x in items2)
+            //{
+            //    ans2.Add(x);
+            //}
             return ans;
         }
 
