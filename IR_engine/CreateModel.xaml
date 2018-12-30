@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:IR_engine"
         mc:Ignorable="d"
-        Title="Create Model" Height="450" Width="800">
+        Title="Create Model" Height="450" Width="500">
     <Grid RenderTransformOrigin="0.954,0.813">
         <Grid.Background>
             <RadialGradientBrush Center="0.4,0.5" RadiusX="1">
@@ -26,21 +26,7 @@
         <TextBox x:Name="iterTB" HorizontalAlignment="Left" Height="23" Margin="96,289,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="66"/>
         <Label Content="Negative Ex:" HorizontalAlignment="Left" Margin="10,317,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Width="86"/>
         <TextBox x:Name="iterTB_Copy" HorizontalAlignment="Left" Height="23" Margin="96,317,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="66"/>
-        <Grid HorizontalAlignment="Left" Height="162" Margin="178,173,0,0" VerticalAlignment="Top" Width="453">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="29*"/>
-                <RowDefinition Height="19*"/>
-                <RowDefinition Height="16*"/>
-                <RowDefinition Height="14*"/>
-                <RowDefinition Height="17*"/>
-                <RowDefinition Height="67*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="104*"/>
-                <ColumnDefinition Width="101*"/>
-                <ColumnDefinition Width="247*"/>
-            </Grid.ColumnDefinitions>
-        </Grid>
+        <ProgressBar x:Name="progressBar" Value="{Binding progressBar.Value}" HorizontalAlignment="Left" Height="35" Margin="10,348,0,0" VerticalAlignment="Top" Width="472"/>
 
     </Grid>
 </Window>

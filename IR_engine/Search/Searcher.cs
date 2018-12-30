@@ -8,10 +8,11 @@ using Word2vec.Tools;
 using System.Collections.Concurrent;
 using System.Threading;
 using Word2Vec.Net;
+using System.ComponentModel;
 
 namespace IR_engine
 {
-    class Searcher
+    class Searcher : INotifyPropertyChanged
     {
         HashSet<string> stopwords = new HashSet<string>() {
             "a","an","and","also","all","are","as","at","be","been","by","but","for","from","-", "document", "issue", "issues",
@@ -21,6 +22,7 @@ namespace IR_engine
         private static Dictionary<string, KeyValuePair<int, term.Type>> currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
         public static List<KeyValuePair<string, term.Type>> parsed = new List<KeyValuePair<string, term.Type>>();
         ConcurrentDictionary<int, string> titles = new ConcurrentDictionary<int, string>();
+        public Dictionary<int, List<string>> rdocs = new Dictionary<int, List<string>>();
         Mutex m = new Mutex();
         public static Dictionary<int, string> Index2Doc = new Dictionary<int, string>();
         Dictionary<string, indexTerm> index;
@@ -32,6 +34,22 @@ namespace IR_engine
         string modelPath;
         Vocabulary vocabulary;
         Word2Vec.Net.Distance distance;
+        private double progress;
+
+        public double Progress {
+            get => progress;
+            set
+            {
+                progress = value;
+                OnPropertyChanged("query");
+            }
+        }
+
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public Searcher(string indexPath, string queryPath, bool Semantics, string modelPath, bool toStem)
         {
@@ -140,10 +158,14 @@ namespace IR_engine
                     }
                 }
                 parsed.Clear();
+                this.Progress += (0.5 / parsedQueires.Keys.Count);
                 m.ReleaseMutex();
                 // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
                 q.Value.Remove("relevant");
                 ranks.TryAdd(q.Key, ranker.rank(q.Value, docs, weightsPerQuery[q.Key]));
+                m.WaitOne();
+                this.Progress += (0.5 / parsedQueires.Keys.Count);
+                m.ReleaseMutex();
             });
             //foreach (var q in parsedQueires)
             //{
@@ -211,6 +233,8 @@ namespace IR_engine
                     }
                 }
             }
+            rdocs = RelevantDocs;
+            OnPropertyChanged("done");
             return RelevantDocs;
         }
 

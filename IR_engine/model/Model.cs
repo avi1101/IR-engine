@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace IR_engine
 {
-    class Model
+    class Model : INotifyPropertyChanged
     {
         //concurrent variables
         static int i = 0;                                                           //use to index the queues in the list
@@ -45,7 +45,9 @@ namespace IR_engine
             {
                 path = value;
                 if (!IndexPath1.Equals(""))
+                {
                     indexer = new Indexer(IndexPath1, path);
+                }
             }
         }
         public string IndexPath1 { get => IndexPath;
@@ -53,9 +55,28 @@ namespace IR_engine
             {
                 IndexPath = value;
                 if (!Path.Equals(""))
+                {
                     indexer = new Indexer(IndexPath, Path);
+                }
             }
         }
+
+        public double Progress {
+            get => progress;
+            set
+            {
+                progress = value;
+                OnPropertyChanged("progressBar");
+            }
+        }
+
+        private double progress;
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public Model(string path, bool Tostem, string ipath)
         {
             readfo = new ReadFile(path, Tostem, cores);
@@ -94,6 +115,7 @@ namespace IR_engine
                 File.Delete(IndexPath1 + @"\city_dictionary.txt");
             Memorydump();
             counter = 0;
+            Progress = 0;
             isWorking = true;
             readfo = new ReadFile(path, toStem, cores);
             if (toStem) { if (!File.Exists(IndexPath1 + "\\EnableStem")) { Directory.CreateDirectory(IndexPath1 + "\\EnableStem"); } outPath = IndexPath1 + "\\EnableStem"; }
@@ -137,6 +159,7 @@ namespace IR_engine
                 id++;
                 i++;
                 k++;
+                Progress = ((double)k / (double)files.Count) * 100;
                 if (k % tasks == 0)
                 {
                     foreach (Task ts in t)
@@ -167,6 +190,7 @@ namespace IR_engine
             {
                 foreach (Task ts in t)
                     ts.Wait();
+                Progress = 100;
                 manageResources();
                 using (StreamWriter sw = new StreamWriter(Path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
                 {
@@ -188,6 +212,7 @@ namespace IR_engine
                 chunk++;
             }
             //readfo.Close();
+            Progress = 0;
             indexList = indexer.CreateIndex();
             Directory.Delete(Path + "\\Posting_and_indexes");
             indexer.MergeLocations(path + @"\cityIndex");

@@ -42,6 +42,11 @@ namespace IR_engine
             InitializeComponent();
             semantics = false;
             m = new Model();
+            DataContext = m;
+            m.PropertyChanged += delegate (object sender, PropertyChangedEventArgs e)
+            {
+                progBar.Dispatcher.BeginInvoke((Action)(() => progBar.Value = (m.Progress)));
+            };
             path = "";
             IndexPath = "";
             isDictionaryStemmed = false;
@@ -155,6 +160,7 @@ namespace IR_engine
                 if (!Directory.Exists(IndexPath)) { test.Content = "Index path not a directory"; IndexPath = ""; path = ""; }
                 else
                 {
+                    progBar.Value = 0;
                     test.Content = "Working, please wait...";
                     isDictionaryStemmed = stem.IsChecked.Value;
                     var watch2 = System.Diagnostics.Stopwatch.StartNew();
@@ -333,6 +339,7 @@ namespace IR_engine
                 test.Content = "No index was loaded, please load an index in order to search";
                 return;
             }
+            progBar.Value = 0;
             string ipt = null;
             if (stem.IsChecked.Value) { ipt = IndexPath.Equals("") ? IndexPathText.Text + "\\EnableStem" : IndexPath + "\\EnableStem"; }
             else { ipt = IndexPath.Equals("") ? IndexPathText.Text + "\\DisableStem" : IndexPath + "\\DisableStem"; }
@@ -383,15 +390,39 @@ namespace IR_engine
                         break;
                 }
             }
+            progBar.Value = 0;
+            Dictionary<int, List<string>> RelevantDocs = null;
             search = new Searcher(ipt, query, semanticsCheckBox.IsChecked.Value, modelPath, stem.IsChecked.Value);
-            Dictionary<int, List<string>> RelevantDocs = search.Search(locations);
-            if (query.Equals("qryTemp.txt"))
-                File.Delete("qryTemp.txt");
-            ShowResults sr = new ShowResults(RelevantDocs, m.elements);
-            if (RelevantDocs.Count != 0)
-                sr.Show();
-            else
-                sr.Close();
+            search.PropertyChanged += delegate (object sender1, PropertyChangedEventArgs e1)
+            {
+                if(e1.PropertyName.Equals("done"))
+                {
+                    if (query.Equals("qryTemp.txt"))
+                        File.Delete("qryTemp.txt");
+                    test.Dispatcher.BeginInvoke((Action)(() => test.Content = "Done!"));
+                    if (search.rdocs.Count != 0)
+                    {
+                        System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            ShowResults sr = new ShowResults(search.rdocs, m.elements);
+                            sr.Show();
+                        }));
+                    }
+                    else
+                        System.Windows.MessageBox.Show("No Results", "no results");
+                    return;
+                }
+                progBar.Dispatcher.BeginInvoke((Action)(() => progBar.Value = (search.Progress) * 100));
+            };
+            //Dictionary<int, List<string>> RelevantDocs = search.Search(locations);
+
+            Task t = new Task(() =>
+            {
+               RelevantDocs = search.Search(locations);
+            });
+            t.Start();
+            test.Content = "Retreiving Data...";
+            //t.Wait();
             //how to read from the checkboxes from the scrollview
 
             //StackPanel s = (StackPanel)scrollLocations.Content;
