@@ -116,16 +116,18 @@ namespace IR_engine
                     {
                         string term = line.Split('\t')[0];
                         List<string> docsforTerms = line.Split('\t')[1].Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                        int len = docsforTerms.Count;
                         if (isfiltered)
                         {
                             HashSet<string> toremove = new HashSet<string>();
-                            foreach (string x in docsforTerms)
+                            for(int i = 0; i < len; i++)
                             {
-                                if (!x.Contains('_') || !docs.Contains(x.Substring(0, x.IndexOf('_')).Trim(' ')))
+                                if (!docsforTerms[i].Contains('_') || !docs.Contains(docsforTerms[i].Substring(0, docsforTerms[i].IndexOf('_')).Trim(' ')))
                                 {
-                                    toremove.Add(x);
+                                    toremove.Add(docsforTerms[i]);
                                 }
                             }
+                            len -= toremove.Count;
                             foreach (string s in toremove)
                             {
                                 docsforTerms.Remove(s);
@@ -135,8 +137,10 @@ namespace IR_engine
                         {
                             term = term.ToLower();
                             Dictionary<string, int> tmp = new Dictionary<string, int>();
-                            foreach (string doc in docsforTerms)
+                            string doc = "";
+                            for(int i = 0; i < len; i++)
                             {
+                                doc = docsforTerms[i];
                                 if (!relevent_cts.Contains(doc.Substring(0, doc.IndexOf('_')).Trim(' '))) ;
                                 relevent_cts.Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '));
                                 if (terms.ContainsKey(term))

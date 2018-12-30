@@ -53,7 +53,7 @@
             </Label.Effect>
         </Label>
         <Image x:Name="image" Source="barvaz.JPG" HorizontalAlignment="Center" Height="145" Margin="-700,-300,0,0" VerticalAlignment="Center" Width="169"/>
-        <Label x:Name="test" Content="{Binding Path=STATUS}" HorizontalAlignment="Center" Margin="616,167,63.2,382" VerticalAlignment="Center" Height="71" Width="284"/>
+        <Label x:Name="test" Content="{Binding Path=STATUS}" HorizontalAlignment="Center" Margin="337,161,341,387" VerticalAlignment="Center" Height="71" Width="284"/>
         <Button x:Name="showDic" Content="show dictionary" HorizontalAlignment="Center" Margin="247,385,538,90.8" VerticalAlignment="Center" Width="119" Click="showDic_Click" Foreground="Black" BorderBrush="#FF00C3FF" Background="#FF00C3FF" Height="45">
             <Button.Effect>
                 <DropShadowEffect/>
@@ -172,7 +172,7 @@
         </Grid>
         <Label Content="Query file path" HorizontalAlignment="center" Height="32" Margin="509,302,351.2,286" VerticalAlignment="center" Width="103" RenderTransformOrigin="0.903,0.863"/>
         <Label Content="Searching" HorizontalAlignment="Left" Margin="664,267,0,0" VerticalAlignment="Top" FontSize="16" FontFamily="Rockwell Extra Bold"/>
-        <TextBox x:Name="textQuery" HorizontalAlignment="Center" Height="23" Margin="0,0,0,170" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="348"/>
+        <TextBox x:Name="textQuery" HorizontalAlignment="Center" Height="23" Margin="307,232,307,364" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="348"/>
         <ProgressBar x:Name="progBar" HorizontalAlignment="Left" Height="34" Margin="24,555,0,0" VerticalAlignment="Top" Width="910"/>
     </Grid>
 </Window>
