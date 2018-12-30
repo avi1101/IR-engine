@@ -25,8 +25,14 @@
         <Label Content="Iterations:" HorizontalAlignment="Left" Margin="10,289,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.492" Width="86"/>
         <TextBox x:Name="iterTB" HorizontalAlignment="Left" Height="23" Margin="96,289,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="66"/>
         <Label Content="Negative Ex:" HorizontalAlignment="Left" Margin="10,317,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Width="86"/>
-        <TextBox x:Name="iterTB_Copy" HorizontalAlignment="Left" Height="23" Margin="96,317,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="66"/>
-        <ProgressBar x:Name="progressBar" Value="{Binding progressBar.Value}" HorizontalAlignment="Left" Height="35" Margin="10,348,0,0" VerticalAlignment="Top" Width="472"/>
+        <TextBox x:Name="negtb" HorizontalAlignment="Left" Height="23" Margin="96,317,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="66"/>
+        <Label x:Name="prog" Content="" HorizontalAlignment="Left" Margin="167,289,0,0" VerticalAlignment="Top" Height="54" Width="310"/>
+        <Label x:Name="warnings" Content="" HorizontalAlignment="Left" Margin="167,173,0,0" VerticalAlignment="Top" Height="111" Width="310"/>
+        <Button Content="Train" HorizontalAlignment="center" Margin="0,380,0,0" VerticalAlignment="center" Width="75" Click="Button_Click"/>
+        <TextBox x:Name="trainSet" HorizontalAlignment="Left" Height="23" Margin="96,348,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <Label Content="Train Set File:" HorizontalAlignment="Left" Margin="10,348,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.492" Width="81"/>
+        <TextBox x:Name="outputName" HorizontalAlignment="Left" Height="23" Margin="347,348,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <Label Content="Output File Name:" HorizontalAlignment="Left" Margin="236,348,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.492" Width="106"/>
 
     </Grid>
 </Window>

@@ -17,12 +17,22 @@ namespace IR_engine
         public string postPath = null;
         public List<string> qry = null;
         public List<string> docs = null;
+        Dictionary<string, int> docSize = new Dictionary<string, int>();
 
 
         public Ranker(string path, bool isStem)
         {
             dataPath = path;
             if (!isStem) { postPath = @"\DisableStem"; } else { postPath = @"EnableStem"; }
+            using (StreamReader sr = new StreamReader(dataPath.Substring(0, dataPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
+            {
+                string line = "";
+                while ((line = sr.ReadLine()) != null)
+                {
+                    string[] splitted = line.Split('\t');
+                    docSize.Add(splitted[0], int.Parse(splitted[6].Trim()));
+                }
+            }
         }
 
         // changed: Elad
@@ -35,7 +45,8 @@ namespace IR_engine
         public List<KeyValuePair<string, double>> rank(
             Dictionary<string, KeyValuePair<int, term.Type>> qries,
             HashSet<string> docs,
-            Dictionary<string, double> weights
+            Dictionary<string, double> weights,
+            bool isfiltered
             )
         {
             Dictionary<string, double> scoresBMOrigin = new Dictionary<string, double>();// ket is Document, value is score
@@ -45,20 +56,25 @@ namespace IR_engine
             string line;
             Dictionary<string, Dictionary<string, int>> terms = new Dictionary<string, Dictionary<string, int>>();//key=term, value=doc,tf
             Dictionary<string, List<string>> fin = new Dictionary<string, List<string>>(); // key = type, value=list of terms
-            Dictionary<string, int> docSize = new Dictionary<string, int>(); //key= docName value = doc size
+            //Dictionary<string, int> docSize = new Dictionary<string, int>(); //key= docName value = doc size
             HashSet<string> relevent_cts = new HashSet<string>();
 
             /*
              * this part gets the size of each document and the avarege doc size
              */
-            using (StreamReader sr = new StreamReader(dataPath.Substring(0, dataPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
+            //using (StreamReader sr = new StreamReader(dataPath.Substring(0, dataPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
+            //{
+            //    while ((line = sr.ReadLine()) != null)
+            //    {
+            //        string[] splitted = line.Split('\t');
+            //        if (docs.Contains(splitted[0])) { docSize.Add(splitted[0], int.Parse(splitted[6].Trim())); avgDocLength = avgDocLength + int.Parse(splitted[6].Trim()); }
+            //    }
+            //}
+            foreach(string docIndex in docs)
             {
-                while ((line = sr.ReadLine()) != null)
-                {
-                    if (docs.Contains(line.Split('\t')[0])) { docSize.Add(line.Split('\t')[0], int.Parse(line.Split('\t')[6].Trim())); avgDocLength = avgDocLength + int.Parse(line.Split('\t')[6].Trim()); }
-                }
+                avgDocLength += docSize[docIndex];
             }
-            int docamount = docSize.Count;
+            int docamount = docs.Count;
             avgDocLength = avgDocLength / docamount;
             /*
              *  this part gets all the terms by type
@@ -100,11 +116,19 @@ namespace IR_engine
                     {
                         string term = line.Split('\t')[0];
                         List<string> docsforTerms = line.Split('\t')[1].Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
-                        foreach (string x in docsforTerms)
+                        if (isfiltered)
                         {
-                            if (!x.Contains('_') || !docs.Contains(x.Substring(0, x.IndexOf('_')).Trim(' ')))
+                            HashSet<string> toremove = new HashSet<string>();
+                            foreach (string x in docsforTerms)
                             {
-                                docsforTerms.Remove(x);
+                                if (!x.Contains('_') || !docs.Contains(x.Substring(0, x.IndexOf('_')).Trim(' ')))
+                                {
+                                    toremove.Add(x);
+                                }
+                            }
+                            foreach (string s in toremove)
+                            {
+                                docsforTerms.Remove(s);
                             }
                         }
                         if (qries.ContainsKey(term) || qries.ContainsKey(term.ToLower()))

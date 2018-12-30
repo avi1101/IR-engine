@@ -101,7 +101,7 @@ namespace IR_engine
         /// </summary>
         /// <param name="toStem"></param>
         /// <returns></returns>
-        public Dictionary<int, List<string>> Search(List<string> locations)
+        public Dictionary<int, List<string>> Search(List<string> locations, bool allLocs)
         {
             Clear();
             List<string> title = new List<string>();
@@ -124,9 +124,13 @@ namespace IR_engine
                 while((line = city.ReadLine()) != null)
                 {
                     string[] splitted = line.Split('\t');
-                    if (!ctHash.Contains(splitted[5]))
+                    if(allLocs)
                         docs.Add(splitted[0]);  //change 0 to 1 if needed name and not index
-
+                    else
+                    {
+                        if(!splitted[5].Equals("") && ctHash.Contains(splitted[5].ToLower()))
+                            docs.Add(splitted[0]);  //change 0 to 1 if needed name and not index
+                    }
                 }
             }
             Parallel.ForEach(parsedQueires, (q) =>
@@ -162,7 +166,7 @@ namespace IR_engine
                 m.ReleaseMutex();
                 // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
                 q.Value.Remove("relevant");
-                ranks.TryAdd(q.Key, ranker.rank(q.Value, docs, weightsPerQuery[q.Key]));
+                ranks.TryAdd(q.Key, ranker.rank(q.Value, docs, weightsPerQuery[q.Key], !allLocs));
                 m.WaitOne();
                 this.Progress += (0.5 / parsedQueires.Keys.Count);
                 m.ReleaseMutex();

@@ -351,12 +351,14 @@ namespace IR_engine
                     modelPath = @"MODELS\"+model_CB.SelectedValue + ".bin";
             }
             List<string> locations = new List<string>();
+            bool allLocs = true;
             StackPanel s = (StackPanel)scrollLocations.Content;
             foreach (System.Windows.Controls.CheckBox c in s.Children)
             {
                 if (c.IsChecked.Value)
                     locations.Add(c.Content.ToString());
             }
+            allLocs = locations.Count == 0 ? true: false;
             string query = "";
             if(!textQuery.Text.Equals(""))
             {
@@ -418,7 +420,7 @@ namespace IR_engine
 
             Task t = new Task(() =>
             {
-               RelevantDocs = search.Search(locations);
+               RelevantDocs = search.Search(locations, allLocs);
             });
             t.Start();
             test.Content = "Retreiving Data...";
