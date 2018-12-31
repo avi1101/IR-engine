@@ -47,13 +47,12 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Label x:Name="Boogle" Content="BarvazBarvazGo" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="75,-370,0,0" VerticalAlignment="Center" Height="85" Width="605" Foreground="#FFFFAE00" FontFamily="Rockwell Extra Bold" FontSize="58" Background="{x:Null}">
+        <Label x:Name="Boogle" Content="BarvazBarvazGo" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="219,43,138,491" VerticalAlignment="Center" Height="85" Width="605" Foreground="#FFFFAE00" FontFamily="Rockwell Extra Bold" FontSize="58" Background="{x:Null}">
             <Label.Effect>
                 <DropShadowEffect/>
             </Label.Effect>
         </Label>
-        <Image x:Name="image" Source="barvaz.JPG" HorizontalAlignment="Center" Height="145" Margin="-700,-300,0,0" VerticalAlignment="Center" Width="169"/>
-        <Label x:Name="test" Content="{Binding Path=STATUS}" HorizontalAlignment="Center" Margin="337,161,341,387" VerticalAlignment="Center" Height="71" Width="284"/>
+        <Image x:Name="image" Source="barvaz.JPG" HorizontalAlignment="Center" Height="145" Margin="50,48,744,426" VerticalAlignment="Center" Width="168"/>
         <Button x:Name="showDic" Content="show dictionary" HorizontalAlignment="Center" Margin="247,385,538,90.8" VerticalAlignment="Center" Width="119" Click="showDic_Click" Foreground="Black" BorderBrush="#FF00C3FF" Background="#FF00C3FF" Height="45">
             <Button.Effect>
                 <DropShadowEffect/>
@@ -169,10 +168,27 @@
                 </Button.Template>
             </Button>
             <ScrollViewer x:Name="scrollLocations" Grid.Column="1" HorizontalAlignment="Right" Margin="0,5.2,4.6,0" Grid.Row="3" Width="108" Height="96" VerticalAlignment="Top" BorderBrush="Black" Background="#FFBFBFBF" OpacityMask="Black"/>
+            <Button x:Name="refreshbtn" Content="Refresh" Grid.Column="2" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="3" VerticalAlignment="Top" Width="75" Click="refreshbtn_Click"/>
         </Grid>
         <Label Content="Query file path" HorizontalAlignment="center" Height="32" Margin="509,302,351.2,286" VerticalAlignment="center" Width="103" RenderTransformOrigin="0.903,0.863"/>
         <Label Content="Searching" HorizontalAlignment="Left" Margin="664,267,0,0" VerticalAlignment="Top" FontSize="16" FontFamily="Rockwell Extra Bold"/>
-        <TextBox x:Name="textQuery" HorizontalAlignment="Center" Height="23" Margin="307,232,307,364" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="348"/>
         <ProgressBar x:Name="progBar" HorizontalAlignment="Left" Height="34" Margin="24,555,0,0" VerticalAlignment="Top" Width="910"/>
+        <Grid HorizontalAlignment="Left" Height="148" Margin="253,119,0,0" VerticalAlignment="Top" Width="495">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="39*"/>
+                <RowDefinition Height="19*"/>
+                <RowDefinition Height="16*"/>
+            </Grid.RowDefinitions>
+            <TextBox x:Name="textQuery" Grid.Column="0" Grid.Row="1
+                     " HorizontalAlignment="Center" Height="32" Margin="70,4,71,2" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="354"/>
+            <Label x:Name="test" Grid.Row="0" Grid.Column="0" Content="{Binding Path=STATUS}" HorizontalAlignment="Center" Margin="10,4" VerticalAlignment="Center" Height="70" Width="475"/>
+            <TextBox x:Name="outFile" HorizontalAlignment="Left" Height="23" Margin="70,9,0,0" Grid.Row="2" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="240"/>
+            <Button x:Name="outFileBrowse" Content="Browse" HorizontalAlignment="Center" Margin="324,3,71,3" VerticalAlignment="Center" Width="100" Height="26" FontFamily="Showcard Gothic" Background="White" Foreground="#FF009FFF" BorderBrush="#FF5F5F5F" Grid.Row="2" Click="outFileBrowse_Click">
+                <Button.Effect>
+                    <DropShadowEffect/>
+                </Button.Effect>
+            </Button>
+        </Grid>
+        <Label Content="Query result output file" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="688,238,0,0"/>
     </Grid>
 </Window>

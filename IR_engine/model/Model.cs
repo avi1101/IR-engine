@@ -109,10 +109,7 @@ namespace IR_engine
                 MessageBox.Show("Invalid path");
                 return;
             }
-            if (File.Exists(IndexPath1 + @"\documents.txt"))
-                File.Delete(IndexPath1 + @"\documents.txt");
-            if (File.Exists(IndexPath1 + @"\city_dictionary.txt"))
-                File.Delete(IndexPath1 + @"\city_dictionary.txt");
+
             Memorydump();
             counter = 0;
             Progress = 0;
@@ -120,6 +117,10 @@ namespace IR_engine
             readfo = new ReadFile(path, toStem, cores);
             if (toStem) { if (!File.Exists(IndexPath1 + "\\EnableStem")) { Directory.CreateDirectory(IndexPath1 + "\\EnableStem"); } outPath = IndexPath1 + "\\EnableStem"; }
             else { if (!File.Exists(IndexPath1 + "\\DisableStem")) { Directory.CreateDirectory(IndexPath1 + "\\DisableStem"); } outPath = IndexPath1 + "\\DisableStem"; }
+            if (File.Exists(outPath + @"\documents.txt"))
+                File.Delete(outPath + @"\documents.txt");
+            if (File.Exists(outPath + @"\city_dictionary.txt"))
+                File.Delete(outPath + @"\city_dictionary.txt");
             indexer = new Indexer(outPath, path + "\\Posting_and_indexes");
 
             if (!Directory.Exists(path + "\\cityIndex")) { Directory.CreateDirectory(path + "\\cityIndex"); }
@@ -140,7 +141,7 @@ namespace IR_engine
             createCityDic(files);
             var list = locations.Keys.ToList();
             list.Sort();
-            using (StreamWriter ct = new StreamWriter(IndexPath1 + "\\city_dictionary.txt"))
+            using (StreamWriter ct = new StreamWriter(outPath + "\\city_dictionary.txt"))
             {
                 foreach (var key in list)
                 {
@@ -166,7 +167,7 @@ namespace IR_engine
                         ts.Wait();
                     if (k % (tasks * 5) == 0)
                     {
-                        manageResources();
+                        manageResources(outPath);
                         using (StreamWriter sw = new StreamWriter(Path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
                         {
                             foreach (KeyValuePair<term, term> entry in terms2)
@@ -191,7 +192,7 @@ namespace IR_engine
                 foreach (Task ts in t)
                     ts.Wait();
                 Progress = 100;
-                manageResources();
+                manageResources(outPath);
                 using (StreamWriter sw = new StreamWriter(Path + "\\Posting_and_indexes\\index" + chunk + ".txt"))
                 {
                     foreach (KeyValuePair<term, term> entry in terms2)
@@ -223,14 +224,23 @@ namespace IR_engine
                 double.Parse(elapsedMs.ToString()) / 1000.0+" sec\n"+
                 "Terms Parsed: " +indexList.Count+"\nDocuments Parsed: "+counter, "BarvazBarvazGo");
             avgDocsSize = ((double)avg_doc_size) / (counter);
+            //File.Move(IndexPath1 + @"\documents.txt", outPath + @"\documents.txt");
+            //File.Move(IndexPath1 + @"\city_dictionary.txt", outPath + @"\city_dictionary.txt");
+            using (StreamWriter lng = new StreamWriter(outPath + @"\languages.txt"))
+            {
+                var lngs = ReadFile.Langs.Keys.ToList();
+                for (int i = 0; i < lngs.Count; i++)
+                    lng.WriteLine(lngs[i]);
+            }
             isWorking = false;
+            OnPropertyChanged("done");
             //sw.Flush();
             //sw.Close();
         }
         /// <summary>
         /// funtion to free up the ram space by writing the accumulated values to the Disk
         /// </summary>
-        public void manageResources()
+        public void manageResources(string outPath)
         {
             for (int i = 0; i < queueList.Count; i++)
             {
@@ -270,7 +280,7 @@ namespace IR_engine
                 }
                 locsList[i].Clear();
             }
-            using (StreamWriter sw = new StreamWriter(IndexPath1 + "\\documents.txt", true))
+            using (StreamWriter sw = new StreamWriter(outPath + "\\documents.txt", true))
             {
                 foreach (KeyValuePair<int, document> entry in docs)
                 {
@@ -302,6 +312,11 @@ namespace IR_engine
         public List<string> load_location(string path)
         {
             return Indexer.Load_locs(path,toStem);
+        }
+
+        public List<string> load_langs(string path)
+        {
+            return Indexer.load_langs(path, toStem);
         }
 
         public Dictionary<int, string> loadElements(string indexPath)

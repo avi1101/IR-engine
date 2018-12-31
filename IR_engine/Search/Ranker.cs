@@ -24,7 +24,7 @@ namespace IR_engine
         {
             dataPath = path;
             if (!isStem) { postPath = @"\DisableStem"; } else { postPath = @"EnableStem"; }
-            using (StreamReader sr = new StreamReader(dataPath.Substring(0, dataPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
+            using (StreamReader sr = new StreamReader(dataPath + "\\documents.txt"))
             {
                 string line = "";
                 while ((line = sr.ReadLine()) != null)

@@ -32,6 +32,8 @@ namespace IR_engine
         string IndexPath = "";
         string modelPath = "";
         string qryPath = "";
+        string outFilePath = "";
+        static int filenum = 1;
         Model m;
         Searcher search;
         bool isDictionaryStemmed;
@@ -45,7 +47,19 @@ namespace IR_engine
             DataContext = m;
             m.PropertyChanged += delegate (object sender, PropertyChangedEventArgs e)
             {
-                progBar.Dispatcher.BeginInvoke((Action)(() => progBar.Value = (m.Progress)));
+                if(e.PropertyName.Equals("done"))
+                {
+                    string a = null;
+                    var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
+                    foreach (string x in arrayOfAllKeys)
+                    {
+                        a = Model.cleanAll(x);
+                        if (!a.Equals("") && !a.Equals(" "))
+                            Language.Dispatcher.BeginInvoke((Action)(() => Language.Items.Add(x)));
+                    }
+                }
+                else
+                    progBar.Dispatcher.BeginInvoke((Action)(() => progBar.Value = (m.Progress)));
             };
             path = "";
             IndexPath = "";
@@ -69,6 +83,8 @@ namespace IR_engine
             //}
             //scrollLocations.Content = s;   
         }
+
+
 
         /// <summary>
         /// mouse enter event for the RUN button
@@ -163,22 +179,10 @@ namespace IR_engine
                     progBar.Value = 0;
                     test.Content = "Working, please wait...";
                     isDictionaryStemmed = stem.IsChecked.Value;
-                    var watch2 = System.Diagnostics.Stopwatch.StartNew();
                     m.IndexPath1 = IndexPath;
                     m.Path = path;
                     m.toStem = stem.IsChecked.Value;
                     Task.Factory.StartNew(()=>m.index());
-                    var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
-                    string a = null;
-                    foreach (string x in arrayOfAllKeys)
-                    {
-                        a = Model.cleanAll(x);
-                        if (!a.Equals("") && !a.Equals(" "))
-                            Language.Items.Add(a);
-                    }
-                    watch2.Stop();
-                    double time =watch2.ElapsedMilliseconds;
-                    time = (time / 1000.0);
                 }
             }
             else
@@ -257,13 +261,22 @@ namespace IR_engine
                 m.load_index(ipt);
                 m.loadElements(ipt);
                 StackPanel s = new StackPanel();
-                foreach(string location in m.load_location(ipt.Substring(0, ipt.LastIndexOf('\\') + 1)))
+                foreach(string location in m.load_location(ipt))
                 {
                     System.Windows.Controls.CheckBox c = new System.Windows.Controls.CheckBox();
-                    c.Content = location;
+                    c.Content = Model.cleanAll(location);
                     s.Children.Add(c);
                 }
                 scrollLocations.Content = s;
+                string a = null;
+                var arrayOfAllKeys = m.load_langs(ipt);
+                if (arrayOfAllKeys == null) return;
+                foreach (string x in arrayOfAllKeys)
+                {
+                    a = Model.cleanAll(x);
+                    if (!a.Equals("") && !a.Equals(" "))
+                        Language.Items.Add(a);
+                }
                 test.Content = "Index was succesfully loaded from the file:\n" + ipt + "\\index.txt";
             }
         }
@@ -289,8 +302,8 @@ namespace IR_engine
             {
                 Directory.Delete(IndexPath + "\\EnableStem", true);
             }
-            File.Delete(IndexPath + "\\city_dictionary.txt");
-            File.Delete(IndexPath + "\\documents.txt");
+            //File.Delete(IndexPath + "\\city_dictionary.txt");
+            //File.Delete(IndexPath + "\\documents.txt");
         }
 
         private void browseQry_Click(object sender, RoutedEventArgs e)
@@ -339,6 +352,17 @@ namespace IR_engine
                 test.Content = "No index was loaded, please load an index in order to search";
                 return;
             }
+            if(outFile.Text.Equals(""))
+            {
+                test.Content = "No result output file selected.\nplease press the browse button and choose where to save it.";
+                return;
+            }
+            if(!Directory.Exists(System.IO.Path.GetDirectoryName(outFile.Text)))
+            {
+                test.Content = "Directory does not exist.\nplease press the browse button and choose where to save it.";
+                return;
+            }
+            string oFile = outFile.Text;
             progBar.Value = 0;
             string ipt = null;
             if (stem.IsChecked.Value) { ipt = IndexPath.Equals("") ? IndexPathText.Text + "\\EnableStem" : IndexPath + "\\EnableStem"; }
@@ -349,6 +373,11 @@ namespace IR_engine
             {
                 if(!model_CB.SelectedValue.Equals("Costumize"))
                     modelPath = @"MODELS\"+model_CB.SelectedValue + ".bin";
+            }
+            if (textQuery.Text.Equals("") && qryTextBox.Text.Equals(""))
+            {
+                test.Content = "No query provided";
+                return;
             }
             List<string> locations = new List<string>();
             bool allLocs = true;
@@ -394,7 +423,7 @@ namespace IR_engine
             }
             progBar.Value = 0;
             Dictionary<int, List<string>> RelevantDocs = null;
-            search = new Searcher(ipt, query, semanticsCheckBox.IsChecked.Value, modelPath, stem.IsChecked.Value);
+            search = new Searcher(ipt, query, semanticsCheckBox.IsChecked.Value, modelPath, stem.IsChecked.Value, oFile);
             search.PropertyChanged += delegate (object sender1, PropertyChangedEventArgs e1)
             {
                 if(e1.PropertyName.Equals("done"))
@@ -439,6 +468,49 @@ namespace IR_engine
         {
             CreateModel cm = new CreateModel();
             cm.Show();
+        }
+
+        private void refreshbtn_Click(object sender, RoutedEventArgs e)
+        {
+            string a = null;
+            var arrayOfAllKeys = ReadFile.Langs.Keys.ToArray();
+            if (arrayOfAllKeys == null) return;
+            foreach (string x in arrayOfAllKeys)
+            {
+                a = Model.cleanAll(x);
+                if (!a.Equals("") && !a.Equals(" "))
+                    Language.Items.Add(x);
+            }
+            var locs = Model.locations.Keys.ToList();
+            if (locs == null) return;
+            StackPanel s = new StackPanel();
+            foreach (string location in locs)
+            {
+                System.Windows.Controls.CheckBox c = new System.Windows.Controls.CheckBox();
+                c.Content = Model.cleanAll(location);
+                s.Children.Add(c);
+            }
+            scrollLocations.Content = s;
+        }
+
+        private void outFileBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            if (Model.isWorking)
+            {
+                test.Content = "Engine is working, please wait for a completion message to pop up";
+                return;
+            }
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    string f = "\\res";
+                    outFilePath = dialog.SelectedPath;
+                    while (File.Exists(outFilePath + f + filenum + ".txt")) filenum++;
+                    outFilePath = outFilePath + f + filenum + ".txt";
+                    outFile.Text = outFilePath;
+                }
+            }
         }
     }
 }

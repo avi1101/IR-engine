@@ -71,11 +71,11 @@ namespace IR_engine
         public List<string> getStrings()
         {
             List<string> l = new List<string>();
-            l.Add(list[0].Key);
-            l.Add(list[1].Key);
-            l.Add(list[2].Key);
-            l.Add(list[3].Key);
-            l.Add(list[4].Key);
+            l.Add(list[0].Key + "Rank: "+list[0].Value + "\t");
+            l.Add(list[1].Key + "Rank: " + list[1].Value + "\t");
+            l.Add(list[2].Key + "Rank: " + list[2].Value + "\t");
+            l.Add(list[3].Key + "Rank: " + list[3].Value + "\t");
+            l.Add(list[4].Key + "Rank: " + list[4].Value + "\t");
             return l;
         }
 

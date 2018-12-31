@@ -27,16 +27,18 @@ namespace IR_engine
         public static Dictionary<int, string> Index2Doc = new Dictionary<int, string>();
         Dictionary<string, indexTerm> index;
         bool Semantics;
-        bool toStem;
+        static bool toStem;
         Ranker ranker;
         string indexPath;
         string queryPath;
         string modelPath;
+        string outputFile;
         Vocabulary vocabulary;
         Word2Vec.Net.Distance distance;
         private double progress;
 
-        public double Progress {
+        public double Progress
+        {
             get => progress;
             set
             {
@@ -51,14 +53,14 @@ namespace IR_engine
         }
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public Searcher(string indexPath, string queryPath, bool Semantics, string modelPath, bool toStem)
+        public Searcher(string indexPath, string queryPath, bool Semantics, string modelPath, bool toStemm, string outputFile)
         {
+            this.outputFile = outputFile;
             this.indexPath = indexPath;
             this.queryPath = queryPath;
             this.Semantics = Semantics;
             this.modelPath = modelPath;
-            this.toStem = toStem;
-            this.ranker = new Ranker(indexPath, toStem);
+            this.ranker = new Ranker(indexPath, toStemm);
             try
             {
                 vocabulary = new Word2VecBinaryReader().Read(modelPath);
@@ -69,18 +71,16 @@ namespace IR_engine
                 Console.WriteLine("Unknown model");
                 vocabulary = null;
             }
-            if (Index2Doc.Count == 0)
-            {
-                using (StreamReader city = new StreamReader(indexPath.Substring(0, indexPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
-                {                                   //locations list is a list of not desired locations
-                    string line = "";
-                    while ((line = city.ReadLine()) != null)
-                    {
-                        string[] splitted = line.Split('\t');
-                        Index2Doc.Add(int.Parse(splitted[0]), splitted[1]);
-                    }
+            using (StreamReader city = new StreamReader(indexPath + "\\documents.txt"))
+            {                                   //locations list is a list of not desired locations
+                string line = "";
+                while ((line = city.ReadLine()) != null)
+                {
+                    string[] splitted = line.Split('\t');
+                    Index2Doc.Add(int.Parse(splitted[0]), splitted[1]);
                 }
             }
+            toStem = toStemm;
         }
 
         public void loadIndex(Dictionary<string, indexTerm> index)
@@ -109,7 +109,7 @@ namespace IR_engine
             // dictionary of <queryID, dictionary of <parsed query, <occrences, type>>>
             Dictionary<int, Dictionary<string, KeyValuePair<int, term.Type>>> parsedQueires = parseAllQueires(weightsPerQuery);
             // dictionary of <queryID, list of <document, it's rank>>
-            ConcurrentDictionary<int, List<KeyValuePair<string, double>>> ranks = 
+            ConcurrentDictionary<int, List<KeyValuePair<string, double>>> ranks =
                 new ConcurrentDictionary<int, List<KeyValuePair<string, double>>>();
             HashSet<string> ctHash = new HashSet<string>();
             HashSet<string> docs = new HashSet<string>();
@@ -118,17 +118,17 @@ namespace IR_engine
                 ctHash.Add(city);
             }
 
-            using (StreamReader city = new StreamReader(indexPath.Substring(0, indexPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
+            using (StreamReader city = new StreamReader(indexPath + "\\documents.txt"))
             {                                   //locations list is a list of not desired locations
                 string line = "";
-                while((line = city.ReadLine()) != null)
+                while ((line = city.ReadLine()) != null)
                 {
                     string[] splitted = line.Split('\t');
-                    if(allLocs)
+                    if (allLocs)
                         docs.Add(splitted[0]);  //change 0 to 1 if needed name and not index
                     else
                     {
-                        if(!splitted[5].Equals("") && ctHash.Contains(splitted[5].ToLower()))
+                        if (!splitted[5].Equals("") && ctHash.Contains(splitted[5].ToLower()))
                             docs.Add(splitted[0]);  //change 0 to 1 if needed name and not index
                     }
                 }
@@ -205,23 +205,23 @@ namespace IR_engine
                         orderby pair.Key ascending
                         select pair;
             Dictionary<int, List<string>> RelevantDocs = new Dictionary<int, List<string>>();
-            using (StreamWriter sw = new StreamWriter(indexPath.Substring(0, indexPath.LastIndexOf('\\') + 1) + "res.txt"))
+            using (StreamWriter sw = new StreamWriter(this.outputFile))
             {
-                foreach(KeyValuePair<int, List<KeyValuePair<string, double>>> ret in items)
+                foreach (KeyValuePair<int, List<KeyValuePair<string, double>>> ret in items)
                 {
                     if (ret.Value == null) continue;
                     int num = 0;
-                    foreach(KeyValuePair<string, double> DocRank in ret.Value)
+                    foreach (KeyValuePair<string, double> DocRank in ret.Value)
                     {
                         if (num >= 50 || DocRank.Value == 0) break;
-                        sw.WriteLine(   ret.Key + " "
+                        sw.WriteLine(ret.Key + " "
                                         + 0 + " "
                                         + Index2Doc[int.Parse(DocRank.Key)].Replace(" ", "") + " "
                                         + num + " "
                                         + DocRank.Value + " "
-                                        + "run"    );
+                                        + "run");
                         //RelevantDocs.Add(Index2Doc[int.Parse(DocRank.Key)].Replace(" ", ""));
-                        if(RelevantDocs.ContainsKey(ret.Key))
+                        if (RelevantDocs.ContainsKey(ret.Key))
                         {
                             //RelevantDocs[ret.Key].Add(Index2Doc[int.Parse(DocRank.Key)].Replace(" ", ""));
                             RelevantDocs[ret.Key].Add(DocRank.Key);
@@ -260,7 +260,7 @@ namespace IR_engine
             {
                 if (j == 5 || bestWord.Distance < 0.91) break;
                 vals.Add(bestWord.Word, 1);
-                if(weights.ContainsKey(bestWord.Word))
+                if (weights.ContainsKey(bestWord.Word))
                 {
                     weights[bestWord.Word] += 0.1;
                 }
@@ -385,19 +385,19 @@ namespace IR_engine
                     {
                         //string l2 = l.Replace("not", "");
                         string[] rel = l.Split(new string[] { "not relevant", "non-relevant" }, StringSplitOptions.None);
-                        if(rel.Length > 1)
+                        if (rel.Length > 1)
                         {
-                            foreach(string splitted in rel)
+                            foreach (string splitted in rel)
                             {
                                 if (splitted.Contains("relevant"))
                                 {
-                                    ParseLine(splitted.Replace("relevant", ""),"narr",weightsPerQuery[currentID]);
+                                    ParseLine(splitted.Replace("relevant", ""), "narr", weightsPerQuery[currentID]);
                                 }
                                 else
                                 {
                                     ParseLine(splitted.Replace("relevant", ""), "negative", weightsPerQuery[currentID]);
                                 }
-                                    
+
                             }
                         }
                         else
@@ -435,7 +435,7 @@ namespace IR_engine
             string[] words = line.Split(new string[] { " ", "(", ")", "," }, StringSplitOptions.RemoveEmptyEntries);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < words.Length; i++)
-                sb.Append(ProcessWord(words[i])+" ");
+                sb.Append(ProcessWord(words[i]) + " ");
             return sb.ToString();
         }
 
@@ -451,7 +451,7 @@ namespace IR_engine
                     String result = ProcessWord(word);
                     if (!result.Equals(""))
                     {
-                        if(!weights.ContainsKey(result))
+                        if (!weights.ContainsKey(result))
                         {
                             if (section.Equals("desc"))
                                 weights.Add(result, 3.5);
@@ -494,7 +494,7 @@ namespace IR_engine
             // check if stemmed is stop word, do not search complete list if not necessary
             if ((workingCopy.Length <= 4) || stopwords.Contains(workingCopy))
             {
-                if(!workingCopy.Equals("not"))
+                if (!workingCopy.Equals("not"))
                     return "";
             }
 

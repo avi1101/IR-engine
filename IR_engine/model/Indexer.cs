@@ -328,6 +328,18 @@ namespace IR_engine
             return locations;
         }
 
+        public static List<string> load_langs(string path, bool isStem)
+        {
+            string line;
+            List<string> locations = new List<string>();
+            using (StreamReader sr = new StreamReader(path + @"\languages.txt"))
+            {
+                while ((line = sr.ReadLine()) != null)
+                { locations.Add(line.Split('\t')[0]); }
+            }
+            return locations;
+        }
+
         public static Dictionary<int, string> load_elements(string path)
         {
             string line = "";
