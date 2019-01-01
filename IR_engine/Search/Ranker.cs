@@ -62,14 +62,6 @@ namespace IR_engine
             /*
              * this part gets the size of each document and the avarege doc size
              */
-            //using (StreamReader sr = new StreamReader(dataPath.Substring(0, dataPath.LastIndexOf('\\') + 1) + "\\documents.txt"))
-            //{
-            //    while ((line = sr.ReadLine()) != null)
-            //    {
-            //        string[] splitted = line.Split('\t');
-            //        if (docs.Contains(splitted[0])) { docSize.Add(splitted[0], int.Parse(splitted[6].Trim())); avgDocLength = avgDocLength + int.Parse(splitted[6].Trim()); }
-            //    }
-            //}
             foreach(string docIndex in docs)
             {
                 avgDocLength += docSize[docIndex];
@@ -117,22 +109,6 @@ namespace IR_engine
                         string term = line.Split('\t')[0];
                         List<string> docsforTerms = line.Split('\t')[1].Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
                         int len = docsforTerms.Count;
-                        if (isfiltered)
-                        {
-                            HashSet<string> toremove = new HashSet<string>();
-                            for(int i = 0; i < len; i++)
-                            {
-                                if (!docsforTerms[i].Contains('_') || !docs.Contains(docsforTerms[i].Substring(0, docsforTerms[i].IndexOf('_')).Trim(' ')))
-                                {
-                                    toremove.Add(docsforTerms[i]);
-                                }
-                            }
-                            len -= toremove.Count;
-                            foreach (string s in toremove)
-                            {
-                                docsforTerms.Remove(s);
-                            }
-                        }
                         if (qries.ContainsKey(term) || qries.ContainsKey(term.ToLower()))
                         {
                             term = term.ToLower();
@@ -141,7 +117,7 @@ namespace IR_engine
                             for(int i = 0; i < len; i++)
                             {
                                 doc = docsforTerms[i];
-                                if (!relevent_cts.Contains(doc.Substring(0, doc.IndexOf('_')).Trim(' '))) ;
+                                if (!relevent_cts.Contains(doc.Substring(0, doc.IndexOf('_')).Trim(' ')))
                                 relevent_cts.Add(doc.Substring(0, doc.IndexOf('_')).Trim(' '));
                                 if (terms.ContainsKey(term))
                                 {
@@ -159,12 +135,13 @@ namespace IR_engine
 
             foreach (string docu in docs)
             {
+                if (!docs.Contains(docu)) continue;
                 double docL = docSize[docu];
                 double scoreTmp = 0;
-                double score22 = 0;
-                double score23 = 0;
-                double w1 = 0; //root of qf^2*tf^2
-                double w2 = 0; //qf*tf
+                //double score22 = 0;
+                //double score23 = 0;
+                //double w1 = 0; //root of qf^2*tf^2
+                //double w2 = 0; //qf*tf
                 if (!relevent_cts.Contains(docu)) continue;
                 foreach (string term in terms.Keys)
                 {
@@ -178,14 +155,14 @@ namespace IR_engine
                     else { tf = x[docu]; }
                     double tf2 = tf / docL;
                     // double idf2 = Math.Log(docs.Count / nqi); NO USE!! bad bad stuff
-                    w1 += Math.Sqrt(Math.Pow(qf, 2) * Math.Pow(tf2, 2));
-                    w2 += qf * tf2;
-                    score22 += qf * ((k1 + 1) * tf / (tf + k1 * (1 - b + b * docL / avgDocLength))) * IDF * weights[term];
-                    scoreTmp += (IDF * (tf * (k1 + 1.0) / (tf + k1 * (1.0 - b + b * docL / avgDocLength))))*weights[term];
+                    //  w1 += Math.Sqrt(Math.Pow(qf, 2) * Math.Pow(tf2, 2));
+                    // w2 += qf * tf2;
+                    //score22 += qf * ((k1 + 1) * tf / (tf + k1 * (1 - b + b * docL / avgDocLength))) * IDF * weights[term];
+                    scoreTmp += BM25rank(qf, nqi, N, IDF, tf, docL, avgDocLength, weights[term]);
                 }
                 if (scoreTmp <= 0) continue;
                 scoresBMOrigin.Add(docu, scoreTmp);
-                CosSim.Add(docu, w2 / w1);
+               // CosSim.Add(docu, w2 / w1);
             }
             //double minV = scoresBMOrigin.Aggregate((l, r) => l.Value < r.Value ? l : r).Value;
             if (scoresBMOrigin.Count == 0)
@@ -212,7 +189,10 @@ namespace IR_engine
             //}
             return ans;
         }
-
+        public double BM25rank(double qf, double nqi, double N, double IDF, double tf, double docL, double avgDocLength,double weight )
+        {
+            return (IDF * (tf * (k1 + 1.0) / (tf + k1 * (1.0 - b + b * docL / avgDocLength)))) * weight;
+        }
     }
 }
 

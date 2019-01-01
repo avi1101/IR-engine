@@ -158,11 +158,17 @@ namespace IR_engine
                         }
                     }
                 }
-                if (curr=="" && country =="" && pop =="" && cap=="")
-                { return; }
+                if (curr == "" && country == "" && pop == "" && cap == "")
+                {
+                    Location l0 = new Location(city, "*", "0", "*", "*");
+                    Model.locations.TryAdd(city, l0);
+                }
+                else
+                {
                     Location l = new Location(city, country, pop, curr, cap);
                     Model.locations.TryAdd(city, l);
-                
+                }
+
             }
             else
             {

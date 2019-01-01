@@ -23,6 +23,7 @@ namespace IR_engine
         public static ConcurrentDictionary<int, document> docs = new ConcurrentDictionary<int, document>(); //holds doc names and <max TF, distinct, location>
         public static int cores = Environment.ProcessorCount;
         public static int fileCount = 0;
+        public static List<string> locationsList = new List<string>();
         public static ConcurrentDictionary<string, byte> cityIn = new ConcurrentDictionary<string, byte>();
         public static ConcurrentDictionary<string, Location> locations = new ConcurrentDictionary<string, Location>();
         public static long avg_doc_size = 0;
@@ -305,13 +306,15 @@ namespace IR_engine
         /// <returns>the index as a dictionary data structure</returns>
         public Dictionary<string, indexTerm> load_index(string indexPath)
         {
+            indexList.Clear();
             indexList = Indexer.Load_Index(indexPath);
             return indexList;
         }
 
         public List<string> load_location(string path)
         {
-            return Indexer.Load_locs(path,toStem);
+            locationsList = Indexer.Load_locs(path, toStem);
+            return locationsList;
         }
 
         public List<string> load_langs(string path)

@@ -15,10 +15,10 @@ namespace IR_engine
     class Searcher : INotifyPropertyChanged
     {
         HashSet<string> stopwords = new HashSet<string>() {
-            "a","an","and","also","all","are","as","at","be","been","by","but","for","from","-", "document", "issue", "issues",
-            "have","has","had","he","in","is","it","its", "not","more","new","what", "where", "discuss", "discussing", "and/or",
-            "which", "how", "who", "of","on","page","part","that","the","this", "regard", "regarding", "considered", "and/or,",
-            "to","s","was","were","will","with", "documents", "i.e.", "i.e.,", ",", "?","etc", "information", "available"};
+            "a","an","and","also","all","are","as","at","be","been","by","but","for","from","-", "document", "issue", "issues", "required", "those",
+            "have","has","had","he","in","is","it","its", "not","more","new","what", "where", "discuss", "discussing", "and/or", "other", "while",
+            "which", "how", "who", "of","on","page","part","that","the","this", "regard", "regarding", "considered", "and/or,", "would", "should",
+            "to","s","was","were","will","with", "documents", "i.e.", "i.e.,", ",", "?","etc", "information", "available", "there", "their", "associated"};
         private static Dictionary<string, KeyValuePair<int, term.Type>> currentKeywords = new Dictionary<string, KeyValuePair<int, term.Type>>();
         public static List<KeyValuePair<string, term.Type>> parsed = new List<KeyValuePair<string, term.Type>>();
         ConcurrentDictionary<int, string> titles = new ConcurrentDictionary<int, string>();
@@ -71,6 +71,7 @@ namespace IR_engine
                 Console.WriteLine("Unknown model");
                 vocabulary = null;
             }
+            Index2Doc.Clear();
             using (StreamReader city = new StreamReader(indexPath + "\\documents.txt"))
             {                                   //locations list is a list of not desired locations
                 string line = "";
@@ -101,7 +102,7 @@ namespace IR_engine
         /// </summary>
         /// <param name="toStem"></param>
         /// <returns></returns>
-        public Dictionary<int, List<string>> Search(List<string> locations, bool allLocs)
+        public Dictionary<int, List<string>> Search(HashSet<string> locations, bool allLocs)
         {
             Clear();
             List<string> title = new List<string>();
@@ -111,12 +112,7 @@ namespace IR_engine
             // dictionary of <queryID, list of <document, it's rank>>
             ConcurrentDictionary<int, List<KeyValuePair<string, double>>> ranks =
                 new ConcurrentDictionary<int, List<KeyValuePair<string, double>>>();
-            HashSet<string> ctHash = new HashSet<string>();
             HashSet<string> docs = new HashSet<string>();
-            foreach (string city in locations)
-            {
-                ctHash.Add(city);
-            }
 
             using (StreamReader city = new StreamReader(indexPath + "\\documents.txt"))
             {                                   //locations list is a list of not desired locations
@@ -128,7 +124,7 @@ namespace IR_engine
                         docs.Add(splitted[0]);  //change 0 to 1 if needed name and not index
                     else
                     {
-                        if (!splitted[5].Equals("") && ctHash.Contains(splitted[5].ToLower()))
+                        if (!splitted[5].Equals("") && locations.Contains(splitted[5].ToLower()))
                             docs.Add(splitted[0]);  //change 0 to 1 if needed name and not index
                     }
                 }
@@ -139,7 +135,6 @@ namespace IR_engine
                 m.WaitOne();
                 if (Semantics)
                 {
-                    //var recWords = GetSimilar(q.Value);
                     var recWords = GetSimilarToSentence(titles[q.Key], weightsPerQuery[q.Key]);
                     foreach (KeyValuePair<string, int> w in recWords)
                     {
@@ -171,36 +166,6 @@ namespace IR_engine
                 this.Progress += (0.5 / parsedQueires.Keys.Count);
                 m.ReleaseMutex();
             });
-            //foreach (var q in parsedQueires)
-            //{
-            //    if (Semantics)
-            //    {
-            //        //var recWords = GetSimilar(q.Value);
-            //        var recWords = GetSimilarToSentence(titles[q.Key]);
-            //        foreach (KeyValuePair<string, int> w in recWords)
-            //        {
-            //            if (q.Value.ContainsKey(w.Key))
-            //            {
-            //                int num = q.Value[w.Key].Key;
-            //                term.Type t = q.Value[w.Key].Value;
-            //                q.Value[w.Key] = new KeyValuePair<int, term.Type>(w.Value + num, t);
-            //            }
-            //            else
-            //            {
-            //                foreach (KeyValuePair<string, term.Type> e in parsed)
-            //                    if (e.Key.Equals(w.Key))
-            //                    {
-            //                        q.Value.Add(w.Key, new KeyValuePair<int, term.Type>(w.Value, e.Value));
-            //                        parsed.Remove(e);
-            //                        break;
-            //                    }
-
-            //            }
-            //        }
-            //    }ss
-            //    // LocationName \t doc | loc1 | loc2 | , doc | loc1 | loc2 | , .....
-            //    ranks.TryAdd(q.Key, ranker.rank(q.Value, docs));
-            //}
             var items = from pair in ranks
                         orderby pair.Key ascending
                         select pair;
@@ -220,16 +185,13 @@ namespace IR_engine
                                         + num + " "
                                         + DocRank.Value + " "
                                         + "run");
-                        //RelevantDocs.Add(Index2Doc[int.Parse(DocRank.Key)].Replace(" ", ""));
                         if (RelevantDocs.ContainsKey(ret.Key))
                         {
-                            //RelevantDocs[ret.Key].Add(Index2Doc[int.Parse(DocRank.Key)].Replace(" ", ""));
                             RelevantDocs[ret.Key].Add(DocRank.Key);
                         }
                         else
                         {
                             List<string> l = new List<string>();
-                            //l.Add(Index2Doc[int.Parse(DocRank.Key)].Replace(" ", ""));
                             l.Add(DocRank.Key);
                             RelevantDocs.Add(ret.Key, l);
                         }
@@ -237,6 +199,18 @@ namespace IR_engine
                     }
                 }
             }
+            //using (StreamWriter sw = new StreamWriter(@"D:\curpus\actual\index\WordsPerQueryStemNoSemantics_2.txt"))
+            //{
+            //    foreach (var entry in parsedQueires)
+            //    {
+            //        sw.Write(entry.Key + "\t");
+            //        foreach (var entryInQuery in entry.Value)
+            //        {
+            //            sw.Write(entryInQuery.Key + ",");
+            //        }
+            //        sw.Write("\r\n");
+            //    }
+            //}
             rdocs = RelevantDocs;
             OnPropertyChanged("done");
             return RelevantDocs;
@@ -471,7 +445,7 @@ namespace IR_engine
                             else if (section.Equals("title"))
                                 weights[result] += 1;
                             else if (section.Equals("negative"))
-                                weights[result] -= 1;
+                                weights[result] -= 0.09;
                         }
                         if (currentKeywords.ContainsKey(result))
                         {

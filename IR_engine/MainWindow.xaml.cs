@@ -264,7 +264,9 @@ namespace IR_engine
                 foreach(string location in m.load_location(ipt))
                 {
                     System.Windows.Controls.CheckBox c = new System.Windows.Controls.CheckBox();
-                    c.Content = Model.cleanAll(location);
+                    string l = Model.cleanAll(location);
+                    if (l.Equals("") || l.Equals("for")) continue;
+                    c.Content = l;
                     s.Children.Add(c);
                 }
                 scrollLocations.Content = s;
@@ -379,7 +381,7 @@ namespace IR_engine
                 test.Content = "No query provided";
                 return;
             }
-            List<string> locations = new List<string>();
+            HashSet<string> locations = new HashSet<string>();
             bool allLocs = true;
             StackPanel s = (StackPanel)scrollLocations.Content;
             foreach (System.Windows.Controls.CheckBox c in s.Children)
@@ -481,13 +483,15 @@ namespace IR_engine
                 if (!a.Equals("") && !a.Equals(" "))
                     Language.Items.Add(x);
             }
-            var locs = Model.locations.Keys.ToList();
+            var locs = Model.locationsList;
             if (locs == null) return;
             StackPanel s = new StackPanel();
             foreach (string location in locs)
             {
                 System.Windows.Controls.CheckBox c = new System.Windows.Controls.CheckBox();
-                c.Content = Model.cleanAll(location);
+                string l = Model.cleanAll(location);
+                if (l.Equals("") || l.Equals("for")) continue;
+                c.Content = l;
                 s.Children.Add(c);
             }
             scrollLocations.Content = s;
